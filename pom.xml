@@ -25,6 +25,17 @@
 		<developerConnection>scm:git:git@github.com:PkayJava/pluggable.git</developerConnection>
 	</scm>
 
+	<developers>
+		<developer>
+			<id>pkayjava@gmail.com</id>
+			<email>pkayjava@gmail.com</email>
+			<url>www.linkedin.com/in/socheatkhauv</url>
+			<organization>iTrust Cambodia</organization>
+			<organizationUrl>http://www.itrustcam.com</organizationUrl>
+			<timezone>7</timezone>
+		</developer>
+	</developers>
+
 	<dependencies>
 
 		<dependency>
