@@ -18,6 +18,12 @@
 		<jodatime.version>2.2</jodatime.version>
 	</properties>
 
+	<scm>
+		<url>https://github.com/PkayJava/pluggable</url>
+		<connection>scm:git:git://github.com/PkayJava/pluggable.git</connection>
+		<developerConnection>scm:git:git@github.com:PkayJava/pluggable.git</developerConnection>
+	</scm>
+
 	<dependencies>
 
 		<dependency>
