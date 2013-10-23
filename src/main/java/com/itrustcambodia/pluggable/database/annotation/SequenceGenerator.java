@@ -20,7 +20,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  *   &#064;SequenceGenerator(name="EMP_SEQ", allocationSize=25)
  * </pre>
  *
- * @since Java Persistence 1.0
+ * @author Socheat KHAUV
  */
 @Target({TYPE, METHOD, FIELD}) 
 @Retention(RUNTIME)

@@ -32,6 +32,9 @@ import com.itrustcambodia.pluggable.widget.CheckBox;
 import com.itrustcambodia.pluggable.widget.DropDownChoice;
 import com.itrustcambodia.pluggable.widget.TextField;
 
+/**
+ * @author Socheat KHAUV
+ */
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_SETTING", description = "Access Application Setting Page") })
 public abstract class ApplicationSettingPage extends KnownPage {
 

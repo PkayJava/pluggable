@@ -9,6 +9,9 @@ import com.itrustcambodia.pluggable.database.annotation.GenerationType;
 import com.itrustcambodia.pluggable.database.annotation.Id;
 import com.itrustcambodia.pluggable.database.annotation.Table;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Entity
 @Table(name = "tbl_user")
 public class AbstractUser implements Serializable {

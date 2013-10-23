@@ -14,6 +14,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 import com.itrustcambodia.pluggable.form.RestAPIForm;
 import com.itrustcambodia.pluggable.rest.RequestMethod;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RestAPIPanel extends Panel {
 
     /**

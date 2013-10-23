@@ -11,6 +11,9 @@ import org.apache.wicket.model.Model;
 import com.itrustcambodia.pluggable.panel.InputFeedback;
 import com.itrustcambodia.pluggable.validation.controller.FieldController;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WidgetDropDownChoice extends Panel {
 
     /**

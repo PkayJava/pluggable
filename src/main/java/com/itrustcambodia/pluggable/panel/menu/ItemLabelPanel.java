@@ -5,6 +5,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 
 import com.itrustcambodia.pluggable.core.Menu;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ItemLabelPanel extends Panel {
 
     private Menu menu;

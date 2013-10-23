@@ -35,6 +35,9 @@ import com.itrustcambodia.pluggable.wicket.RestController;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.Secured;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RestDocUtilities {
 
     private RestDocUtilities() {

@@ -38,6 +38,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.Secured;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RestController implements IResource {
 
     public static final String PATH = "rest";

@@ -9,6 +9,9 @@ import org.apache.wicket.util.io.IClusterable;
 
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class InstantiationPermissions implements IClusterable {
     private static final long serialVersionUID = 1L;
 

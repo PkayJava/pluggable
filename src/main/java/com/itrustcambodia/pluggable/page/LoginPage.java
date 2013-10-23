@@ -17,6 +17,9 @@ import com.itrustcambodia.pluggable.layout.BlankLayout;
 import com.itrustcambodia.pluggable.wicket.authroles.authentication.AuthenticatedWebSession;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/i")
 public class LoginPage extends WebPage implements ILoginPage {
 

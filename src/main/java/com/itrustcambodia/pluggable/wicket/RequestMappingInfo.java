@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.wicket;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RequestMappingInfo implements Serializable {
 
     /**

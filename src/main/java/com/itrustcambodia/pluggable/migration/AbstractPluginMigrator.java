@@ -14,6 +14,9 @@ import com.itrustcambodia.pluggable.database.EntityRowMapper;
 import com.itrustcambodia.pluggable.entity.PluginRegistry;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractPluginMigrator extends AbstractMigrator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractPluginMigrator.class);

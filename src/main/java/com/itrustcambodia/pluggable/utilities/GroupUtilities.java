@@ -10,6 +10,9 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import com.itrustcambodia.pluggable.database.EntityRowMapper;
 import com.itrustcambodia.pluggable.entity.Group;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class GroupUtilities {
 
     private GroupUtilities() {

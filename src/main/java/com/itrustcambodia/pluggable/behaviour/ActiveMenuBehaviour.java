@@ -6,6 +6,9 @@ import org.apache.wicket.markup.ComponentTag;
 
 import com.itrustcambodia.pluggable.core.Menu;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ActiveMenuBehaviour extends Behavior {
 
     private Menu menu;

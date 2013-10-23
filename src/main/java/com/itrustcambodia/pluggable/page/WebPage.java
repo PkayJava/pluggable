@@ -21,6 +21,9 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
 
     /**

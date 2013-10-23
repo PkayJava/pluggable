@@ -52,6 +52,9 @@ import com.itrustcambodia.pluggable.wicket.RequestMappingInfo;
 import com.itrustcambodia.pluggable.wicket.authroles.authentication.AuthenticatedWebApplication;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractWebApplication extends AuthenticatedWebApplication implements Serializable {
 
     /**

@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.wicket.protocol.http.WicketFilter;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Framework extends WicketFilter {
 
     @Override

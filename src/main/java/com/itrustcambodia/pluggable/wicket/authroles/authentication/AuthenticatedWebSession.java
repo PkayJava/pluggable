@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.wicket.authroles.authentication;
 import org.apache.wicket.Session;
 import org.apache.wicket.request.Request;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AuthenticatedWebSession extends AbstractAuthenticatedWebSession {
     private static final long serialVersionUID = 1L;
 

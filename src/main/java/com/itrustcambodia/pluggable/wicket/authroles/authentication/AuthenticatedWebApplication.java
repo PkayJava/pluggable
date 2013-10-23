@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.RoleAuthorizationStrategy;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AuthenticatedWebApplication extends WebApplication implements IRoleCheckingStrategy, IUnauthorizedComponentInstantiationListener {
     /** Subclass of authenticated web session to instantiate */
     private final WeakReference<Class<? extends AbstractAuthenticatedWebSession>> webSessionClassRef;

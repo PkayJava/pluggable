@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.validator;
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.ValidationError;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class UrlValidator extends org.apache.wicket.validation.validator.UrlValidator {
 
     /**

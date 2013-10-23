@@ -10,6 +10,9 @@ import org.apache.wicket.resource.JQueryResourceReference;
 
 import com.itrustcambodia.pluggable.resources.ResourceReference;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class Bootstrap3Layout extends AbstractLayout {
 
     /**

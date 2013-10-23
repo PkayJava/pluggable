@@ -12,6 +12,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.IRoleCheckingStrategy;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class AnnotationsRoleAuthorizationStrategy extends AbstractRoleAuthorizationStrategy {
     /**
      * Construct.
@@ -36,7 +39,7 @@ public class AnnotationsRoleAuthorizationStrategy extends AbstractRoleAuthorizat
         final AuthorizeInstantiation classAnnotation = componentClass.getAnnotation(AuthorizeInstantiation.class);
         if (classAnnotation != null) {
             List<String> tmp = new ArrayList<String>();
-            for (Role role : classAnnotation.roles()){
+            for (Role role : classAnnotation.roles()) {
                 tmp.add(role.name());
             }
             authorized = hasAny(new Roles(tmp.toArray(new String[tmp.size()])));
@@ -47,7 +50,7 @@ public class AnnotationsRoleAuthorizationStrategy extends AbstractRoleAuthorizat
                 final AuthorizeInstantiation packageAnnotation = componentPackage.getAnnotation(AuthorizeInstantiation.class);
                 if (packageAnnotation != null) {
                     List<String> tmp = new ArrayList<String>();
-                    for (Role role : packageAnnotation.roles()){
+                    for (Role role : packageAnnotation.roles()) {
                         tmp.add(role.name());
                     }
                     authorized = hasAny(new Roles(tmp.toArray(new String[tmp.size()])));

@@ -1,5 +1,8 @@
 package com.itrustcambodia.pluggable.database.annotation;
 
+/**
+ * @author Socheat KHAUV
+ */
 public enum GenerationType {
 
     /**

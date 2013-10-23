@@ -4,6 +4,9 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.IFilterStateLocator;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class FilterToolbar extends org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterToolbar {
 
     /**

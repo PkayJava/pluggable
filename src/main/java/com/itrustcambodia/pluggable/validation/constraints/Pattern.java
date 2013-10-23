@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
  * <p/>
  * Accepts {@code CharSequence}. {@code null} elements are considered valid.
  * 
- * @author Emmanuel Bernard
+ * @author Socheat KHAUV
  */
 @Target({ FIELD })
 @Retention(RUNTIME)

@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * This annotation is to be used inside an annotation of type ApiErrors
  * 
  * @see ApiErrors
- * @author Fabio Maffioletti
+ * @author Socheat KHAUV
  * 
  */
 @Documented

@@ -9,6 +9,9 @@ import com.itrustcambodia.pluggable.database.annotation.Column;
 import com.itrustcambodia.pluggable.database.annotation.Entity;
 import com.itrustcambodia.pluggable.database.annotation.Id;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class TableUtilities {
 
     private TableUtilities() {

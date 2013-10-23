@@ -7,6 +7,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 
 import com.itrustcambodia.pluggable.validation.controller.FieldController;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WidgetLabelField extends Panel {
 
     /**

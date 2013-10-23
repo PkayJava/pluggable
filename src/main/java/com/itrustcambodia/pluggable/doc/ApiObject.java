@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * This annotation is to be used on your object classes and represents an object
  * used for communication between clients and server
  * 
- * @author Fabio Maffioletti
+ * @author Socheat KHAUV
  * 
  */
 @Documented

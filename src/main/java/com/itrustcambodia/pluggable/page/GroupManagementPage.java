@@ -20,6 +20,9 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/g")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_GROUP_MANAGEMENT", description = "Access Group Management Page") })
 public class GroupManagementPage extends WebPage {

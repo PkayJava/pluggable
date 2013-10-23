@@ -14,6 +14,9 @@ import com.itrustcambodia.pluggable.entity.RoleGroup;
 import com.itrustcambodia.pluggable.entity.RoleUser;
 import com.itrustcambodia.pluggable.entity.UserGroup;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class SecurityUtilities {
 
     private SecurityUtilities() {

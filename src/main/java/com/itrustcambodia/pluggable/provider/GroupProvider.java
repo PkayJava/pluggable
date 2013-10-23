@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.vaynberg.wicket.select2.Response;
 import com.vaynberg.wicket.select2.TextChoiceProvider;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class GroupProvider extends TextChoiceProvider<Group> {
 
     /**

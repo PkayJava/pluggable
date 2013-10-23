@@ -2,6 +2,9 @@ package com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data
 
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class GoFilter extends org.apache.wicket.extensions.markup.html.repeater.data.table.filter.GoFilter {
 
     /**

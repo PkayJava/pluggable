@@ -19,6 +19,9 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/r")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_ROLE_MANAGEMENT", description = "Access Role Management Page") })
 public class RoleManagementPage extends WebPage {

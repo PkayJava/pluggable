@@ -6,6 +6,9 @@ import org.apache.wicket.markup.html.border.Border;
 
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public interface IWebPage {
 
     String getTitle();

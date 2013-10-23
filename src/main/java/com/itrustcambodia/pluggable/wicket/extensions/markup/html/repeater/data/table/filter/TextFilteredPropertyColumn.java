@@ -4,6 +4,9 @@ import org.apache.wicket.Component;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class TextFilteredPropertyColumn<T, F, S> extends org.apache.wicket.extensions.markup.html.repeater.data.table.filter.TextFilteredPropertyColumn<T, F, S> {
 
     /**

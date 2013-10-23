@@ -6,6 +6,9 @@ import com.itrustcambodia.pluggable.core.Menu;
 import com.itrustcambodia.pluggable.core.Mount;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/o")
 public class LogoutPage extends WebPage {
 

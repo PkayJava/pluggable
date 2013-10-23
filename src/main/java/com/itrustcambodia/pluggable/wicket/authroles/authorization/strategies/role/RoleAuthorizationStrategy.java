@@ -5,6 +5,9 @@ import org.apache.wicket.authorization.strategies.CompoundAuthorizationStrategy;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AnnotationsRoleAuthorizationStrategy;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.metadata.MetaDataRoleAuthorizationStrategy;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RoleAuthorizationStrategy extends CompoundAuthorizationStrategy {
     /**
      * Construct.

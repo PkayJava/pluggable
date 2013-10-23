@@ -5,6 +5,9 @@ import java.util.HashSet;
 import org.apache.wicket.util.io.IClusterable;
 import org.apache.wicket.util.string.StringList;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Roles extends HashSet<String> implements IClusterable {
     private static final long serialVersionUID = 1L;
 

@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/jv")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_JVM", description = "Access JVM Page") })
 public class JvmPage extends WebPage {

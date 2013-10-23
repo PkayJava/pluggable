@@ -36,7 +36,7 @@ import java.lang.annotation.Target;
  *    protected int getVersionNum() { return versionNum; }
  * </pre>
  * 
- * @since Java Persistence 1.0
+ * @author Socheat KHAUV
  */
 @Target({ FIELD })
 @Retention(RUNTIME)

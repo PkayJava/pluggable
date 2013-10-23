@@ -6,6 +6,9 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.Filte
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ChoiceFilter<T> extends org.apache.wicket.extensions.markup.html.repeater.data.table.filter.ChoiceFilter<T> {
 
     /**

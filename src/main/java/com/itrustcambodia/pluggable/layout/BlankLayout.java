@@ -2,6 +2,9 @@ package com.itrustcambodia.pluggable.layout;
 
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class BlankLayout extends Bootstrap3Layout {
 
     /**

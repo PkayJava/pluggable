@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  * This annotation is to be used on your objects' fields and represents a field
  * of an object
  * 
- * @author Fabio Maffioletti
+ * @author Socheat KHAUV
  * 
  */
 @Documented

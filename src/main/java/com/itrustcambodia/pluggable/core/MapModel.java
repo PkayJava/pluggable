@@ -5,6 +5,9 @@ import java.util.Map;
 import org.apache.wicket.model.IDetachable;
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class MapModel<T> implements IModel<T> {
 
     /**

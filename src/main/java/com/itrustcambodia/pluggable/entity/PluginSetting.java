@@ -9,6 +9,9 @@ import com.itrustcambodia.pluggable.database.annotation.GenerationType;
 import com.itrustcambodia.pluggable.database.annotation.Id;
 import com.itrustcambodia.pluggable.database.annotation.Table;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Entity
 @Table(name = "tbl_plugin_setting")
 public class PluginSetting implements Serializable {

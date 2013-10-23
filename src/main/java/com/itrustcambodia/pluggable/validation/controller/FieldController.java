@@ -26,6 +26,11 @@ import com.itrustcambodia.pluggable.widget.Select2MultiChoice;
 import com.itrustcambodia.pluggable.widget.TextArea;
 import com.itrustcambodia.pluggable.widget.TextField;
 
+/**
+ * 
+ * @author Socheat KHAUV
+ * 
+ */
 public class FieldController implements Comparable<FieldController>, Serializable {
 
     /**

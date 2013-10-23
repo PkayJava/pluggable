@@ -51,7 +51,7 @@ import java.lang.annotation.Target;
  *    }
  * </pre>
  * 
- * @since Java Persistence 1.0
+ * @author Socheat KHAUV
  */
 @Target({ TYPE, METHOD, FIELD })
 @Retention(RUNTIME)

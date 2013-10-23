@@ -27,6 +27,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.widget.Button;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/eu")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_EDIT_USER", description = "Access Edit User Page") })
 public class EditUserPage extends KnownPage {

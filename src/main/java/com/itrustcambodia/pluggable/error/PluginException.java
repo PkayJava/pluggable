@@ -1,5 +1,8 @@
 package com.itrustcambodia.pluggable.error;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class PluginException extends RuntimeException {
 
     /**

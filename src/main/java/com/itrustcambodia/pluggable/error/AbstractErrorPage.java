@@ -5,6 +5,9 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import com.itrustcambodia.pluggable.page.WebPage;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractErrorPage extends WebPage {
     private static final long serialVersionUID = 1L;
 

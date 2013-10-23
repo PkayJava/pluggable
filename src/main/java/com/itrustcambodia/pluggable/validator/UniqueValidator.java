@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.core.AbstractWebApplication;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.validation.constraints.Unique;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class UniqueValidator implements IFormValidator {
 
     /**

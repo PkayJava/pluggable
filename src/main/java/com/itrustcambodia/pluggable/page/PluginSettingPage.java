@@ -22,6 +22,9 @@ import com.itrustcambodia.pluggable.validation.type.Setting;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.itrustcambodia.pluggable.widget.Button;
 
+/**
+ * @author Socheat KHAUV
+ */
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_PLUGIN_SETTING", description = "Access Plugin Setting Page") })
 public abstract class PluginSettingPage extends KnownPage {
 

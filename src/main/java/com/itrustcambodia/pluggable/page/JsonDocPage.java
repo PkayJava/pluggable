@@ -19,6 +19,9 @@ import com.itrustcambodia.pluggable.utilities.RestDocUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/j")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_JSON_DOC", description = "Access Json Doc Page") })
 public class JsonDocPage extends WebPage {

@@ -29,6 +29,9 @@ import com.itrustcambodia.pluggable.panel.menu.ItemParentPanel;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class FullLayout extends Bootstrap3Layout {
 
     /**

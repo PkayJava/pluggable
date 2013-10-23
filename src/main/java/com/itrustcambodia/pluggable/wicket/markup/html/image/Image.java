@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.wicket.markup.html.image;
 import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebComponent;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Image extends WebComponent {
 
     /**

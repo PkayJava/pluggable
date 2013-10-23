@@ -4,6 +4,9 @@ import org.apache.wicket.extensions.validation.validator.RfcCompliantEmailAddres
 import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.ValidationError;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class EmailAddressValidator extends RfcCompliantEmailAddressValidator {
 
     /**

@@ -2,6 +2,9 @@ package com.itrustcambodia.pluggable.rest;
 
 import java.io.Serializable;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Result implements Serializable {
 
     /**

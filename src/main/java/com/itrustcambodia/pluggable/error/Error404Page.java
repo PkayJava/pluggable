@@ -9,6 +9,9 @@ import com.itrustcambodia.pluggable.core.Mount;
 import com.itrustcambodia.pluggable.layout.ErrorLayout;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/404")
 public class Error404Page extends AbstractErrorPage {
 

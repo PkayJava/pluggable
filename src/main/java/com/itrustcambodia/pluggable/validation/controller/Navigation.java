@@ -5,6 +5,10 @@ import java.io.Serializable;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 
+/**
+ * @author Socheat KHAUV
+ */
+
 public class Navigation implements Serializable {
 
     /**

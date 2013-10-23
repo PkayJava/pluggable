@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.resources;
 import org.apache.wicket.request.resource.CssResourceReference;
 import org.apache.wicket.request.resource.JavaScriptResourceReference;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ResourceReference {
 
     public static final CssResourceReference BOOTSTRAP_RC1_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.0.RC1/css/bootstrap.min.css");

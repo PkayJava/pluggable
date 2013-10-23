@@ -5,6 +5,9 @@ import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByBorder
 import org.apache.wicket.extensions.markup.html.repeater.data.sort.OrderByLink;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class HeadersToolbar<S> extends org.apache.wicket.extensions.markup.html.repeater.data.table.HeadersToolbar<S> {
 
     /**

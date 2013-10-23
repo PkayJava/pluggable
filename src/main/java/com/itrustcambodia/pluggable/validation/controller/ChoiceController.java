@@ -4,6 +4,11 @@ import java.util.Map;
 
 import org.apache.wicket.markup.html.form.IChoiceRenderer;
 
+/**
+ * 
+ * @author Socheat KHAUV
+ * 
+ */
 public class ChoiceController implements IChoiceRenderer<Map<String, String>> {
 
     /**

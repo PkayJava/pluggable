@@ -32,6 +32,9 @@ import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class MenuLayout extends Bootstrap3Layout {
 
     /**

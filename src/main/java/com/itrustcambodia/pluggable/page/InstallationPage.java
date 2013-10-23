@@ -35,6 +35,9 @@ import com.itrustcambodia.pluggable.validator.LocalRepositoryValidator;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.widget.Button;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/s")
 public class InstallationPage extends KnownPage {
 

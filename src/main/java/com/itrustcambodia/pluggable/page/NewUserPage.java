@@ -26,6 +26,9 @@ import com.itrustcambodia.pluggable.validation.type.TextFieldType;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/nu")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_NEW_USER", description = "Access New User Page") })
 public class NewUserPage extends KnownPage {

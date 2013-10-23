@@ -15,6 +15,9 @@ import com.itrustcambodia.pluggable.validation.controller.FieldController;
 import com.itrustcambodia.pluggable.validation.type.TextFieldType;
 import com.itrustcambodia.pluggable.validator.UniqueValidator;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WidgetPasswordTextField extends Panel {
 
     /**

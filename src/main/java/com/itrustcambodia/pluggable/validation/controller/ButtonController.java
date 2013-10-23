@@ -4,6 +4,11 @@ import java.io.Serializable;
 
 import com.itrustcambodia.pluggable.widget.Button;
 
+/**
+ * 
+ * @author Socheat KHAUV
+ * 
+ */
 public class ButtonController implements Comparable<ButtonController>, Serializable {
 
     /**

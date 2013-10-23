@@ -13,6 +13,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import com.itrustcambodia.pluggable.database.MapRowMapper;
 import com.itrustcambodia.pluggable.validation.type.Choice;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class SelectionUtilities {
 
     private SelectionUtilities() {

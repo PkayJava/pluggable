@@ -8,6 +8,9 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 
 import com.itrustcambodia.pluggable.page.WebPage;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Menu implements Serializable {
 
     /**

@@ -7,6 +7,9 @@ import com.itrustcambodia.pluggable.database.annotation.Entity;
 import com.itrustcambodia.pluggable.database.annotation.Id;
 import com.itrustcambodia.pluggable.database.annotation.Table;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Entity
 @Table(name = "tbl_role_group")
 public class RoleGroup implements Serializable {

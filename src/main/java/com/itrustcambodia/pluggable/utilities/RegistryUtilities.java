@@ -12,6 +12,9 @@ import com.itrustcambodia.pluggable.database.EntityRowMapper;
 import com.itrustcambodia.pluggable.entity.ApplicationSetting;
 import com.itrustcambodia.pluggable.entity.PluginSetting;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RegistryUtilities {
 
     private RegistryUtilities() {

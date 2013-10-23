@@ -10,6 +10,9 @@ import com.itrustcambodia.pluggable.panel.InputFeedback;
 import com.itrustcambodia.pluggable.validation.controller.FieldController;
 import com.vaynberg.wicket.select2.Select2Choice;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WidgetSelect2Choice extends Panel {
 
     /**

@@ -1,5 +1,8 @@
 package com.itrustcambodia.pluggable.support;
 
+/**
+ * @author Socheat KHAUV
+ */
 public final class AndroidSupport {
     private static final String UNICODE[] = new String[913];
     private static final String ANDROID_UNICODE[] = new String[913];

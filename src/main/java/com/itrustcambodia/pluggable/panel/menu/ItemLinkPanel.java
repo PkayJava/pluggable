@@ -8,6 +8,9 @@ import org.apache.wicket.markup.html.panel.Panel;
 import com.itrustcambodia.pluggable.behaviour.ActiveMenuBehaviour;
 import com.itrustcambodia.pluggable.core.Menu;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ItemLinkPanel extends Panel {
 
     private Menu menu;

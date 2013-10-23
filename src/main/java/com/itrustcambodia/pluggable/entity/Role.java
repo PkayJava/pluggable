@@ -10,6 +10,9 @@ import com.itrustcambodia.pluggable.database.annotation.Id;
 import com.itrustcambodia.pluggable.database.annotation.Table;
 import com.itrustcambodia.pluggable.database.annotation.Unique;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Entity
 @Table(name = "tbl_role")
 public class Role implements Serializable {

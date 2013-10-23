@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.wicket.markup.html.navigation.paging;
 import org.apache.wicket.markup.html.navigation.paging.IPageable;
 import org.apache.wicket.markup.html.navigation.paging.IPagingLabelProvider;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class PagingNavigator extends org.apache.wicket.markup.html.navigation.paging.PagingNavigator {
 
     /**

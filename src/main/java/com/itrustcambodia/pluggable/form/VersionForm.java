@@ -2,6 +2,9 @@ package com.itrustcambodia.pluggable.form;
 
 import java.io.Serializable;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class VersionForm implements Serializable {
 
     /**

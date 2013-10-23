@@ -12,6 +12,9 @@ import org.apache.wicket.markup.html.form.validation.AbstractFormValidator;
 
 import com.itrustcambodia.pluggable.PluggableConstants;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class LocalRepositoryValidator extends AbstractFormValidator {
     /**
 	 * 

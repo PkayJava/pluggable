@@ -27,6 +27,9 @@ import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.RestController;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractPlugin implements IInitializer {
 
     private AbstractWebApplication application;

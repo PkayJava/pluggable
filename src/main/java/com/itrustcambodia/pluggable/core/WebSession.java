@@ -8,6 +8,9 @@ import com.itrustcambodia.pluggable.utilities.SecurityUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.authentication.AuthenticatedWebSession;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WebSession extends AuthenticatedWebSession {
 
     /**

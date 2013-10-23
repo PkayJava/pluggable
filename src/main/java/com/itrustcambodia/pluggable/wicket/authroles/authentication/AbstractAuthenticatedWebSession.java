@@ -6,6 +6,9 @@ import org.apache.wicket.request.Request;
 
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractAuthenticatedWebSession extends WebSession {
     private static final long serialVersionUID = 1L;
 

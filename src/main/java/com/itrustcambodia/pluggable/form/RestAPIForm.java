@@ -6,6 +6,9 @@ import java.util.Map;
 
 import com.itrustcambodia.pluggable.rest.RequestMethod;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RestAPIForm implements Serializable {
 
     /**

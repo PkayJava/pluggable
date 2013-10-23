@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 /**
  * The annotated element must not be {@code null}. Accepts any type.
  * 
- * @author Emmanuel Bernard
+ * @author Socheat KHAUV
  */
 @Target({ FIELD })
 @Retention(RUNTIME)

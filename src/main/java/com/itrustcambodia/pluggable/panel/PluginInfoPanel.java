@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.panel;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class PluginInfoPanel extends Panel {
 
     /**

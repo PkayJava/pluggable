@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.entity.Role;
 import com.itrustcambodia.pluggable.entity.RoleGroup;
 import com.itrustcambodia.pluggable.entity.RoleUser;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class RoleUtilities {
 
     private RoleUtilities() {

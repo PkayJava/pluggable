@@ -29,6 +29,9 @@ import com.itrustcambodia.pluggable.rest.Controller;
 import com.itrustcambodia.pluggable.rest.RequestMapping;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class Initializer implements IInitializer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Initializer.class);

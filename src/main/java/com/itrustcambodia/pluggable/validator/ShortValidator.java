@@ -4,6 +4,9 @@ import org.apache.wicket.validation.IValidatable;
 import org.apache.wicket.validation.IValidator;
 import org.apache.wicket.validation.ValidationError;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class ShortValidator implements IValidator<String> {
 
     /**

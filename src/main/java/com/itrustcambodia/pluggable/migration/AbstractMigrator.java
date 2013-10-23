@@ -5,6 +5,9 @@ import java.lang.reflect.Method;
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
 import com.itrustcambodia.pluggable.core.Version;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class AbstractMigrator implements IMigrator {
 
     private AbstractWebApplication application;

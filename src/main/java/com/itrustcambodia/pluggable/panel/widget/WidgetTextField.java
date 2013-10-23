@@ -24,6 +24,9 @@ import com.itrustcambodia.pluggable.validator.ShortValidator;
 import com.itrustcambodia.pluggable.validator.UniqueValidator;
 import com.itrustcambodia.pluggable.validator.UrlValidator;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class WidgetTextField extends Panel {
 
     /**

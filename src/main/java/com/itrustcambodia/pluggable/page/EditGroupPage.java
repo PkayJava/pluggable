@@ -25,6 +25,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/eg")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_EDIT_GROUP", description = "Access Edit Group Page") })
 public class EditGroupPage extends KnownPage {

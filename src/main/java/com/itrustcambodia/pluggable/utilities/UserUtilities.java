@@ -4,6 +4,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.entity.AbstractUser;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class UserUtilities {
     private UserUtilities() {
     }

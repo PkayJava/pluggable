@@ -18,6 +18,9 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.vaynberg.wicket.select2.Response;
 import com.vaynberg.wicket.select2.TextChoiceProvider;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class UserProvider extends TextChoiceProvider<AbstractUser> {
 
     /**
@@ -49,7 +52,7 @@ public class UserProvider extends TextChoiceProvider<AbstractUser> {
     }
 
     @Override
-    public Collection<AbstractUser> toChoices(Collection<String> ids) { 
+    public Collection<AbstractUser> toChoices(Collection<String> ids) {
         JdbcTemplate jdbcTemplate = ((AbstractWebApplication) Application.get()).getJdbcTemplate();
 
         Map<String, Object> params = new HashMap<String, Object>();

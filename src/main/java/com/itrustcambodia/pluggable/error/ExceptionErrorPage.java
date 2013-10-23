@@ -22,6 +22,9 @@ import com.itrustcambodia.pluggable.core.Mount;
 import com.itrustcambodia.pluggable.layout.ErrorLayout;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Mount("/e")
 public class ExceptionErrorPage extends AbstractErrorPage {
     private static final long serialVersionUID = 1L;

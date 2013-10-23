@@ -3,6 +3,9 @@ package com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.data
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.FilterForm;
 import org.apache.wicket.model.IModel;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class TextFilter<T> extends org.apache.wicket.extensions.markup.html.repeater.data.table.filter.TextFilter<T> {
 
     /**

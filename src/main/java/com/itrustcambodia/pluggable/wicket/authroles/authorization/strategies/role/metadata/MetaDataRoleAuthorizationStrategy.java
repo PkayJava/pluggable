@@ -10,6 +10,9 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.IRoleCheckingStrategy;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class MetaDataRoleAuthorizationStrategy extends AbstractRoleAuthorizationStrategy {
     /**
      * Component meta data key for actions/roles information. Typically, you do

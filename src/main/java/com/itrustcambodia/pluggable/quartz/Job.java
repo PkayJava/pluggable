@@ -7,6 +7,9 @@ import org.quartz.JobExecutionException;
 import com.itrustcambodia.pluggable.core.AbstractPlugin;
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class Job implements org.quartz.Job {
 
     @Override

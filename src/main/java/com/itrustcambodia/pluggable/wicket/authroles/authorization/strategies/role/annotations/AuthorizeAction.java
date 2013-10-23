@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.PACKAGE, ElementType.TYPE })
 @Documented

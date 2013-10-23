@@ -7,6 +7,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * @author Socheat KHAUV
+ */
 @Target(TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

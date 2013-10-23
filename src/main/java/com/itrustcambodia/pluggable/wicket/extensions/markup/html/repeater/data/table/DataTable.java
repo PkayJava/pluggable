@@ -5,6 +5,9 @@ import java.util.List;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.IColumn;
 import org.apache.wicket.markup.repeater.data.IDataProvider;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class DataTable<T, S> extends org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable<T, S> {
 
     /**

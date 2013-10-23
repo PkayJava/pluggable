@@ -4,6 +4,9 @@ import org.apache.wicket.extensions.markup.html.repeater.data.table.DataTable;
 
 import com.itrustcambodia.pluggable.wicket.markup.html.navigation.paging.PagingNavigator;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class NavigationToolbar extends org.apache.wicket.extensions.markup.html.repeater.data.table.NavigationToolbar {
 
     /**

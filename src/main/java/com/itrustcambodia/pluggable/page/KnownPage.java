@@ -88,6 +88,9 @@ import com.itrustcambodia.pluggable.widget.TextField;
 import com.vaynberg.wicket.select2.ChoiceProvider;
 import com.vaynberg.wicket.select2.DragAndDropBehavior;
 
+/**
+ * @author Socheat KHAUV
+ */
 public abstract class KnownPage extends WebPage {
 
     /**

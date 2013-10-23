@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.IOUtils;
 
+/**
+ * @author Socheat KHAUV
+ */
 public class MultiReadHttpServletRequest extends HttpServletRequestWrapper {
     private ByteArrayOutputStream cachedBytes;
 

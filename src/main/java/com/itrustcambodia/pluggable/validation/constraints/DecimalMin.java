@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * <p/>
  * {@code null} elements are considered valid.
  * 
- * @author Emmanuel Bernard
+ * @author Socheat KHAUV
  */
 @Target({ FIELD })
 @Retention(RUNTIME)
