@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+	<wicket:extend>
+		<wicket:container wicket:id="layout">
+			<div class="row">
+				<div class="col-md-12">
+					<wicket:enclosure child="envtable">
+						<table class="table table-bordered table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Value</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr wicket:id="envtable">
+									<td wicket:id="name">No</td>
+									<td wicket:id="value">No</td>
+								</tr>
+							</tbody>
+						</table>
+					</wicket:enclosure>
+					<wicket:enclosure child="systemtable">
+						<table class="table table-bordered table-striped table-hover">
+							<thead>
+								<tr>
+									<th>Name</th>
+									<th>Value</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr wicket:id="systemtable">
+									<td wicket:id="name">No</td>
+									<td wicket:id="value">No</td>
+								</tr>
+							</tbody>
+						</table>
+					</wicket:enclosure>
+				</div>
+			</div>
+		</wicket:container>
+	</wicket:extend>
+</body>
+</html>

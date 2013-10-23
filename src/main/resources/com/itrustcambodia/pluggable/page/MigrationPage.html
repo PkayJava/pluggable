@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+	<wicket:extend>
+		<wicket:container wicket:id="layout">
+			<div class="row">
+				<div class="col-md-12">
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">
+								New Version :
+								<wicket:container wicket:id="newVersion1" />
+							</h3>
+						</div>
+						<wicket:container wicket:id="descriptions">
+							<div class="panel-body">
+								<p>
+									<strong><wicket:container wicket:id="version" /></strong><br />
+									<wicket:container wicket:id="description" />
+								</p>
+							</div>
+						</wicket:container>
+						<div class="panel-footer">
+							Would you like to upgrade from
+							<wicket:container wicket:id="oldVersion" />
+							to
+							<wicket:container wicket:id="newVersion2" />
+							?
+						</div>
+					</div>
+					<form class="form-horizontal" wicket:id="upgradeForm">
+						<button type="submit" wicket:id="upgradeButton"
+							class="btn btn-default">Upgrade</button>
+					</form>
+				</div>
+			</div>
+		</wicket:container>
+	</wicket:extend>
+</body>
+</html>

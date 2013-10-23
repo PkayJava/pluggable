@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+
+	<entry key="UniqueValidator">'${input}' is not available.</entry>
+
+	<entry key="Required">'${label}' is required.</entry>
+
+	<entry key="BooleanValidator">'${input}' is not valid.</entry>
+
+	<entry key="ByteValidator">'${input}' is not valid.</entry>
+
+	<entry key="DateValidator">'${input}' is not valid format '${pattern}'.</entry>
+
+	<entry key="FloatValidator">'${input}' is not valid.</entry>
+
+	<entry key="IntegerValidator">'${input}' is not valid.</entry>
+
+	<entry key="LongValidator">'${input}' is not valid.</entry>
+
+	<entry key="ShortValidator">'${input}' is not valid.</entry>
+
+	<entry key="DoubleValidator">'${input}' is not valid.</entry>
+
+	<entry key="UrlValidator">'${input}' is not valid url.</entry>
+
+	<entry key="EmailAddressValidator">'${input}' is not a valid email format.</entry>
+
+	<entry key="LocalRepositoryValidator.empty">'${label}' is required.</entry>
+
+	<entry key="LocalRepositoryValidator.directory">'${input}' is not directory</entry>
+
+	<entry key="LocalRepositoryValidator.access">'${input}' read/write permission</entry>
+
+	<entry key="AmazonS3RepositoryValidator.anonymousRead">'${input}' anonymous read permission</entry>
+
+	<entry key="AmazonS3RepositoryValidator.write">'${input}' write permission</entry>
+
+	<entry key="AmazonS3RepositoryValidator.delete">'${input}' delete permission</entry>
+
+	<entry key="AmazonS3RepositoryValidator.accessKey">'${label}' is required.</entry>
+
+	<entry key="AmazonS3RepositoryValidator.secretKey">'${label}' is required.</entry>
+
+	<entry key="AmazonS3RepositoryValidator.bucketName">'${label}' is required.</entry>
+
+	<entry key="AmazonS3RepositoryValidator.bucketPath">'${label}' is required.</entry>
+
+
+</properties>

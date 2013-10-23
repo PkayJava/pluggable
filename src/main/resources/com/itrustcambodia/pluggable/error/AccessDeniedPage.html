@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+	<wicket:extend>
+		<wicket:container wicket:id="layout">
+			<div class="row">
+				<div class="col-md-1"></div>
+				<div class="col-md-10">
+					<br />
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Access Denied</h3>
+						</div>
+						<div class="panel-body">
+							You do not have access to the page you requested. <br /> <br />
+							<a wicket:id="homePageLink" class="btn btn-info" href="">Return
+								to home page</a>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-1"></div>
+			</div>
+		</wicket:container>
+	</wicket:extend>
+</body>
+</html>

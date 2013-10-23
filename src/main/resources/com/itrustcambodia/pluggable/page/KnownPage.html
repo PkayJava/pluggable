@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+	<wicket:extend>
+		<wicket:container wicket:id="layout">
+			<div class="row">
+				<div class="col-md-12">
+					<wicket:container wicket:id="fragment" />
+				</div>
+			</div>
+
+			<wicket:fragment wicket:id="formFragment">
+				<form wicket:id="form" class="form-horizontal">
+					<wicket:container wicket:id="fields">
+						<wicket:container wicket:id="field" />
+					</wicket:container>
+					<div class="form-group">
+						<div class="col-md-3"></div>
+						<div class="col-md-9">
+							<wicket:container wicket:id="buttons">
+								<button type="submit" wicket:id="button">
+									<wicket:container wicket:id="label" />
+								</button>
+							</wicket:container>
+						</div>
+					</div>
+				</form>
+			</wicket:fragment>
+
+			<wicket:fragment wicket:id="labelFormFragment">
+
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title" wicket:id="formTitle"></h3>
+					</div>
+					<div class="panel-body">
+						<form wicket:id="form" class="form-horizontal">
+							<wicket:container wicket:id="fields">
+								<wicket:container wicket:id="field" />
+							</wicket:container>
+							<div class="form-group">
+								<div class="col-md-3"></div>
+								<div class="col-md-9">
+									<wicket:container wicket:id="buttons">
+										<button type="submit" wicket:id="button">
+											<wicket:container wicket:id="label" />
+										</button>
+									</wicket:container>
+								</div>
+							</div>
+						</form>
+					</div>
+				</div>
+			</wicket:fragment>
+
+		</wicket:container>
+	</wicket:extend>
+</body>
+</html>

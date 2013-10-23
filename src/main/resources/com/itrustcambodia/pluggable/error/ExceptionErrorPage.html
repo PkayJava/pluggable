@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+</head>
+<body>
+	<wicket:extend>
+		<wicket:container wicket:id="layout">
+			<div class="row">
+				<div class="col-md-1"></div>
+				<div class="col-md-10">
+					<br />
+					<wicket:container wicket:id="accessDeniedException">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title">Access Denied</h3>
+							</div>
+							<div class="panel-body">
+								<wicket:container wicket:id="message" />
+								, please contact administrator. <br /> <br /> <a
+									class="btn btn-info" wicket:id="loginLink">Return to login
+									page</a>
+							</div>
+						</div>
+					</wicket:container>
+					<wicket:container wicket:id="unknownException">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title">Unexpected Runtime Exception</h3>
+							</div>
+							<div class="panel-body">
+								<wicket:container wicket:id="exception" />
+								<br /> <a class="btn btn-info" wicket:id="homePageLink">Return
+									to home page</a>
+							</div>
+						</div>
+					</wicket:container>
+					<wicket:container wicket:id="markupHighlight">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								<h3 class="panel-title">Markup</h3>
+							</div>
+							<div class="panel-body">
+								The problem is in "<span class="resource" wicket:id="resource">resource
+									problem</span>":
+								<div class="well" wicket:id="markup">markup goes here</div>
+							</div>
+						</div>
+					</wicket:container>
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">Stacktrace</h3>
+						</div>
+						<div class="panel-body">
+							<span wicket:id="stacktrace">stacktrace goes here</span>
+						</div>
+					</div>
+				</div>
+				<div class="col-md-1"></div>
+			</div>
+		</wicket:container>
+	</wicket:extend>
+</body>
+</html>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<html>
+<body>
+	<wicket:panel xmlns:wicket="http://wicket.apache.org">
+		<div class="accordion" wicket:id="restAccordion">
+			<div class="panel-group" wicket:id="restItems">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<wicket:enclosure child="methods">
+								<span class="pull-right"> <span
+									class="label label-danger" wicket:id="deprecated"
+									style="margin-top: 6px;"></span> <wicket:container
+										wicket:id="methods">
+										<span wicket:id="method"></span>
+									</wicket:container>
+								</span>
+							</wicket:enclosure>
+							<a class="accordion-toggle" data-toggle="collapse" wicket:id="head"></a>
+						</h4>
+					</div>
+					<div wicket:id="body" class="panel-collapse collapse">
+						<div class="panel-body">
+							<table class="table table-condensed table-striped table-bordered">
+								<tbody>
+									<tr>
+										<th>Path</th>
+										<td><code wicket:id="path">path</code></td>
+									</tr>
+									<tr>
+										<th>Description</th>
+										<td wicket:id="description"></td>
+									</tr>
+									<wicket:enclosure child="method1">
+										<tr>
+											<th>Method</th>
+											<td><wicket:container wicket:id="method1">
+													<span wicket:id="method"></span>
+												</wicket:container></td>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="roles">
+										<tr>
+											<th>Role</th>
+											<td><wicket:container wicket:id="roles">
+													<span class="label label-danger" wicket:id="role"></span>
+												</wicket:container></td>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="headers">
+										<tr>
+											<th colspan="2">Headers</th>
+										</tr>
+										<tr wicket:id="headers">
+											<td><code wicket:id="name"></code></td>
+											<td wicket:id="description"></td>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="urlParameters">
+										<tr>
+											<th colspan="2">URL Parameters</th>
+										</tr>
+										<wicket:container wicket:id="urlParameters">
+											<tr wicket:id="urlParameter">
+												<td><code wicket:id="name"></code></td>
+												<td wicket:id="value"></td>
+											</tr>
+										</wicket:container>
+									</wicket:enclosure>
+									<wicket:enclosure child="formParameters">
+										<tr>
+											<th colspan="2">Request Parameters</th>
+										</tr>
+										<wicket:container wicket:id="formParameters">
+											<tr wicket:id="formParameter">
+												<td><code wicket:id="name"></code></td>
+												<td wicket:id="value"></td>
+											</tr>
+										</wicket:container>
+									</wicket:enclosure>
+									<wicket:enclosure child="requestObject">
+										<tr>
+											<th colspan="2">Request Object</th>
+										</tr>
+										<tr>
+											<td>type</td>
+											<td><code wicket:id="requestObject"></code></td>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="responseObject">
+										<tr>
+											<th colspan="2">Response Object : <code
+													wicket:id="responseObject"></code></th>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="responseDescription">
+										<tr>
+											<td colspan="2" wicket:id="responseDescription"></td>
+										</tr>
+									</wicket:enclosure>
+									<wicket:enclosure child="errors">
+										<tr>
+											<th colspan="2">Errors</th>
+										</tr>
+										<tr wicket:id="errors">
+											<td><code wicket:id="code"></code></td>
+											<td wicket:id="description"></td>
+										</tr>
+									</wicket:enclosure>
+	
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</wicket:panel>
+</body>
+</html>

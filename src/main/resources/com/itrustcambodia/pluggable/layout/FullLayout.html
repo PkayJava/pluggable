@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:wicket="http://wicket.apache.org">
+<head>
+<meta charset="utf-8" />
+<wicket:head>
+	<style>
+body {
+	padding-top: 70px;
+}
+</style>
+</wicket:head>
+</head>
+<body>
+	<wicket:border>
+		<nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+			<div class="navbar-header">
+				<button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapsable">
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" wicket:id="brandPage"><wicket:container
+						wicket:id="brandLabel" /></a>
+			</div>
+			<div class="collapse navbar-collapse navbar-collapsable">
+				<ul class="nav navbar-nav">
+					<wicket:container wicket:id="leftNavItems">
+						<wicket:container wicket:id="navItem"></wicket:container>
+					</wicket:container>
+				</ul>
+				<wicket:container wicket:id="rightBar">
+					<form class="nav navbar-form navbar-right">
+						<a wicket:id="logout" type="submit" class="btn btn-danger">Logout</a>
+					</form>
+				</wicket:container>
+			</div>
+		</nav>
+		
+		<div class="container">
+			<wicket:container wicket:id="pluginInfo" />
+		</div>
+		
+		<div class="container">
+			<wicket:body />
+		</div>
+	</wicket:border>
+</body>
+</html>
