@@ -5,7 +5,7 @@ pluggable : J2EE Framework for Plugin Architecture
 is designed to provide plugin architecture for java web application development
 
 # Highlight Features
-* webpage layout are highly customisation
+* webpage layout
 * rapid prototyping
 * add/remove plugin as needed
 * all rest api document are prepared
