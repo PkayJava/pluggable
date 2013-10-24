@@ -41,9 +41,9 @@ import com.itrustcambodia.pluggable.page.ApplicationSettingPage;
 import com.itrustcambodia.pluggable.page.LoginPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.quartz.Job;
-import com.itrustcambodia.pluggable.quartz.Scheduled;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.GroupUtilities;
+import com.itrustcambodia.pluggable.utilities.JobUtilities;
 import com.itrustcambodia.pluggable.utilities.RegistryUtilities;
 import com.itrustcambodia.pluggable.utilities.RoleUtilities;
 import com.itrustcambodia.pluggable.utilities.SecurityUtilities;
@@ -202,14 +202,15 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
 
         for (Class<? extends Job> job : this.jobs) {
-            Scheduled scheduled = job.getAnnotation(Scheduled.class);
-            if (scheduled != null && scheduled.cron() != null && !"".equals(scheduled.cron())) {
+            com.itrustcambodia.pluggable.entity.Job meta = JobUtilities.createJob(jdbcTemplate, job);
+            if (!meta.isDisable()) {
                 try {
                     JobDetail jobDetail = newJob(job).withIdentity(job.getName()).build();
                     jobDetail.getJobDataMap().put(AbstractWebApplication.class.getName(), this);
-                    CronTrigger trigger = newTrigger().withIdentity(job.getName()).withSchedule(cronSchedule(scheduled.cron())).build();
+                    CronTrigger trigger = newTrigger().withIdentity(meta.getId()).withSchedule(cronSchedule(meta.getCron())).build();
                     schedulerFactory.getScheduler().scheduleJob(jobDetail, trigger);
                 } catch (SchedulerException e) {
+                    jdbcTemplate.update("update " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class) + " set " + com.itrustcambodia.pluggable.entity.Job.DISABLE + " = ? where " + com.itrustcambodia.pluggable.entity.Job.ID + " = ?", true, meta.getId());
                 }
             }
         }

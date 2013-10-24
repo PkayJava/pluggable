@@ -39,6 +39,7 @@ import com.itrustcambodia.pluggable.entity.AbstractUser;
 import com.itrustcambodia.pluggable.entity.ApplicationRegistry;
 import com.itrustcambodia.pluggable.entity.ApplicationSetting;
 import com.itrustcambodia.pluggable.entity.Group;
+import com.itrustcambodia.pluggable.entity.Job;
 import com.itrustcambodia.pluggable.entity.PluginRegistry;
 import com.itrustcambodia.pluggable.entity.PluginSetting;
 import com.itrustcambodia.pluggable.entity.Role;
@@ -350,6 +351,11 @@ public class FrameworkUtilities {
         table = schema.getTable(ApplicationSetting.class);
         if (!table.exists()) {
             schema.createTable(ApplicationSetting.class, ApplicationSetting.ID, ApplicationSetting.NAME, ApplicationSetting.VALUE);
+        }
+
+        table = schema.getTable(Job.class);
+        if (!table.exists()) {
+            schema.createTable(Job.class, Job.ID, Job.CRON, Job.NEW_CRON, Job.DESCRIPTION, Job.DISABLE, Job.LAST_ERROR, Job.LAST_PROCESS, Job.PAUSE, Job.STATUS);
         }
 
         jdbcTemplate.update("UPDATE " + TableUtilities.getTableName(PluginRegistry.class) + " set " + PluginRegistry.PRESENTED + " = ?", false);

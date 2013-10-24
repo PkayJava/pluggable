@@ -13,5 +13,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Scheduled {
+
     String cron();
+
+    String description() default "";
+
+    boolean disable() default false;
 }
