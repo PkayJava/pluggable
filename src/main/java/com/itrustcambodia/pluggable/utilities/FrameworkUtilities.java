@@ -56,6 +56,7 @@ import com.itrustcambodia.pluggable.page.JobManagementPage;
 import com.itrustcambodia.pluggable.page.JsonDocPage;
 import com.itrustcambodia.pluggable.page.JvmPage;
 import com.itrustcambodia.pluggable.page.RoleManagementPage;
+import com.itrustcambodia.pluggable.page.UserManagementPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.rest.Controller;
 import com.itrustcambodia.pluggable.wicket.authroles.Secured;
@@ -237,6 +238,9 @@ public class FrameworkUtilities {
 
     public static final Menu getSecurityMenu(AbstractWebApplication application, Roles roles) {
         List<Menu> children = new ArrayList<Menu>();
+        if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(UserManagementPage.class))) {
+            children.add(Menu.linkMenu(AbstractWebApplication.USER_LABEL, UserManagementPage.class));
+        }
         if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(GroupManagementPage.class))) {
             children.add(Menu.linkMenu(AbstractWebApplication.GROUP_LAEBL, GroupManagementPage.class));
         }

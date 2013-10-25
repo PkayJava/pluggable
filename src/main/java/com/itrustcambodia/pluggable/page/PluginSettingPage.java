@@ -167,7 +167,7 @@ public abstract class PluginSettingPage extends KnownPage {
         return new Navigation(plugin.getSettingPage());
     }
 
-    @Button(label = "Cancel", validate = false, order = 6)
+    @Button(label = "Cancel", validate = false, order = -1)
     public Navigation cancel() {
         return new Navigation(PluginManagementPage.class);
     }

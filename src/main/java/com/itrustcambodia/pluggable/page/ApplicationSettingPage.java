@@ -123,12 +123,12 @@ public abstract class ApplicationSettingPage extends KnownPage {
         getForm().add(new AmazonS3RepositoryValidator(repository, accessKey, secretKey, bucketName, bucketPath));
     }
 
-    @Button(label = "Cancel", order = 2, type = ButtonType.DEFAULT, validate = false)
+    @Button(label = "Cancel", order = 1, type = ButtonType.DEFAULT, validate = false)
     public Navigation cancelClick() {
         return new Navigation(PluginManagementPage.class);
     }
 
-    @Button(label = "Save", order = 1, type = ButtonType.DEFAULT, validate = true)
+    @Button(label = "Save", order = 2, type = ButtonType.DEFAULT, validate = true)
     public Navigation saveClick() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         for (Field field : ReflectionUtils.getAllFields(this.getClass())) {
