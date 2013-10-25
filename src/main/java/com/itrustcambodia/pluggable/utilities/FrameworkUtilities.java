@@ -52,10 +52,10 @@ import com.itrustcambodia.pluggable.error.InternalErrorPage;
 import com.itrustcambodia.pluggable.error.PageExpiredErrorPage;
 import com.itrustcambodia.pluggable.migration.AbstractPluginMigrator;
 import com.itrustcambodia.pluggable.page.GroupManagementPage;
+import com.itrustcambodia.pluggable.page.JobManagementPage;
 import com.itrustcambodia.pluggable.page.JsonDocPage;
 import com.itrustcambodia.pluggable.page.JvmPage;
 import com.itrustcambodia.pluggable.page.RoleManagementPage;
-import com.itrustcambodia.pluggable.page.UserManagementPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.rest.Controller;
 import com.itrustcambodia.pluggable.wicket.authroles.Secured;
@@ -240,11 +240,11 @@ public class FrameworkUtilities {
         if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(GroupManagementPage.class))) {
             children.add(Menu.linkMenu(AbstractWebApplication.GROUP_LAEBL, GroupManagementPage.class));
         }
-        if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(UserManagementPage.class))) {
-            children.add(Menu.linkMenu(AbstractWebApplication.USER_LABEL, UserManagementPage.class));
-        }
         if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(RoleManagementPage.class))) {
             children.add(Menu.linkMenu(AbstractWebApplication.ROLE_LABEL, RoleManagementPage.class));
+        }
+        if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(JobManagementPage.class))) {
+            children.add(Menu.linkMenu(AbstractWebApplication.JOB_LABEL, JobManagementPage.class));
         }
         if (roles.hasAnyRole(FrameworkUtilities.lookupRoles(JvmPage.class))) {
             children.add(Menu.linkMenu(AbstractWebApplication.JVM_LABEL, JvmPage.class));

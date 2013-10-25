@@ -75,6 +75,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
     public static final String BEE_API_LABEL = "Bee API";
 
     public static final String USER_LABEL = "User";
+    
+    public static final String JOB_LABEL = "Job";
 
     public static final String ROLE_LABEL = "Role";
 

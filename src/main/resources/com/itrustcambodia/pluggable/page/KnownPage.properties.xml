@@ -19,6 +19,8 @@
 	<entry key="LongValidator">'${input}' is not valid.</entry>
 
 	<entry key="ShortValidator">'${input}' is not valid.</entry>
+	
+	<entry key="CronExpressionValidator">'${input}' is not valid.</entry>
 
 	<entry key="DoubleValidator">'${input}' is not valid.</entry>
 

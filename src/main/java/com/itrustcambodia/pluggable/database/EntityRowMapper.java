@@ -82,7 +82,17 @@ public class EntityRowMapper<T> implements RowMapper<T> {
                 } else if (metaData.getColumnType(i) == Types.DATALINK) {
                     throw new DatabaseException("DB Error " + field.getType().getName() + " " + "DATALINK");
                 } else if (metaData.getColumnType(i) == Types.DATE) {
-                    throw new DatabaseException("DB Error " + field.getType().getName() + " " + "DATE");
+                    if (field.getType().getName().equals("java.util.Date")) {
+                        try {
+                            field.setAccessible(true);
+                            field.set(entity, rs.getDate(i));
+                            field.setAccessible(false);
+                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalAccessException e) {
+                        }
+                    } else {
+                        throw new DatabaseException("DB Error " + field.getType().getName() + " " + "DATE");
+                    }
                 } else if (metaData.getColumnType(i) == Types.DECIMAL) {
                     if (field.getType().getName().equals("double") || field.getType().getName().equals("java.lang.Double")) {
                         try {
@@ -156,12 +166,22 @@ public class EntityRowMapper<T> implements RowMapper<T> {
                 } else if (metaData.getColumnType(i) == Types.STRUCT) {
                     throw new DatabaseException("DB Error " + field.getType().getName() + " " + "STRUCT");
                 } else if (metaData.getColumnType(i) == Types.TIME) {
-                    throw new DatabaseException("DB Error " + field.getType().getName() + " " + "TIME");
+                    if (field.getType().getName().equals("java.util.Date")) {
+                        try {
+                            field.setAccessible(true);
+                            field.set(entity, rs.getTime(i));
+                            field.setAccessible(false);
+                        } catch (IllegalArgumentException e) {
+                        } catch (IllegalAccessException e) {
+                        }
+                    } else {
+                        throw new DatabaseException("DB Error " + field.getType().getName() + " " + "TIME");
+                    }
                 } else if (metaData.getColumnType(i) == Types.TIMESTAMP) {
                     if (field.getType().getName().equals("java.util.Date")) {
                         try {
                             field.setAccessible(true);
-                            field.set(entity, rs.getDate(i));
+                            field.set(entity, rs.getTimestamp(i));
                             field.setAccessible(false);
                         } catch (IllegalArgumentException e) {
                         } catch (IllegalAccessException e) {
