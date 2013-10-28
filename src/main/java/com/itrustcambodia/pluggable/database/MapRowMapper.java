@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.JdbcUtils;
 
 public class MapRowMapper implements RowMapper<Map<String, String>> {
 
@@ -15,7 +16,7 @@ public class MapRowMapper implements RowMapper<Map<String, String>> {
         Map<String, String> object = new HashMap<String, String>();
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            String columnName = metaData.getColumnLabel(i);
+            String columnName = JdbcUtils.lookupColumnName(metaData, i);
             object.put(columnName, rs.getString(i));
         }
         return object;
