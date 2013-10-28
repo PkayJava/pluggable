@@ -1,5 +1,6 @@
 package com.itrustcambodia.pluggable.page;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -8,6 +9,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,13 +30,13 @@ import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
+import org.apache.wicket.model.PropertyModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.reflections.ReflectionUtils;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
-import com.itrustcambodia.pluggable.core.MapModel;
 import com.itrustcambodia.pluggable.database.EntityRowMapper;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.panel.widget.WidgetCheckBox;
@@ -110,7 +112,7 @@ public abstract class KnownPage extends WebPage {
 
     private Map<String, FormComponent<?>> buttons = new HashMap<String, FormComponent<?>>();
 
-    private Form<?> form;
+    private Form<Void> form;
 
     public KnownPage() {
         super();
@@ -496,10 +498,12 @@ public abstract class KnownPage extends WebPage {
                 widget.setOrder(textField.order());
 
                 if (textField.type() == TextFieldType.PASSWORD) {
-                    org.apache.wicket.markup.html.form.TextField<String> component = new PasswordTextField("field", new MapModel<String>(model, field.getName()));
+                    org.apache.wicket.markup.html.form.TextField<String> component = new PasswordTextField("field", new PropertyModel<String>(model, field.getName()));
+                    component.setType(String.class);
                     components.put(field.getName(), component);
                 } else {
-                    org.apache.wicket.markup.html.form.TextField<String> component = new org.apache.wicket.markup.html.form.TextField<String>("field", new MapModel<String>(model, field.getName()));
+                    org.apache.wicket.markup.html.form.TextField<String> component = new org.apache.wicket.markup.html.form.TextField<String>("field", new PropertyModel<String>(model, field.getName()));
+                    component.setType(String.class);
                     components.put(field.getName(), component);
                 }
             } else if (field.getAnnotation(LabelField.class) != null) {
@@ -516,7 +520,7 @@ public abstract class KnownPage extends WebPage {
                 widget.setCheckBox(checkBox);
                 widget.setOrder(checkBox.order());
 
-                org.apache.wicket.markup.html.form.CheckBox component = new org.apache.wicket.markup.html.form.CheckBox("field", new MapModel<Boolean>(model, field.getName()));
+                org.apache.wicket.markup.html.form.CheckBox component = new org.apache.wicket.markup.html.form.CheckBox("field", new PropertyModel<Boolean>(model, field.getName()));
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(CheckBoxMultipleChoice.class) != null) {
                 widget = new FieldController();
@@ -542,7 +546,7 @@ public abstract class KnownPage extends WebPage {
                     // widget.getCheckBoxMultipleChoice().display(),
                     // widget.getCheckBoxMultipleChoice().where());
                 }
-                org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>>("field", new MapModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
+                org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>>("field", new PropertyModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(ListMultipleChoice.class) != null) {
                 widget = new FieldController();
@@ -568,7 +572,7 @@ public abstract class KnownPage extends WebPage {
                     // widget.getListMultipleChoice().display(),
                     // widget.getListMultipleChoice().where());
                 }
-                org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>>("field", new MapModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
+                org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>>("field", new PropertyModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(FileUploadField.class) != null) {
                 widget = new FieldController();
@@ -576,7 +580,7 @@ public abstract class KnownPage extends WebPage {
                 widget.setFileUploadField(fileUploadField);
                 widget.setOrder(fileUploadField.order());
 
-                org.apache.wicket.markup.html.form.upload.FileUploadField component = new org.apache.wicket.markup.html.form.upload.FileUploadField("field", new MapModel<List<FileUpload>>(model, field.getName()));
+                org.apache.wicket.markup.html.form.upload.FileUploadField component = new org.apache.wicket.markup.html.form.upload.FileUploadField("field", new PropertyModel<List<FileUpload>>(model, field.getName()));
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(MultiFileUploadField.class) != null) {
                 widget = new FieldController();
@@ -584,9 +588,8 @@ public abstract class KnownPage extends WebPage {
                 widget.setMultiFileUploadField(multiFileUploadField);
                 widget.setOrder(multiFileUploadField.order());
 
-                MapModel<List<FileUpload>> mapModel = new MapModel<List<FileUpload>>(model, field.getName());
-                mapModel.setObject(new ArrayList<FileUpload>());
-                org.apache.wicket.markup.html.form.upload.MultiFileUploadField component = new org.apache.wicket.markup.html.form.upload.MultiFileUploadField("field", mapModel);
+                model.put(field.getName(), new ArrayList<FileUpload>());
+                org.apache.wicket.markup.html.form.upload.MultiFileUploadField component = new org.apache.wicket.markup.html.form.upload.MultiFileUploadField("field", new PropertyModel<List<FileUpload>>(model, field.getName()));
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(RadioChoice.class) != null) {
                 widget = new FieldController();
@@ -611,7 +614,7 @@ public abstract class KnownPage extends WebPage {
                     // field.getType(), widget.getRadioChoice().display(),
                     // widget.getRadioChoice().where());
                 }
-                org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>>("field", new MapModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
+                org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>>("field", new PropertyModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(DropDownChoice.class) != null) {
                 widget = new FieldController();
@@ -637,7 +640,7 @@ public abstract class KnownPage extends WebPage {
                     // widget.getDropDownChoice().where());
                 }
 
-                org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>>("field", new MapModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
+                org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>>("field", new PropertyModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(TextArea.class) != null) {
                 widget = new FieldController();
@@ -645,7 +648,8 @@ public abstract class KnownPage extends WebPage {
                 widget.setTextArea(textArea);
                 widget.setOrder(textArea.order());
 
-                org.apache.wicket.markup.html.form.TextArea<String> component = new org.apache.wicket.markup.html.form.TextArea<String>("field", new MapModel<String>(model, field.getName()));
+                org.apache.wicket.markup.html.form.TextArea<String> component = new org.apache.wicket.markup.html.form.TextArea<String>("field", new PropertyModel<String>(model, field.getName()));
+                component.setType(String.class);
                 components.put(field.getName(), component);
             } else if (field.getAnnotation(Select2MultiChoice.class) != null) {
                 widget = new FieldController();
@@ -653,14 +657,15 @@ public abstract class KnownPage extends WebPage {
                 widget.setSelect2MultiChoice(select2MultiChoice);
                 widget.setOrder(select2MultiChoice.order());
 
-                ChoiceProvider<?> provider = null;
+                ChoiceProvider<Serializable> provider = null;
                 try {
-                    provider = select2MultiChoice.provider().newInstance();
+                    provider = (ChoiceProvider<Serializable>) select2MultiChoice.provider().newInstance();
                 } catch (InstantiationException e) {
                 } catch (IllegalAccessException e) {
                 }
 
-                com.vaynberg.wicket.select2.Select2MultiChoice component = new com.vaynberg.wicket.select2.Select2MultiChoice("field", new MapModel(model, field.getName()), provider);
+                com.vaynberg.wicket.select2.Select2MultiChoice<Serializable> component = new com.vaynberg.wicket.select2.Select2MultiChoice<Serializable>("field", new PropertyModel<Collection<Serializable>>(model, field.getName()), provider);
+                component.setType(field.getType());
                 component.getSettings().setMinimumInputLength(select2MultiChoice.minimumInputLength());
                 component.add(new DragAndDropBehavior());
                 components.put(field.getName(), component);
@@ -670,14 +675,15 @@ public abstract class KnownPage extends WebPage {
                 widget.setSelect2Choice(select2Choice);
                 widget.setOrder(select2Choice.order());
 
-                ChoiceProvider<?> provider = null;
+                ChoiceProvider<Serializable> provider = null;
                 try {
-                    provider = select2Choice.provider().newInstance();
+                    provider = (ChoiceProvider<Serializable>) select2Choice.provider().newInstance();
                 } catch (InstantiationException e) {
                 } catch (IllegalAccessException e) {
                 }
 
-                com.vaynberg.wicket.select2.Select2Choice component = new com.vaynberg.wicket.select2.Select2Choice("field", new MapModel(model, field.getName()), provider);
+                com.vaynberg.wicket.select2.Select2Choice<Serializable> component = new com.vaynberg.wicket.select2.Select2Choice<Serializable>("field", new PropertyModel<Serializable>(model, field.getName()), provider);
+                component.setType(field.getType());
                 component.getSettings().setMinimumInputLength(select2Choice.minimumInputLength());
                 component.add(new DragAndDropBehavior());
                 components.put(field.getName(), component);
