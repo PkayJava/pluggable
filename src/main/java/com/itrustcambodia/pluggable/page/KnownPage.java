@@ -1282,7 +1282,7 @@ public abstract class KnownPage extends WebPage {
         }
     }
 
-    protected void buttonClick(String methodName) {
+    protected final void buttonClick(String methodName) {
         try {
             Method method = this.getClass().getMethod(methodName);
             Navigation navigation = (Navigation) method.invoke(this);
