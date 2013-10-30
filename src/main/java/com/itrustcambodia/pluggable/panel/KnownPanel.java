@@ -3,6 +3,7 @@ package com.itrustcambodia.pluggable.panel;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
 import org.reflections.ReflectionUtils;
 
+import com.itrustcambodia.pluggable.validation.controller.LinkController;
 import com.itrustcambodia.pluggable.validation.controller.Navigation;
 import com.itrustcambodia.pluggable.widget.Link;
 
@@ -43,18 +45,20 @@ public abstract class KnownPanel extends Panel {
 
     @SuppressWarnings("unchecked")
     private void initializeInterceptor() {
-        List<Map<String, String>> links = new ArrayList<Map<String, String>>();
+        List<LinkController> links = new ArrayList<LinkController>();
         for (Method method : ReflectionUtils.getAllMethods(this.getClass())) {
             if (method.getAnnotation(Link.class) != null) {
-                Map<String, String> link = new HashMap<String, String>();
-                link.put("method", method.getName());
-                link.put("label", method.getAnnotation(Link.class).label());
+                LinkController link = new LinkController();
+                link.setMethod(method.getName());
+                link.setLabel(method.getAnnotation(Link.class).label());
+                link.setOrder(method.getAnnotation(Link.class).order());
                 links.add(link);
             }
         }
+        Collections.sort(links);
 
-        for (Map<String, String> model : links) {
-            org.apache.wicket.markup.html.link.Link<String> link = new org.apache.wicket.markup.html.link.Link<String>("link", Model.<String> of(model.get("method"))) {
+        for (LinkController model : links) {
+            org.apache.wicket.markup.html.link.Link<String> link = new org.apache.wicket.markup.html.link.Link<String>("link", Model.<String> of(model.getMethod())) {
 
                 /**
                  * 
@@ -67,11 +71,11 @@ public abstract class KnownPanel extends Panel {
                 }
             };
 
-            Label label = new Label("label", model.get("label"));
+            Label label = new Label("label", model.getLabel());
             link.add(label);
-            KnownPanel.this.links.put(model.get("method"), link);
+            KnownPanel.this.links.put(model.getMethod(), link);
         }
-        ListView<Map<String, String>> listView = new ListView<Map<String, String>>("links", links) {
+        ListView<LinkController> listView = new ListView<LinkController>("links", links) {
 
             /**
              * 
@@ -79,8 +83,8 @@ public abstract class KnownPanel extends Panel {
             private static final long serialVersionUID = -9162943532693333702L;
 
             @Override
-            protected void populateItem(ListItem<Map<String, String>> item) {
-                item.add(KnownPanel.this.links.get(item.getModelObject().get("method")));
+            protected void populateItem(ListItem<LinkController> item) {
+                item.add(KnownPanel.this.links.get(item.getModelObject().getMethod()));
             }
         };
         add(listView);
