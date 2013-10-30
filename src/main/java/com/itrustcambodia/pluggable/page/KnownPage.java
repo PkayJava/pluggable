@@ -536,15 +536,6 @@ public abstract class KnownPage extends WebPage {
                     }
                 } else if (widget.getCheckBoxMultipleChoice().type() == ChoiceType.QUERY) {
                     values = new ArrayList<Map<String, String>>();
-                    // IApplication application = (IApplication)
-                    // getApplication();
-                    // JdbcTemplate jdbcTemplate =
-                    // application.getJdbcTemplate();
-                    // values =
-                    // SelectionUtilities.getSystemQueryChoices(jdbcTemplate,
-                    // field.getType().getComponentType(),
-                    // widget.getCheckBoxMultipleChoice().display(),
-                    // widget.getCheckBoxMultipleChoice().where());
                 }
                 org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.CheckBoxMultipleChoice<Map<String, String>>("field", new PropertyModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
@@ -562,15 +553,6 @@ public abstract class KnownPage extends WebPage {
                     }
                 } else if (widget.getListMultipleChoice().type() == ChoiceType.QUERY) {
                     values = new ArrayList<Map<String, String>>();
-                    // IApplication application = (IApplication)
-                    // getApplication();
-                    // JdbcTemplate jdbcTemplate =
-                    // application.getJdbcTemplate();
-                    // values =
-                    // SelectionUtilities.getSystemQueryChoices(jdbcTemplate,
-                    // field.getType().getComponentType(),
-                    // widget.getListMultipleChoice().display(),
-                    // widget.getListMultipleChoice().where());
                 }
                 org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.ListMultipleChoice<Map<String, String>>("field", new PropertyModel<List<Map<String, String>>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
@@ -605,14 +587,6 @@ public abstract class KnownPage extends WebPage {
                     }
                 } else if (widget.getRadioChoice().type() == ChoiceType.QUERY) {
                     values = new ArrayList<Map<String, String>>();
-                    // IApplication application = (IApplication)
-                    // getApplication();
-                    // JdbcTemplate jdbcTemplate =
-                    // application.getJdbcTemplate();
-                    // values =
-                    // SelectionUtilities.getSystemQueryChoices(jdbcTemplate,
-                    // field.getType(), widget.getRadioChoice().display(),
-                    // widget.getRadioChoice().where());
                 }
                 org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.RadioChoice<Map<String, String>>("field", new PropertyModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
                 components.put(field.getName(), component);
@@ -630,14 +604,6 @@ public abstract class KnownPage extends WebPage {
                     }
                 } else if (widget.getDropDownChoice().type() == ChoiceType.QUERY) {
                     values = new ArrayList<Map<String, String>>();
-                    // IApplication application = (IApplication)
-                    // getApplication();
-                    // JdbcTemplate jdbcTemplate =
-                    // application.getJdbcTemplate();
-                    // values =
-                    // SelectionUtilities.getSystemQueryChoices(jdbcTemplate,
-                    // field.getType(), widget.getDropDownChoice().display(),
-                    // widget.getDropDownChoice().where());
                 }
 
                 org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>> component = new org.apache.wicket.markup.html.form.DropDownChoice<Map<String, String>>("field", new PropertyModel<Map<String, String>>(model, field.getName()), values, new ChoiceController());
