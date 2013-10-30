@@ -29,8 +29,14 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
 
     private Map<String, Object> filter = new HashMap<String, Object>();
 
+    private Map<String, Object> where = new HashMap<String, Object>();
+
     public MapSortableDataProvider(String query) {
         this.query = query;
+    }
+
+    public void addWhere(String name, Object value) {
+        this.where.put(name, value);
     }
 
     @Override
@@ -50,6 +56,20 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
                 }
             }
         }
+        for (Entry<String, Object> entry : this.where.entrySet()) {
+            if (entry.getValue() != null) {
+                if (entry.getValue() instanceof String) {
+                    if (!"".equals(entry.getValue())) {
+                        where.add(entry.getKey() + " = :" + entry.getKey());
+                        paramMap.put(entry.getKey(), entry.getValue());
+                    }
+                } else {
+                    where.add(entry.getKey() + " = :" + entry.getKey());
+                    paramMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+
         AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication.get();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         if (where.isEmpty()) {
@@ -78,6 +98,19 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
                     if (!"".equals(entry.getValue())) {
                         where.add(entry.getKey() + " like :" + entry.getKey());
                         paramMap.put(entry.getKey(), entry.getValue() + "%");
+                    }
+                } else {
+                    where.add(entry.getKey() + " = :" + entry.getKey());
+                    paramMap.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        for (Entry<String, Object> entry : this.where.entrySet()) {
+            if (entry.getValue() != null) {
+                if (entry.getValue() instanceof String) {
+                    if (!"".equals(entry.getValue())) {
+                        where.add(entry.getKey() + " = :" + entry.getKey());
+                        paramMap.put(entry.getKey(), entry.getValue());
                     }
                 } else {
                     where.add(entry.getKey() + " = :" + entry.getKey());
