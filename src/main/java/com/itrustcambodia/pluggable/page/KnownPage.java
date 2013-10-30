@@ -119,6 +119,10 @@ public abstract class KnownPage extends WebPage {
         initializeInterceptor();
     }
 
+    public Map<String, Object> getModel() {
+        return model;
+    }
+
     protected String getFormTitle() {
         return "";
     }
