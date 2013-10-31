@@ -1,6 +1,7 @@
 package com.itrustcambodia.pluggable.wicket;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -87,7 +88,9 @@ public class Initializer implements IInitializer {
 
                     Set<Class<? extends Job>> jobs = reflections.getSubTypesOf(Job.class);
                     for (Class<? extends Job> job : jobs) {
-                        ((AbstractWebApplication) application).addJob(job);
+                        if (!Modifier.isAbstract(job.getModifiers())) {
+                            ((AbstractWebApplication) application).addJob(job);
+                        }
                     }
                 }
             }
