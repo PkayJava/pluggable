@@ -74,16 +74,16 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         if (where.isEmpty()) {
             if (getSort() == null) {
-                return jdbcTemplate.query("select * from " + this.query, new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select * from " + this.query + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
             } else {
-                return jdbcTemplate.query("select * from " + this.query + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc"), new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select * from " + this.query + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
             }
         } else {
             NamedParameterJdbcTemplate named = new NamedParameterJdbcTemplate(jdbcTemplate);
             if (getSort() == null) {
-                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and "), paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and ") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
             } else {
-                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and ") + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc"), paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and ") + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
             }
         }
     }
