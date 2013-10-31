@@ -16,7 +16,13 @@ public class ColumnMapRowMapper implements RowMapper<Map<String, Object>> {
         int columnCount = rsmd.getColumnCount();
         Map<String, Object> mapOfColValues = createColumnMap(columnCount * 2);
         for (int i = 1; i <= columnCount; i++) {
-            String key = rsmd.getTableName(i) + "." + JdbcUtils.lookupColumnName(rsmd, i);
+            String tableName = rsmd.getTableName(i);
+            String key = "";
+            if (tableName == null || "".equals(tableName)) {
+                key = JdbcUtils.lookupColumnName(rsmd, i);
+            } else {
+                key = rsmd.getTableName(i) + "." + JdbcUtils.lookupColumnName(rsmd, i);
+            }
             Object obj = JdbcUtils.getResultSetValue(rs, i);
             mapOfColValues.put(key, obj);
         }

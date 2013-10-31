@@ -3,6 +3,7 @@ package com.itrustcambodia.pluggable.wicket.extensions.markup.html.repeater.util
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,12 +32,25 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
 
     private Map<String, Object> where = new HashMap<String, Object>();
 
+    private List<String> group = new LinkedList<String>();
+
+    private List<String> select = new LinkedList<String>();
+
     public MapSortableDataProvider(String query) {
         this.query = query;
+        this.select.add("*");
     }
 
     public void addWhere(String name, Object value) {
         this.where.put(name, value);
+    }
+
+    public void addGroup(String name) {
+        this.group.add(name);
+    }
+
+    public void addSelect(String name) {
+        this.select.add(name);
     }
 
     @Override
@@ -72,18 +86,22 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
 
         AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication.get();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
+        String groupBy = "";
+        if (!this.group.isEmpty()) {
+            groupBy = " group by " + StringUtils.join(this.group, ",") + " ";
+        }
         if (where.isEmpty()) {
             if (getSort() == null) {
-                return jdbcTemplate.query("select * from " + this.query + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
             } else {
-                return jdbcTemplate.query("select * from " + this.query + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
             }
         } else {
             NamedParameterJdbcTemplate named = new NamedParameterJdbcTemplate(jdbcTemplate);
             if (getSort() == null) {
-                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and ") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
             } else {
-                return named.query("select * from " + this.query + " where " + StringUtils.join(where, " and ") + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
             }
         }
     }
@@ -118,13 +136,25 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
                 }
             }
         }
+        String groupBy = "";
+        if (!this.group.isEmpty()) {
+            groupBy = " group by " + StringUtils.join(this.group, ",") + " ";
+        }
         AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication.get();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         if (where.isEmpty()) {
-            return jdbcTemplate.queryForObject("select count(*) from " + this.query, Long.class);
+            if (this.group.isEmpty()) {
+                return jdbcTemplate.queryForObject("select count(*) from " + this.query, Long.class);
+            } else {
+                return jdbcTemplate.queryForObject("select count(*) from (" + "select " + StringUtils.join(this.group, ",") + " from " + this.query + groupBy + ") pp", Long.class);
+            }
         } else {
             NamedParameterJdbcTemplate named = new NamedParameterJdbcTemplate(jdbcTemplate);
-            return named.queryForObject("select count(*) from " + this.query + " where " + StringUtils.join(where, " and "), paramMap, Long.class);
+            if (this.group.isEmpty()) {
+                return named.queryForObject("select count(*) from " + this.query + " where " + StringUtils.join(where, " and "), paramMap, Long.class);
+            } else {
+                return named.queryForObject("select count(*) from (" + "select " + StringUtils.join(this.group, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + ") pp", paramMap, Long.class);
+            }
         }
     }
 
