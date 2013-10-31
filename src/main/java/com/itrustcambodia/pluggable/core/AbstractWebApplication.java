@@ -75,7 +75,7 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
     public static final String BEE_API_LABEL = "Bee API";
 
     public static final String USER_LABEL = "User";
-    
+
     public static final String JOB_LABEL = "Job";
 
     public static final String ROLE_LABEL = "Role";
@@ -129,7 +129,7 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
         addBean(DbSupport.class, support);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
         addBean(Gson.class, gson);
 
         Schema schema = support.getSchema();
