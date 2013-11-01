@@ -203,8 +203,11 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
         SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
 
+        List<String> jobs = jdbcTemplate.queryForList("select " + com.itrustcambodia.pluggable.entity.Job.ID + " from " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class), String.class);
+
         for (Class<? extends Job> job : this.jobs) {
             com.itrustcambodia.pluggable.entity.Job meta = JobUtilities.createJob(jdbcTemplate, job);
+            jobs.remove(meta.getId());
             if (!meta.isDisable()) {
                 try {
                     JobDetail jobDetail = newJob(job).withIdentity(job.getName()).build();
@@ -214,6 +217,11 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
                 } catch (SchedulerException e) {
                     jdbcTemplate.update("update " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class) + " set " + com.itrustcambodia.pluggable.entity.Job.DISABLE + " = ? where " + com.itrustcambodia.pluggable.entity.Job.ID + " = ?", true, meta.getId());
                 }
+            }
+        }
+        if (jobs != null && !jobs.isEmpty()) {
+            for (String job : jobs) {
+                jdbcTemplate.update("delete from " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class) + " where " + com.itrustcambodia.pluggable.entity.Job.ID + " = ?", job);
             }
         }
         try {
@@ -392,7 +400,7 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         super.onDestroy();
         SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
         try {
-            schedulerFactory.getScheduler().shutdown(true);
+            schedulerFactory.getScheduler().shutdown(false);
         } catch (SchedulerException e) {
         }
     }
