@@ -192,6 +192,7 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
         getMarkupSettings().setCompressWhitespace(true);
         getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
+        getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
 
         getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_EXCEPTION_PAGE);
 
@@ -229,8 +230,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         } catch (SchedulerException e) {
         }
     }
-    
-    public SchedulerFactory getSchedulerFactory(){
+
+    public SchedulerFactory getSchedulerFactory() {
         return getBean(SchedulerFactory.class);
     }
 
