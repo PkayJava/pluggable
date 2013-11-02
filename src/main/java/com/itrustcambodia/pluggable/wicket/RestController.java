@@ -37,6 +37,7 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.Secured;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
+import com.sun.tools.apt.resources.apt;
 
 /**
  * @author Socheat KHAUV
@@ -62,11 +63,12 @@ public class RestController implements IResource {
 
     @Override
     public void respond(Attributes attributes) {
-        javax.servlet.http.HttpServletRequest request = (javax.servlet.http.HttpServletRequest) attributes.getRequest().getContainerRequest();
-
-        HttpServletResponse response = (HttpServletResponse) attributes.getResponse().getContainerResponse();
-        WebSession session = (WebSession) WebSession.get();
         AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication.get();
+
+        javax.servlet.http.HttpServletRequest request = (javax.servlet.http.HttpServletRequest) attributes.getRequest().getContainerRequest();
+        HttpServletResponse response = (HttpServletResponse) attributes.getResponse().getContainerResponse();
+        response.setCharacterEncoding(application.getRequestCycleSettings().getResponseRequestEncoding());
+        WebSession session = (WebSession) WebSession.get();
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
         String path = attributes.getRequest().getUrl().getPath().substring(RestController.PATH.length());
