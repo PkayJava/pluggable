@@ -1,8 +1,14 @@
 package com.itrustcambodia.pluggable.page;
 
+import static org.quartz.TriggerBuilder.newTrigger;
+
 import java.util.List;
 
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.SchedulerException;
+import org.quartz.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
@@ -68,13 +74,31 @@ public class EditJobPage extends KnownPage {
     private void initializeInterceptor() {
         org.apache.wicket.markup.html.form.TextField<String> cron = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("cron");
         cron.add(new CronExpressionValidator());
+        org.apache.wicket.markup.html.form.Button once = (org.apache.wicket.markup.html.form.Button) getFormButton("once");
+        once.setVisible(!this.disable);
     }
 
-    @Button(label = "Okay", order = 1, validate = true)
+    @Button(label = "Okay", order = 3, validate = true)
     public Navigation okay() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         jdbcTemplate.update("UPDATE " + TableUtilities.getTableName(Job.class) + " SET " + Job.DESCRIPTION + " = ?, " + Job.DISABLE + " = ?, " + Job.PAUSE + " = ? , " + Job.NEW_CRON + " = ? where " + Job.ID + " = ?", this.description, this.disable, this.pause, this.cron, this.jobId);
+        return new Navigation(JobManagementPage.class);
+    }
+
+    @Button(label = "Run Once", order = 2, validate = false)
+    public Navigation once() {
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
+        Job job = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Job.class) + " where " + Job.ID + " = ?", new EntityRowMapper<Job>(Job.class), this.jobId);
+        if (Job.Status.IDLE.equals(job.getStatus())) {
+            try {
+                JobDetail jobDetail = application.getSchedulerFactory().getScheduler().getJobDetail(JobKey.jobKey(job.getId()));
+                Trigger now = newTrigger().withIdentity(String.valueOf(System.currentTimeMillis())).startNow().build();
+                application.getSchedulerFactory().getScheduler().scheduleJob(jobDetail, now);
+            } catch (SchedulerException e) {
+            }
+        }
         return new Navigation(JobManagementPage.class);
     }
 

@@ -229,6 +229,10 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         } catch (SchedulerException e) {
         }
     }
+    
+    public SchedulerFactory getSchedulerFactory(){
+        return getBean(SchedulerFactory.class);
+    }
 
     public void addJob(Class<? extends Job> job) {
         this.jobs.add(job);
