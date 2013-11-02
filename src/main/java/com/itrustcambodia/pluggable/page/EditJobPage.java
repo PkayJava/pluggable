@@ -93,10 +93,7 @@ public class EditJobPage extends KnownPage {
         Job job = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Job.class) + " where " + Job.ID + " = ?", new EntityRowMapper<Job>(Job.class), this.jobId);
         if (Job.Status.IDLE.equals(job.getStatus())) {
             try {
-                JobDetail jobDetail = application.getSchedulerFactory().getScheduler().getJobDetail(JobKey.jobKey(job.getId()));
-                jobDetail.getJobDataMap().put(AbstractWebApplication.class.getName(), application);
-                Trigger now = newTrigger().withIdentity(String.valueOf(System.currentTimeMillis())).startNow().build();
-                application.getSchedulerFactory().getScheduler().scheduleJob(jobDetail, now);
+                application.getSchedulerFactory().getScheduler().triggerJob(JobKey.jobKey(job.getId()));
             } catch (SchedulerException e) {
             }
         }
