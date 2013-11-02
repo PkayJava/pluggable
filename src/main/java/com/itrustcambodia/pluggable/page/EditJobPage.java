@@ -94,6 +94,7 @@ public class EditJobPage extends KnownPage {
         if (Job.Status.IDLE.equals(job.getStatus())) {
             try {
                 JobDetail jobDetail = application.getSchedulerFactory().getScheduler().getJobDetail(JobKey.jobKey(job.getId()));
+                jobDetail.getJobDataMap().put(AbstractWebApplication.class.getName(), application);
                 Trigger now = newTrigger().withIdentity(String.valueOf(System.currentTimeMillis())).startNow().build();
                 application.getSchedulerFactory().getScheduler().scheduleJob(jobDetail, now);
             } catch (SchedulerException e) {
