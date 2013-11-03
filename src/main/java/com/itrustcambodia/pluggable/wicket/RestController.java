@@ -261,6 +261,7 @@ public class RestController implements IResource {
                 } else {
                     username = session.getUsername();
                 }
+
                 if (!valid) {
                     if (BASIC.equals(authentication)) {
                         response.setHeader(WWW_AUTHENTICATE, basicRealm);
@@ -270,6 +271,11 @@ public class RestController implements IResource {
                         response.setHeader(WWW_AUTHENTICATE, digestRealm);
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
+                    }
+                } else {
+                    if (!session.isSignedIn()) {
+                        String password = jdbcTemplate.queryForObject("select " + AbstractUser.PASSWORD + " from " + TableUtilities.getTableName(AbstractUser.class) + " where " + AbstractUser.LOGIN + " = ?", String.class, username);
+                        session.signIn(username, password);
                     }
                 }
             }
@@ -308,8 +314,8 @@ public class RestController implements IResource {
                     throw new ClassCastException(info.getMethod().getName() + " must return type is not a Result object");
                 } else {
                     Result object = (Result) result;
-                    response.setStatus(object.getStatus());
                     response.setContentType(object.getContentType());
+                    response.setStatus(object.getStatus());
                 }
             }
             return;
