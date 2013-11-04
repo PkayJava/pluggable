@@ -53,6 +53,9 @@ public class EntityRowMapper<T> implements RowMapper<T> {
             for (int i = 1; i <= metaData.getColumnCount(); i++) {
                 String columnName = metaData.getColumnName(i);
                 Field field = types.get(fields.get(columnName));
+                if (field == null) {
+                    continue;
+                }
                 if (metaData.getColumnType(i) == Types.ARRAY) {
                     throw new DatabaseException("DB Error " + field.getType().getName() + " " + "ARRAY");
                 } else if (metaData.getColumnType(i) == Types.BIGINT) {
