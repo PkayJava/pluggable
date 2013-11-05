@@ -230,7 +230,7 @@ public class MySQLSchema extends Schema {
         String tableName = TableUtilities.getTableName(entity);
         Field field = null;
         for (Field tmp : org.reflections.ReflectionUtils.getAllFields(entity)) {
-            if (tmp.getName().equals(name)) {
+            if (tmp.isAnnotationPresent(Column.class) && name.equals(tmp.getAnnotation(Column.class).name())) {
                 field = tmp;
                 break;
             }
