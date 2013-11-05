@@ -659,8 +659,6 @@ public abstract class KnownPage extends WebPage {
                 components.put(field.getName(), component);
             }
 
-            Collections.sort(fields);
-
             if (widget != null) {
                 this.fieldTypes.put(field.getName(), field.getType());
                 this.fieldController.put(field.getName(), widget);
@@ -683,6 +681,8 @@ public abstract class KnownPage extends WebPage {
                 fields.add(widget);
             }
         }
+
+        Collections.sort(fields);
 
         ListView<FieldController> widgetListView = new ListView<FieldController>("fields", fields) {
 
