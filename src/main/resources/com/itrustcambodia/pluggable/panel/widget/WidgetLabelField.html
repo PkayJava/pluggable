@@ -2,16 +2,21 @@
 <html>
 <body>
 	<wicket:panel xmlns:wicket="http://wicket.apache.org">
-		<wicket:enclosure child="field">
-			<div class="form-group">
-				<label class="col-md-3 control-label">
-					<wicket:container wicket:id="label"/>
-				</label>
-				<div class="col-md-9">
-					<p class="form-control-static" wicket:id="field"></p>
-				</div>
+
+		<div class="form-group">
+			<label class="col-md-3 control-label"> <wicket:container
+					wicket:id="label" />
+			</label>
+			<div class="col-md-9">
+				<p class="form-control-static" wicket:id="field"></p>
+				<wicket:enclosure child="link">
+					<p class="form-control-static">
+						<a wicket:id="link" target="_blank" />
+					</p>
+				</wicket:enclosure>
 			</div>
-		</wicket:enclosure>
+		</div>
+
 	</wicket:panel>
 </body>
 </html>
