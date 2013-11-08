@@ -58,6 +58,7 @@ public final class Settings implements Serializable {
     private String tags;
     private String separator;
     private String[] tokenSeparators;
+    private Boolean dropdownAutoWidth;
 
     public CharSequence toJson() {
 	try {
@@ -88,12 +89,13 @@ public final class Settings implements Serializable {
 	    Json.writeFunction(writer, "query", query);
 	    Json.writeObject(writer, "width", width);
 	    Json.writeObject(writer, "openOnEnter", openOnEnter);
-	    Json.writeObject(writer, "containerCss", containerCss);
+	    Json.writeFunction(writer, "containerCss", containerCss);
 	    Json.writeObject(writer, "containerCssClass", containerCssClass);
-	    Json.writeObject(writer, "dropdownCss", dropdownCss);
+	    Json.writeFunction(writer, "dropdownCss", dropdownCss);
 	    Json.writeObject(writer, "dropdownCssClass", dropdownCssClass);
 	    Json.writeObject(writer, "separator", separator);
 	    Json.writeObject(writer, "tokenSeparators", tokenSeparators);
+	    Json.writeObject(writer, "dropdownAutoWidth", dropdownAutoWidth);
 	    if (ajax != null) {
 		writer.key("ajax");
 		ajax.toJson(writer);
@@ -387,4 +389,11 @@ public final class Settings implements Serializable {
 	this.tokenSeparators = tokenSeparators;
     }
 
+    public Boolean getDropdownAutoWidth() {
+    return dropdownAutoWidth;
+    }
+
+    public void setDropdownAutoWidth(Boolean dropdownAutoWidth) {
+    this.dropdownAutoWidth = dropdownAutoWidth;
+    }
 }

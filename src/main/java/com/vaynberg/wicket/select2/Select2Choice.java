@@ -23,8 +23,7 @@ import org.json.JSONException;
 import com.vaynberg.wicket.select2.json.JsonBuilder;
 
 /**
- * Single-select Select2 component. Should be attached to a
- * {@code <input type='hidden'/>} element.
+ * Single-select Select2 component. Should be attached to a {@code <input type='hidden'/>} element.
  * 
  * @author igor
  * 
@@ -34,51 +33,52 @@ import com.vaynberg.wicket.select2.json.JsonBuilder;
 public class Select2Choice<T> extends AbstractSelect2Choice<T, T> {
 
     public Select2Choice(String id, IModel<T> model, ChoiceProvider<T> provider) {
-        super(id, model, provider);
+	super(id, model, provider);
     }
 
     public Select2Choice(String id, IModel<T> model) {
-        super(id, model);
+	super(id, model);
     }
 
     public Select2Choice(String id) {
-        super(id);
+	super(id);
     }
 
     @Override
     protected void convertInput() {
 
-        String input = getWebRequest().getRequestParameters().getParameterValue(getInputName()).toString();
-        if (Strings.isEmpty(input)) {
-            setConvertedInput(null);
-        } else {
-            setConvertedInput(getProvider().toChoices(Collections.singleton(input)).iterator().next());
-        }
+	String input = getWebRequest().getRequestParameters().getParameterValue(getInputName()).toString();
+	if (Strings.isEmpty(input)) {
+	    setConvertedInput(null);
+	} else {
+	    setConvertedInput(getProvider().toChoices(Collections.singleton(input)).iterator().next());
+	}
     }
 
     @Override
     protected void renderInitializationScript(IHeaderResponse response) {
 
-        T value = null;
-        if (getWebRequest().getRequestParameters().getParameterNames().contains(getInputName())) {
-            convertInput();
-            value = getConvertedInput();
-        } else {
-            value = getModelObject();
-        }
+	T value;
+	if (getWebRequest().getRequestParameters().getParameterNames().contains(getInputName())) {
+	    convertInput();
+	    value = getConvertedInput();
+	} else {
+	    value = getModelObject();
+	}
 
-        if (value != null) {
+	if (value != null) {
 
-            JsonBuilder selection = new JsonBuilder();
+	    JsonBuilder selection = new JsonBuilder();
 
-            try {
-                selection.object();
-                getProvider().toJson(value, selection);
-                selection.endObject();
-            } catch (JSONException e) {
-                throw new RuntimeException("Error converting model object to Json", e);
-            }
-            response.render(OnDomReadyHeaderItem.forScript(JQuery.execute("$('#%s').select2('data', %s);", getJquerySafeMarkupId(), selection.toJson())));
-        }
+	    try {
+		selection.object();
+		getProvider().toJson(value, selection);
+		selection.endObject();
+	    } catch (JSONException e) {
+		throw new RuntimeException("Error converting model object to Json", e);
+	    }
+	    response.render(OnDomReadyHeaderItem.forScript(JQuery.execute("$('#%s').select2('data', %s);",
+		    getJquerySafeMarkupId(), selection.toJson())));
+	}
     }
 }
