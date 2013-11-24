@@ -41,7 +41,7 @@ public class WidgetTextField extends Panel {
         add(label);
         TextFieldType widgetType = widget.getTextField().type();
         TextField<String> textField = null;
-        if (widgetType == TextFieldType.EMAIL || widgetType == TextFieldType.TEXT || widgetType == TextFieldType.REGX || widgetType == TextFieldType.URL) {
+        if (widgetType == TextFieldType.EMAIL || widgetType == TextFieldType.TEXT || widgetType == TextFieldType.NUMBER || widgetType == TextFieldType.REGX || widgetType == TextFieldType.URL) {
             textField = (TextField<String>) components.get(widget.getName());
             if (widget.getType().getName().equals("java.lang.Byte") || widget.getType().getName().equals("byte")) {
                 textField.add(new ByteValidator());
@@ -66,6 +66,10 @@ public class WidgetTextField extends Panel {
             } else {
                 throw new WicketRuntimeException("unknow type " + widget.getType().getName());
             }
+        }
+
+        if (textField == null) {
+            System.out.println("debug");
         }
 
         add(textField);
