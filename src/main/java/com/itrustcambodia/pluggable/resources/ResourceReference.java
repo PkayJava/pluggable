@@ -12,11 +12,11 @@ public class ResourceReference {
 
     public static final JavaScriptResourceReference BOOTSTRAP_RC1_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.0.RC1/js/bootstrap.min.js");
 
-    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.1/css/bootstrap.min.css");
+    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.2/css/bootstrap.min.css");
 
-    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.1/css/bootstrap-theme.min.css");
+    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.2/css/bootstrap-theme.min.css");
 
-    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.1/js/bootstrap.min.js");
+    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.2/js/bootstrap.min.js");
 
     public static final CssResourceReference BOOTSTRAP_M1_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.0.M1/css/bootstrap.min.css");
 
