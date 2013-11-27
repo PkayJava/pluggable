@@ -85,7 +85,8 @@ public class EditGroupPage extends KnownPage {
 
     @com.itrustcambodia.pluggable.widget.Button(label = "Cancel", validate = false, order = 1)
     public Navigation cancelClick() {
-        return new Navigation(GroupManagementPage.class);
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        return new Navigation(application.getGroupManagementPage());
     }
 
     @com.itrustcambodia.pluggable.widget.Button(label = "Delete", validate = false, order = 2)
@@ -95,7 +96,7 @@ public class EditGroupPage extends KnownPage {
         jdbcTemplate.update("delete from " + TableUtilities.getTableName(UserGroup.class) + " where " + UserGroup.GROUP_ID + " = ?", this.groupId);
         jdbcTemplate.update("delete from " + TableUtilities.getTableName(Group.class) + " where " + Group.ID + " = ?", this.groupId);
         jdbcTemplate.update("delete from " + TableUtilities.getTableName(RoleGroup.class) + " where " + RoleGroup.GROUP_ID + " = ?", this.groupId);
-        return new Navigation(GroupManagementPage.class);
+        return new Navigation(application.getGroupManagementPage());
     }
 
     @com.itrustcambodia.pluggable.widget.Button(label = "Okay", validate = true, order = 3)
@@ -130,7 +131,7 @@ public class EditGroupPage extends KnownPage {
                 mapping.execute(pp);
             }
         }
-        return new Navigation(GroupManagementPage.class);
+        return new Navigation(application.getGroupManagementPage());
     }
 
     @Override

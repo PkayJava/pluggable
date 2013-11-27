@@ -42,9 +42,9 @@ public class UserManagementPage extends WebPage {
         AbstractLayout layout = requestLayout("layout");
         add(layout);
 
-        layout.add(new BookmarkablePageLink<Void>("newUserPageLink", NewUserPage.class));
+        final AbstractWebApplication application = (AbstractWebApplication) getApplication();
 
-        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        layout.add(new BookmarkablePageLink<Void>("newUserPageLink", application.getNewUserPage()));
 
         List<Map<String, Object>> users = application.getJdbcTemplate().queryForList("select * from " + TableUtilities.getTableName(application.getUserEntity()));
 
@@ -56,7 +56,7 @@ public class UserManagementPage extends WebPage {
             protected void populateItem(ListItem<Map<String, Object>> item) {
                 PageParameters parameters = new PageParameters();
                 parameters.add("userId", item.getModelObject().get(AbstractUser.ID));
-                BookmarkablePageLink<Void> loginLink = new BookmarkablePageLink<Void>("loginLink", EditUserPage.class, parameters);
+                BookmarkablePageLink<Void> loginLink = new BookmarkablePageLink<Void>("loginLink", application.getEditUserPage(), parameters);
                 item.add(loginLink);
 
                 Label login = new Label("loginLabel", (String) item.getModelObject().get(AbstractUser.LOGIN));

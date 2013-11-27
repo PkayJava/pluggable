@@ -380,6 +380,18 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
     public abstract Class<? extends AbstractUser> getUserEntity();
 
+    public abstract Class<? extends WebPage> getNewUserPage();
+
+    public abstract Class<? extends WebPage> getEditUserPage();
+
+    public abstract Class<? extends WebPage> getUserManagementPage();
+
+    public abstract Class<? extends WebPage> getNewGroupPage();
+
+    public abstract Class<? extends WebPage> getEditGroupPage();
+    
+    public abstract Class<? extends WebPage> getGroupManagementPage();
+
     public abstract Class<? extends AbstractApplicationMigrator> getMigrator();
 
     public Schema getSchema() {

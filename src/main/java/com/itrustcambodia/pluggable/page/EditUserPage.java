@@ -90,7 +90,8 @@ public class EditUserPage extends KnownPage {
 
     @Button(label = "Cancel", validate = false, order = 1)
     public Navigation cancelClick() {
-        return new Navigation(UserManagementPage.class);
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        return new Navigation(application.getUserManagementPage());
     }
 
     @Button(label = "Delete", validate = false, order = 2)
@@ -102,11 +103,11 @@ public class EditUserPage extends KnownPage {
         jdbcTemplate.update("delete from " + TableUtilities.getTableName(AbstractUser.class) + " where " + AbstractUser.ID + " = ?", this.userId);
         jdbcTemplate.update("delete from " + TableUtilities.getTableName(RoleUser.class) + " where " + RoleUser.USER_ID + " = ?", this.userId);
 
-        return new Navigation(UserManagementPage.class);
+        return new Navigation(application.getUserManagementPage());
     }
 
     @Button(label = "Okay", validate = true, order = 3)
-    public void okayClick() {
+    public Navigation okayClick() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
@@ -138,7 +139,7 @@ public class EditUserPage extends KnownPage {
                 mapping.execute(pp);
             }
         }
-        setResponsePage(UserManagementPage.class);
+        return new Navigation(application.getUserManagementPage());
     }
 
     @Override

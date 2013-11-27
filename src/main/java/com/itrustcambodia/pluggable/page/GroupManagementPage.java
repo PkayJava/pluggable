@@ -43,10 +43,10 @@ public class GroupManagementPage extends WebPage {
         AbstractLayout layout = requestLayout("layout");
         add(layout);
 
-        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        final AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
-        layout.add(new BookmarkablePageLink<Void>("newGroupPageLink", NewGroupPage.class));
+        layout.add(new BookmarkablePageLink<Void>("newGroupPageLink", application.getNewGroupPage()));
 
         List<Group> groups = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class), new EntityRowMapper<Group>(Group.class));
         ListView<Group> table = new ListView<Group>("table", groups) {
@@ -59,7 +59,7 @@ public class GroupManagementPage extends WebPage {
                 PageParameters parameters = new PageParameters();
                 parameters.add("groupId", item.getModelObject().getId());
 
-                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>("nameLink", EditGroupPage.class, parameters);
+                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>("nameLink", application.getEditGroupPage(), parameters);
                 item.add(nameLink);
 
                 Label nameLabel = new Label("nameLabel", item.getModelObject().getName());
