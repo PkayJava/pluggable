@@ -36,12 +36,36 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
 
     private List<String> select = new LinkedList<String>();
 
+    // private Map<String, Object> aggregate = new HashMap<String, Object>();
+
     public MapSortableDataProvider(String query) {
         this.query = query;
         this.select.add("*");
     }
 
     public void addWhere(String name, Object value) {
+        // String lname = name.toLowerCase();
+        // if ((lname.startsWith("avg(") || lname.startsWith("bit_and(") ||
+        // lname.startsWith("bit_or(") || lname.startsWith("bit_xor(") ||
+        // lname.startsWith("count(") || lname.startsWith("group_concat(") ||
+        // lname.startsWith("max(") || lname.startsWith("min(") ||
+        // lname.startsWith("std(") || lname.startsWith("sdtdev_pop(") ||
+        // lname.startsWith("stddev_samp(") || lname.startsWith("stddev(") ||
+        // lname.startsWith("sum(") || lname.startsWith("var_pop(") ||
+        // lname.startsWith("var_samp(") || lname.startsWith("variance(") ||
+        // lname.startsWith("avg (") || lname.startsWith("bit_and (") ||
+        // lname.startsWith("bit_or (") || lname.startsWith("bit_xor (") ||
+        // lname.startsWith("count (") || lname.startsWith("group_concat (") ||
+        // lname.startsWith("max (") || lname.startsWith("min (") ||
+        // lname.startsWith("std (")
+        // || lname.startsWith("sdtdev_pop (") ||
+        // lname.startsWith("stddev_samp (") || lname.startsWith("stddev (") ||
+        // lname.startsWith("sum (") || lname.startsWith("var_pop (") ||
+        // lname.startsWith("var_samp (") || lname.startsWith("variance ("))
+        // && lname.endsWith(")")) {
+        // this.aggregate.put(name, value);
+        // } else {
+        // }
         this.where.put(name, value);
     }
 
