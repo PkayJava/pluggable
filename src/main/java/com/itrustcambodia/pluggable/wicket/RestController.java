@@ -21,6 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import com.itrustcambodia.pluggable.PluggableConstants;
 import com.itrustcambodia.pluggable.core.AbstractPlugin;
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
 import com.itrustcambodia.pluggable.core.WebSession;
@@ -295,7 +296,14 @@ public class RestController implements IResource {
         }
 
         if (info.getMethod().getAnnotation(Deprecated.class) != null) {
-            response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        	Boolean allowdeprecated = application.select(PluggableConstants.DEPRECATED, Boolean.class);
+        	if (allowdeprecated == null){
+        		response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);        		
+        	} else {
+        		if (!allowdeprecated){
+        			response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);	
+        		}
+        	}
             return;
         }
 
