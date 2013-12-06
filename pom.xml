@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.itrustcambodia.pluggable</groupId>
 	<artifactId>pluggable</artifactId>
-	<version>0.6.2.2-SNAPSHOT</version>
+	<version>0.6.2.2</version>
 	<name>pluggable</name>
 	<packaging>jar</packaging>
 
@@ -31,7 +31,7 @@
 		<url>https://github.com/PkayJava/pluggable</url>
 		<connection>scm:git:git://github.com/PkayJava/pluggable.git</connection>
 		<developerConnection>scm:git:git@github.com:PkayJava/pluggable.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>pluggable-0.6.2.2</tag>
 	</scm>
 
 	<repositories>
