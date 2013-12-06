@@ -298,13 +298,14 @@ public class RestController implements IResource {
         if (info.getMethod().getAnnotation(Deprecated.class) != null) {
         	Boolean allowdeprecated = application.select(PluggableConstants.DEPRECATED, Boolean.class);
         	if (allowdeprecated == null){
-        		response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);        		
+        		response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+        		return;
         	} else {
         		if (!allowdeprecated){
         			response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);	
+        			return;
         		}
         	}
-            return;
         }
 
         UserPrincipal principal = new UserPrincipal(username);
