@@ -47,9 +47,9 @@ public class RestController implements IResource {
 
     private static final String AUTHORIZATION = "authorization";
 
-    private static final String BASIC = "BASIC";
+    private static final String BASIC = "Basic";
 
-    private static final String DIGEST = "DIGEST";
+    private static final String DIGEST = "Digest";
 
     private static final String AUTHENTICATION = "authentication";
 
@@ -87,7 +87,7 @@ public class RestController implements IResource {
 
         String secretKey = application.getSecretKey();
 
-        String basicRealm = "Basic realm=\"" + application.getRealm() + "\"";
+        String basicRealm = BASIC +" realm=\"" + application.getRealm() + "\"";
         long expiryTime = System.currentTimeMillis() + (300 * 1000);
 
         String signatureValue = DigestUtils.md5Hex(expiryTime + ":" + secretKey);
@@ -98,7 +98,7 @@ public class RestController implements IResource {
         // qop is quality of protection, as defined by RFC 2617.
         // we do not use opaque due to IE violation of RFC 2617 in not
         // representing opaque on subsequent requests in same session.
-        String digestRealm = "Digest realm=\"" + application.getRealm() + "\", " + "qop=\"auth\", nonce=\"" + nonceValueBase64 + "\"";
+        String digestRealm = DIGEST +" realm=\"" + application.getRealm() + "\", " + "qop=\"auth\", nonce=\"" + nonceValueBase64 + "\"";
 
         // if (authException instanceof NonceExpiredException) {
         // authenticateHeader = authenticateHeader + ", stale=\"true\"";
@@ -111,9 +111,9 @@ public class RestController implements IResource {
                 authentication = request.getHeader(AUTHENTICATION);
             }
         } else {
-            if (authentication.startsWith("Basic")) {
+            if (authorization.startsWith("Basic")) {
                 authentication = BASIC;
-            } else if (authentication.startsWith("Digest")) {
+            } else if (authorization.startsWith("Digest")) {
                 authentication = DIGEST;
             }
         }
