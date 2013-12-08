@@ -8,20 +8,25 @@ import org.apache.wicket.request.resource.JavaScriptResourceReference;
  */
 public class ResourceReference {
 
+	/**
+	 * Bootstrap 3.0.0.RC1
+	 */
     public static final CssResourceReference BOOTSTRAP_RC1_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.0.RC1/css/bootstrap.min.css");
-
     public static final JavaScriptResourceReference BOOTSTRAP_RC1_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.0.RC1/js/bootstrap.min.js");
 
-    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.2/css/bootstrap.min.css");
+    /**
+     * Bootstrap 3.0.x
+     */
+    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.3/css/bootstrap.min.css");
+    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.3/css/bootstrap-theme.min.css");
+    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.3/js/bootstrap.min.js");
 
-    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.2/css/bootstrap-theme.min.css");
-
-    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.2/js/bootstrap.min.js");
-
+    /**
+     * Bootstrap 3.0.0.M1
+     */
     public static final CssResourceReference BOOTSTRAP_M1_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.0.M1/css/bootstrap.min.css");
-
     public static final JavaScriptResourceReference BOOTSTRAP_M1_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.0.M1/js/bootstrap.min.js");
-
+    
     public static final JavaScriptResourceReference HTML5SHIV_JS = new JavaScriptResourceReference(ResourceReference.class, "html5shiv/3.6.2pre/html5shiv.min.js");
 
     public static final JavaScriptResourceReference JQUERY_JS = new JavaScriptResourceReference(ResourceReference.class, "jquery/1.10.0/jquery-1.10.0.min.js");
