@@ -3,6 +3,7 @@ package com.itrustcambodia.pluggable.panel.widget;
 import java.util.Map;
 
 import org.apache.wicket.AttributeModifier;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
@@ -18,14 +19,18 @@ public class WidgetLabelField extends Panel {
      */
     private static final long serialVersionUID = 7060419016983447006L;
 
-    public WidgetLabelField(String id, Map<String, Object> object, FieldController widget, Map<String, Object> components) {
+    public WidgetLabelField(String id, Map<String, Object> object,
+            FieldController widget, Map<String, Object> components) {
         super(id);
+
+        WebMarkupContainer labelContainer = new WebMarkupContainer(
+                "labelContainer");
 
         Label label = new Label("label", widget.getLabelField().label());
         add(label);
 
         Label field = (Label) components.get(widget.getName());
-        Label link = new Label("link","");
+        Label link = new Label("link", "");
         if (object.get(widget.getName()) != null) {
             if (object.get(widget.getName()) instanceof String) {
                 com.itrustcambodia.pluggable.validator.UrlValidator urlValidator = new com.itrustcambodia.pluggable.validator.UrlValidator();
@@ -33,7 +38,8 @@ public class WidgetLabelField extends Panel {
                     link.setVisible(true);
                     field.setVisible(false);
                     link.setDefaultModelObject(object.get(widget.getName()));
-                    link.add(AttributeModifier.replace("href", (String) object.get(widget.getName())));
+                    link.add(AttributeModifier.replace("href",
+                            (String) object.get(widget.getName())));
                 } else {
                     link.setVisible(false);
                     field.setVisible(true);
@@ -50,8 +56,14 @@ public class WidgetLabelField extends Panel {
         if (object.get(widget.getName()) != null) {
             field.setDefaultModelObject(object.get(widget.getName()));
         }
-        add(link);
-        add(field);
+
+        labelContainer.add(label);
+        labelContainer.add(link);
+        labelContainer.add(field);
+        add(labelContainer);
+        if (widget.getName() == null || "".equals(widget.getName())) {
+            labelContainer.setVisible(true);
+        }
 
     }
 }
