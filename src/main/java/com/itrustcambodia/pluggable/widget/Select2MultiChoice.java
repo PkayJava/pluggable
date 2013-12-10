@@ -15,14 +15,12 @@ import com.vaynberg.wicket.select2.ChoiceProvider;
 @Documented
 public @interface Select2MultiChoice {
 
-    String label();
+	String label();
 
-    int minimumInputLength() default 1;
+	int minimumInputLength() default 1;
 
-    double order() default Double.MAX_VALUE;
+	double order() default Double.MAX_VALUE;
 
-    Class<? extends ChoiceProvider<? extends Serializable>> provider();
-
-    String where() default "";
+	Class<? extends ChoiceProvider<? extends Serializable>> provider();
 
 }
