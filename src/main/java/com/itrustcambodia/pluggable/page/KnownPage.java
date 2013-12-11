@@ -46,6 +46,7 @@ import com.itrustcambodia.pluggable.panel.widget.WidgetDateField;
 import com.itrustcambodia.pluggable.panel.widget.WidgetDateTimeField;
 import com.itrustcambodia.pluggable.panel.widget.WidgetDropDownChoice;
 import com.itrustcambodia.pluggable.panel.widget.WidgetFileUploadField;
+import com.itrustcambodia.pluggable.panel.widget.WidgetImageField;
 import com.itrustcambodia.pluggable.panel.widget.WidgetLabelField;
 import com.itrustcambodia.pluggable.panel.widget.WidgetListMultipleChoice;
 import com.itrustcambodia.pluggable.panel.widget.WidgetMultiFileUploadField;
@@ -76,10 +77,12 @@ import com.itrustcambodia.pluggable.validation.controller.Navigation;
 import com.itrustcambodia.pluggable.validation.type.Choice;
 import com.itrustcambodia.pluggable.validation.type.ChoiceType;
 import com.itrustcambodia.pluggable.validation.type.TextFieldType;
+import com.itrustcambodia.pluggable.wicket.markup.html.image.Image;
 import com.itrustcambodia.pluggable.widget.CheckBox;
 import com.itrustcambodia.pluggable.widget.CheckBoxMultipleChoice;
 import com.itrustcambodia.pluggable.widget.DropDownChoice;
 import com.itrustcambodia.pluggable.widget.FileUploadField;
+import com.itrustcambodia.pluggable.widget.ImageField;
 import com.itrustcambodia.pluggable.widget.LabelField;
 import com.itrustcambodia.pluggable.widget.ListMultipleChoice;
 import com.itrustcambodia.pluggable.widget.MultiFileUploadField;
@@ -183,7 +186,18 @@ public abstract class KnownPage extends WebPage {
                 }
             }
 
-            if (field.getAnnotation(TextField.class) != null) {
+            if (field.getAnnotation(ImageField.class) != null) {
+                ImageField imageField = field.getAnnotation(ImageField.class);
+                try {
+                    Object value = FieldUtils.readField(field, this, true);
+                    if (value != null) {
+                        if (value instanceof String) {
+                            model.put(field.getName(), value);
+                        }
+                    }
+                } catch (IllegalAccessException e) {
+                }
+            } else if (field.getAnnotation(TextField.class) != null) {
                 TextField textField = field.getAnnotation(TextField.class);
                 try {
                     Object value = FieldUtils.readField(field, this, true);
@@ -622,7 +636,15 @@ public abstract class KnownPage extends WebPage {
         List<FieldController> fields = new ArrayList<FieldController>();
         for (Field field : ReflectionUtils.getAllFields(this.getClass())) {
             FieldController widget = null;
-            if (field.getAnnotation(TextField.class) != null) {
+            if (field.getAnnotation(ImageField.class) != null) {
+                widget = new FieldController();
+                ImageField imageField = field.getAnnotation(ImageField.class);
+                widget.setOrder(imageField.order());
+                widget.setImageField(imageField);
+                Image component = new Image("field", new PropertyModel<String>(
+                        model, field.getName()));
+                components.put(field.getName(), component);
+            } else if (field.getAnnotation(TextField.class) != null) {
                 widget = new FieldController();
                 TextField textField = field.getAnnotation(TextField.class);
                 widget.setTextField(textField);
@@ -904,6 +926,11 @@ public abstract class KnownPage extends WebPage {
                     WidgetLabelField widgetLabelField = new WidgetLabelField(
                             "field", model, widget, components);
                     item.add(widgetLabelField);
+                }
+                if (widget.getImageField() != null) {
+                    WidgetImageField widgetImageField = new WidgetImageField(
+                            "field", model, widget, components);
+                    item.add(widgetImageField);
                 }
                 if (widget.getCheckBox() != null) {
                     WidgetCheckBox widgetCheckBox = new WidgetCheckBox("field",

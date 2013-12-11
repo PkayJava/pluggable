@@ -17,6 +17,7 @@ import com.itrustcambodia.pluggable.widget.CheckBox;
 import com.itrustcambodia.pluggable.widget.CheckBoxMultipleChoice;
 import com.itrustcambodia.pluggable.widget.DropDownChoice;
 import com.itrustcambodia.pluggable.widget.FileUploadField;
+import com.itrustcambodia.pluggable.widget.ImageField;
 import com.itrustcambodia.pluggable.widget.LabelField;
 import com.itrustcambodia.pluggable.widget.ListMultipleChoice;
 import com.itrustcambodia.pluggable.widget.MultiFileUploadField;
@@ -31,7 +32,8 @@ import com.itrustcambodia.pluggable.widget.TextField;
  * @author Socheat KHAUV
  * 
  */
-public class FieldController implements Comparable<FieldController>, Serializable {
+public class FieldController implements Comparable<FieldController>,
+        Serializable {
 
     /**
      * 
@@ -39,6 +41,8 @@ public class FieldController implements Comparable<FieldController>, Serializabl
     private static final long serialVersionUID = -4112265688170083562L;
 
     private TextField textField;
+
+    private ImageField imageField;
 
     private CheckBox checkBox;
 
@@ -208,7 +212,8 @@ public class FieldController implements Comparable<FieldController>, Serializabl
         return checkBoxMultipleChoice;
     }
 
-    public void setCheckBoxMultipleChoice(CheckBoxMultipleChoice checkBoxMultipleChoice) {
+    public void setCheckBoxMultipleChoice(
+            CheckBoxMultipleChoice checkBoxMultipleChoice) {
         this.checkBoxMultipleChoice = checkBoxMultipleChoice;
     }
 
@@ -240,7 +245,8 @@ public class FieldController implements Comparable<FieldController>, Serializabl
         return multiFileUploadField;
     }
 
-    public void setMultiFileUploadField(MultiFileUploadField multiFileUploadField) {
+    public void setMultiFileUploadField(
+            MultiFileUploadField multiFileUploadField) {
         this.multiFileUploadField = multiFileUploadField;
     }
 
@@ -311,6 +317,14 @@ public class FieldController implements Comparable<FieldController>, Serializabl
 
     public void setLabelField(LabelField labelField) {
         this.labelField = labelField;
+    }
+
+    public ImageField getImageField() {
+        return imageField;
+    }
+
+    public void setImageField(ImageField imageField) {
+        this.imageField = imageField;
     }
 
 }

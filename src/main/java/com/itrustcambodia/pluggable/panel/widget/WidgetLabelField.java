@@ -27,7 +27,6 @@ public class WidgetLabelField extends Panel {
                 "labelContainer");
 
         Label label = new Label("label", widget.getLabelField().label());
-        add(label);
 
         Label field = (Label) components.get(widget.getName());
         Label link = new Label("link", "");

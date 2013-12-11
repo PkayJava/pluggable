@@ -5,6 +5,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,15 +64,20 @@ public class RestController implements IResource {
 
     @Override
     public void respond(Attributes attributes) {
-        AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication.get();
+        AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication
+                .get();
 
-        javax.servlet.http.HttpServletRequest request = (javax.servlet.http.HttpServletRequest) attributes.getRequest().getContainerRequest();
-        HttpServletResponse response = (HttpServletResponse) attributes.getResponse().getContainerResponse();
-        response.setCharacterEncoding(application.getRequestCycleSettings().getResponseRequestEncoding());
+        javax.servlet.http.HttpServletRequest request = (javax.servlet.http.HttpServletRequest) attributes
+                .getRequest().getContainerRequest();
+        HttpServletResponse response = (HttpServletResponse) attributes
+                .getResponse().getContainerResponse();
+        response.setCharacterEncoding(application.getRequestCycleSettings()
+                .getResponseRequestEncoding());
         WebSession session = (WebSession) WebSession.get();
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
-        String path = attributes.getRequest().getUrl().getPath().substring(RestController.PATH.length());
+        String path = attributes.getRequest().getUrl().getPath()
+                .substring(RestController.PATH.length());
         RequestMappingInfo info = application.getControllers().get(path);
 
         if (info == null) {
@@ -79,8 +85,11 @@ public class RestController implements IResource {
             RequestCycle.get().setResponsePage(Error404Page.class);
             return;
         }
-        RequestMapping requestMapping = info.getMethod().getAnnotation(RequestMapping.class);
-        if (requestMapping == null || requestMapping.method() != RequestMethod.valueOf(request.getMethod().toUpperCase())) {
+        RequestMapping requestMapping = info.getMethod().getAnnotation(
+                RequestMapping.class);
+        if (requestMapping == null
+                || requestMapping.method() != RequestMethod.valueOf(request
+                        .getMethod().toUpperCase())) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             RequestCycle.get().setResponsePage(Error404Page.class);
             return;
@@ -88,18 +97,21 @@ public class RestController implements IResource {
 
         String secretKey = application.getSecretKey();
 
-        String basicRealm = BASIC +" realm=\"" + application.getRealm() + "\"";
+        String basicRealm = BASIC + " realm=\"" + application.getRealm() + "\"";
         long expiryTime = System.currentTimeMillis() + (300 * 1000);
 
-        String signatureValue = DigestUtils.md5Hex(expiryTime + ":" + secretKey);
+        String signatureValue = DigestUtils
+                .md5Hex(expiryTime + ":" + secretKey);
 
         String nonceValue = expiryTime + ":" + signatureValue;
-        String nonceValueBase64 = new String(Base64.encodeBase64(nonceValue.getBytes()));
+        String nonceValueBase64 = new String(Base64.encodeBase64(nonceValue
+                .getBytes()));
 
         // qop is quality of protection, as defined by RFC 2617.
         // we do not use opaque due to IE violation of RFC 2617 in not
         // representing opaque on subsequent requests in same session.
-        String digestRealm = DIGEST +" realm=\"" + application.getRealm() + "\", " + "qop=\"auth\", nonce=\"" + nonceValueBase64 + "\"";
+        String digestRealm = DIGEST + " realm=\"" + application.getRealm()
+                + "\", " + "qop=\"auth\", nonce=\"" + nonceValueBase64 + "\"";
 
         // if (authException instanceof NonceExpiredException) {
         // authenticateHeader = authenticateHeader + ", stale=\"true\"";
@@ -108,7 +120,8 @@ public class RestController implements IResource {
         String authentication = DIGEST;
         String authorization = request.getHeader(AUTHORIZATION);
         if (authorization == null || "".equals(authorization)) {
-            if (request.getHeader(AUTHENTICATION) != null && !"".equals(request.getHeader(AUTHENTICATION))) {
+            if (request.getHeader(AUTHENTICATION) != null
+                    && !"".equals(request.getHeader(AUTHENTICATION))) {
                 authentication = request.getHeader(AUTHENTICATION);
             }
         } else {
@@ -134,7 +147,9 @@ public class RestController implements IResource {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
-                        String[] credential = new String(Base64.decodeBase64(authorization.substring(6).getBytes())).split(":");
+                        String[] credential = new String(
+                                Base64.decodeBase64(authorization.substring(6)
+                                        .getBytes())).split(":");
                         if (credential == null || credential.length != 2) {
                             response.setHeader(WWW_AUTHENTICATE, basicRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -142,14 +157,16 @@ public class RestController implements IResource {
                         }
                         username = credential[0];
                         String password = credential[1];
-                        boolean valid = SecurityUtilities.authenticate(jdbcTemplate, username, password);
+                        boolean valid = SecurityUtilities.authenticate(
+                                jdbcTemplate, username, password);
                         if (!valid) {
                             response.setHeader(WWW_AUTHENTICATE, basicRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         } else {
                             roles = new Roles();
-                            for (String role : RoleUtilities.lookupRoles(jdbcTemplate, username)) {
+                            for (String role : RoleUtilities.lookupRoles(
+                                    jdbcTemplate, username)) {
                                 roles.add(role);
                             }
                         }
@@ -161,21 +178,33 @@ public class RestController implements IResource {
                         }
 
                         DigestData digest = new DigestData(authorization);
-                        if (!digest.validateAndDecode(secretKey, application.getRealm())) {
+                        if (!digest.validateAndDecode(secretKey,
+                                application.getRealm())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
 
-                        if (!SecurityUtilities.authenticate(jdbcTemplate, digest.getUsername())) {
+                        if (!SecurityUtilities.authenticate(jdbcTemplate,
+                                digest.getUsername())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
 
-                        String password = jdbcTemplate.queryForObject("select " + AbstractUser.PASSWORD + " from " + TableUtilities.getTableName(AbstractUser.class) + " where " + AbstractUser.LOGIN + " = ?", String.class, digest.getUsername());
+                        String password = jdbcTemplate
+                                .queryForObject(
+                                        "select "
+                                                + AbstractUser.PASSWORD
+                                                + " from "
+                                                + TableUtilities
+                                                        .getTableName(AbstractUser.class)
+                                                + " where "
+                                                + AbstractUser.LOGIN + " = ?",
+                                        String.class, digest.getUsername());
 
-                        String serverDigestMd5 = digest.calculateServerDigest(password, request.getMethod());
+                        String serverDigestMd5 = digest.calculateServerDigest(
+                                password, request.getMethod());
                         if (!serverDigestMd5.equals(digest.getResponse())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -184,14 +213,16 @@ public class RestController implements IResource {
 
                         username = digest.getUsername();
 
-                        boolean valid = SecurityUtilities.authenticate(jdbcTemplate, username, password);
+                        boolean valid = SecurityUtilities.authenticate(
+                                jdbcTemplate, username, password);
                         if (!valid) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         } else {
                             roles = new Roles();
-                            for (String role : RoleUtilities.lookupRoles(jdbcTemplate, username)) {
+                            for (String role : RoleUtilities.lookupRoles(
+                                    jdbcTemplate, username)) {
                                 roles.add(role);
                             }
                         }
@@ -216,7 +247,9 @@ public class RestController implements IResource {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
-                        String[] credential = new String(Base64.decodeBase64(authorization.substring(6).getBytes())).split(":");
+                        String[] credential = new String(
+                                Base64.decodeBase64(authorization.substring(6)
+                                        .getBytes())).split(":");
                         if (credential == null || credential.length != 2) {
                             response.setHeader(WWW_AUTHENTICATE, basicRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -224,7 +257,8 @@ public class RestController implements IResource {
                         }
                         username = credential[0];
                         String password = credential[1];
-                        valid = SecurityUtilities.authenticate(jdbcTemplate, username, password);
+                        valid = SecurityUtilities.authenticate(jdbcTemplate,
+                                username, password);
                     } else if (DIGEST.equals(authentication)) {
                         if (authorization == null) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
@@ -233,21 +267,33 @@ public class RestController implements IResource {
                         }
 
                         DigestData digest = new DigestData(authorization);
-                        if (!digest.validateAndDecode(secretKey, application.getRealm())) {
+                        if (!digest.validateAndDecode(secretKey,
+                                application.getRealm())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
 
-                        if (!SecurityUtilities.authenticate(jdbcTemplate, digest.getUsername())) {
+                        if (!SecurityUtilities.authenticate(jdbcTemplate,
+                                digest.getUsername())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                             return;
                         }
 
-                        String password = jdbcTemplate.queryForObject("select " + AbstractUser.PASSWORD + " from " + TableUtilities.getTableName(AbstractUser.class) + " where " + AbstractUser.LOGIN + " = ?", String.class, digest.getUsername());
+                        String password = jdbcTemplate
+                                .queryForObject(
+                                        "select "
+                                                + AbstractUser.PASSWORD
+                                                + " from "
+                                                + TableUtilities
+                                                        .getTableName(AbstractUser.class)
+                                                + " where "
+                                                + AbstractUser.LOGIN + " = ?",
+                                        String.class, digest.getUsername());
 
-                        String serverDigestMd5 = digest.calculateServerDigest(password, request.getMethod());
+                        String serverDigestMd5 = digest.calculateServerDigest(
+                                password, request.getMethod());
                         if (!serverDigestMd5.equals(digest.getResponse())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -256,7 +302,8 @@ public class RestController implements IResource {
 
                         username = digest.getUsername();
 
-                        valid = SecurityUtilities.authenticate(jdbcTemplate, username, password);
+                        valid = SecurityUtilities.authenticate(jdbcTemplate,
+                                username, password);
                     }
                 } else {
                     username = session.getUsername();
@@ -274,7 +321,16 @@ public class RestController implements IResource {
                     }
                 } else {
                     if (!session.isSignedIn()) {
-                        String password = jdbcTemplate.queryForObject("select " + AbstractUser.PASSWORD + " from " + TableUtilities.getTableName(AbstractUser.class) + " where " + AbstractUser.LOGIN + " = ?", String.class, username);
+                        String password = jdbcTemplate
+                                .queryForObject(
+                                        "select "
+                                                + AbstractUser.PASSWORD
+                                                + " from "
+                                                + TableUtilities
+                                                        .getTableName(AbstractUser.class)
+                                                + " where "
+                                                + AbstractUser.LOGIN + " = ?",
+                                        String.class, username);
                         session.signIn(username, password);
                     }
                 }
@@ -286,7 +342,8 @@ public class RestController implements IResource {
             RequestCycle.get().setResponsePage(InternalErrorPage.class);
             return;
         }
-        AbstractPlugin plugin = application.getPlugin(application.getPluginMapping(info.getClazz().getName()));
+        AbstractPlugin plugin = application.getPlugin(application
+                .getPluginMapping(info.getClazz().getName()));
         if (plugin != null) {
             if (!plugin.isMigrated() || !plugin.isActivated()) {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -296,30 +353,39 @@ public class RestController implements IResource {
         }
 
         if (info.getMethod().getAnnotation(Deprecated.class) != null) {
-        	Boolean allowdeprecated = application.select(PluggableConstants.DEPRECATED, Boolean.class);
-        	if (allowdeprecated == null){
-        		response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
-        		return;
-        	} else {
-        		if (!allowdeprecated){
-        			response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);	
-        			return;
-        		}
-        	}
+            Boolean allowdeprecated = application.select(
+                    PluggableConstants.DEPRECATED, Boolean.class);
+            if (allowdeprecated == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+                return;
+            } else {
+                if (!allowdeprecated) {
+                    response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+                    return;
+                }
+            }
         }
 
-        UserPrincipal principal = new UserPrincipal(username);
+        UserPrincipal principal = null;
+        if (secured != null) {
+            principal = new UserPrincipal(username);
+        }
 
         try {
             // Object result = (Object)
             // MethodUtils.invokeMethod(info.getClazz().newInstance(),
             // info.getMethod().getName(), application, request, response);
-            Object result = (Object) MethodUtils.invokeMethod(info.getClazz().newInstance(), info.getMethod().getName(), application, new HttpServletRequest(jdbcTemplate, principal, request), response);
+            Object result = (Object) MethodUtils.invokeMethod(info.getClazz()
+                    .newInstance(), info.getMethod().getName(), application,
+                    new HttpServletRequest(jdbcTemplate, principal, request),
+                    response);
             if (result == null) {
-                throw new NullPointerException(info.getMethod().getName() + " must return a Result object");
+                throw new NullPointerException(info.getMethod().getName()
+                        + " must return a Result object");
             } else {
                 if (!(result instanceof Result)) {
-                    throw new ClassCastException(info.getMethod().getName() + " must return type is not a Result object");
+                    throw new ClassCastException(info.getMethod().getName()
+                            + " must return type is not a Result object");
                 } else {
                     Result object = (Result) result;
                     response.setContentType(object.getContentType());
@@ -370,11 +436,18 @@ public class RestController implements IResource {
 
         private JdbcTemplate jdbcTemplate;
 
-        public HttpServletRequest(JdbcTemplate jdbcTemplate, UserPrincipal principal, javax.servlet.http.HttpServletRequest request) {
+        public HttpServletRequest(JdbcTemplate jdbcTemplate,
+                UserPrincipal principal,
+                javax.servlet.http.HttpServletRequest request) {
             super(request);
             this.principal = principal;
             this.jdbcTemplate = jdbcTemplate;
-            roles = RoleUtilities.lookupRoles(jdbcTemplate, principal.getName());
+            if (principal != null) {
+                roles = RoleUtilities.lookupRoles(jdbcTemplate,
+                        principal.getName());
+            } else {
+                roles = Collections.emptyList();
+            }
         }
 
         @Override
@@ -418,8 +491,10 @@ public class RestController implements IResource {
 
         public DigestData(String header) {
             section212response = header.substring(7);
-            String[] headerEntries = DigestAuthUtils.splitIgnoringQuotes(section212response, ',');
-            Map<String, String> headerMap = DigestAuthUtils.splitEachArrayElementAndCreateMap(headerEntries, "=", "\"");
+            String[] headerEntries = DigestAuthUtils.splitIgnoringQuotes(
+                    section212response, ',');
+            Map<String, String> headerMap = DigestAuthUtils
+                    .splitEachArrayElementAndCreateMap(headerEntries, "=", "\"");
 
             username = headerMap.get("username");
             realm = headerMap.get("realm");
@@ -432,9 +507,11 @@ public class RestController implements IResource {
 
         }
 
-        public boolean validateAndDecode(String entryPointKey, String expectedRealm) {
+        public boolean validateAndDecode(String entryPointKey,
+                String expectedRealm) {
             // Check all required parameters were supplied (ie RFC 2069)
-            if ((username == null) || (realm == null) || (nonce == null) || (uri == null) || (response == null)) {
+            if ((username == null) || (realm == null) || (nonce == null)
+                    || (uri == null) || (response == null)) {
                 return false;
             }
             // Check all required parameters for an "auth" qop were supplied (ie
@@ -461,8 +538,10 @@ public class RestController implements IResource {
             // Decode nonce from Base64
             // format of nonce is:
             // base64(expirationTime + ":" + md5Hex(expirationTime + ":" + key))
-            String nonceAsPlainText = new String(Base64.decodeBase64(nonce.getBytes()));
-            String[] nonceTokens = StringUtils.delimitedListToStringArray(nonceAsPlainText, ":");
+            String nonceAsPlainText = new String(Base64.decodeBase64(nonce
+                    .getBytes()));
+            String[] nonceTokens = StringUtils.delimitedListToStringArray(
+                    nonceAsPlainText, ":");
 
             if (nonceTokens.length != 2) {
                 return false;
@@ -477,7 +556,8 @@ public class RestController implements IResource {
             }
 
             // Check signature of nonce matches this expiry time
-            String expectedNonceSignature = DigestAuthUtils.md5Hex(nonceExpiryTime + ":" + entryPointKey);
+            String expectedNonceSignature = DigestAuthUtils
+                    .md5Hex(nonceExpiryTime + ":" + entryPointKey);
 
             if (!expectedNonceSignature.equals(nonceTokens[1])) {
                 return false;
@@ -489,7 +569,8 @@ public class RestController implements IResource {
             // Compute the expected response-digest (will be in hex form)
 
             // Don't catch IllegalArgumentException (already checked validity)
-            return DigestAuthUtils.generateDigest(false, username, realm, password, httpMethod, uri, qop, nonce, nc, cnonce);
+            return DigestAuthUtils.generateDigest(false, username, realm,
+                    password, httpMethod, uri, qop, nonce, nc, cnonce);
         }
 
         boolean isNonceExpired() {
@@ -510,7 +591,8 @@ public class RestController implements IResource {
 
         private static final String[] EMPTY_STRING_ARRAY = new String[0];
 
-        static String encodePasswordInA1Format(String username, String realm, String password) {
+        static String encodePasswordInA1Format(String username, String realm,
+                String password) {
             String a1 = username + ":" + realm + ":" + password;
 
             return md5Hex(a1);
@@ -594,7 +676,10 @@ public class RestController implements IResource {
          * @throws IllegalArgumentException
          *             if the supplied qop value is unsupported.
          */
-        static String generateDigest(boolean passwordAlreadyEncoded, String username, String realm, String password, String httpMethod, String uri, String qop, String nonce, String nc, String cnonce) throws IllegalArgumentException {
+        static String generateDigest(boolean passwordAlreadyEncoded,
+                String username, String realm, String password,
+                String httpMethod, String uri, String qop, String nonce,
+                String nc, String cnonce) throws IllegalArgumentException {
             String a1Md5;
             String a2 = httpMethod + ":" + uri;
             String a2Md5 = md5Hex(a2);
@@ -602,7 +687,8 @@ public class RestController implements IResource {
             if (passwordAlreadyEncoded) {
                 a1Md5 = password;
             } else {
-                a1Md5 = DigestAuthUtils.encodePasswordInA1Format(username, realm, password);
+                a1Md5 = DigestAuthUtils.encodePasswordInA1Format(username,
+                        realm, password);
             }
 
             String digest;
@@ -613,9 +699,11 @@ public class RestController implements IResource {
                 digest = a1Md5 + ":" + nonce + ":" + a2Md5;
             } else if ("auth".equals(qop)) {
                 // As per RFC 2617 compliant clients
-                digest = a1Md5 + ":" + nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + a2Md5;
+                digest = a1Md5 + ":" + nonce + ":" + nc + ":" + cnonce + ":"
+                        + qop + ":" + a2Md5;
             } else {
-                throw new IllegalArgumentException("This method does not support a qop: '" + qop + "'");
+                throw new IllegalArgumentException(
+                        "This method does not support a qop: '" + qop + "'");
             }
 
             return md5Hex(digest);
@@ -644,7 +732,8 @@ public class RestController implements IResource {
          * @return a <code>Map</code> representing the array contents, or
          *         <code>null</code> if the array to process was null or empty
          */
-        static Map<String, String> splitEachArrayElementAndCreateMap(String[] array, String delimiter, String removeCharacters) {
+        static Map<String, String> splitEachArrayElementAndCreateMap(
+                String[] array, String delimiter, String removeCharacters) {
             if ((array == null) || (array.length == 0)) {
                 return null;
             }
@@ -666,7 +755,8 @@ public class RestController implements IResource {
                     continue;
                 }
 
-                map.put(splitThisArrayElement[0].trim(), splitThisArrayElement[1].trim());
+                map.put(splitThisArrayElement[0].trim(),
+                        splitThisArrayElement[1].trim());
             }
 
             return map;
@@ -690,10 +780,12 @@ public class RestController implements IResource {
          */
         static String[] split(String toSplit, String delimiter) {
             Assert.hasLength(toSplit, "Cannot split a null or empty string");
-            Assert.hasLength(delimiter, "Cannot use a null or empty delimiter to split a string");
+            Assert.hasLength(delimiter,
+                    "Cannot use a null or empty delimiter to split a string");
 
             if (delimiter.length() != 1) {
-                throw new IllegalArgumentException("Delimiter can only be one character in length");
+                throw new IllegalArgumentException(
+                        "Delimiter can only be one character in length");
             }
 
             int offset = toSplit.indexOf(delimiter);
@@ -722,7 +814,8 @@ public class RestController implements IResource {
 
     private static class Hex {
 
-        private static final char[] HEX = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+        private static final char[] HEX = { '0', '1', '2', '3', '4', '5', '6',
+                '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 
         public static char[] encode(byte[] bytes) {
             final int nBytes = bytes.length;
@@ -743,7 +836,8 @@ public class RestController implements IResource {
             int nChars = s.length();
 
             if (nChars % 2 != 0) {
-                throw new IllegalArgumentException("Hex-encoded string must have an even number of characters");
+                throw new IllegalArgumentException(
+                        "Hex-encoded string must have an even number of characters");
             }
 
             byte[] result = new byte[nChars / 2];
@@ -753,7 +847,8 @@ public class RestController implements IResource {
                 int lsb = Character.digit(s.charAt(i + 1), 16);
 
                 if (msb < 0 || lsb < 0) {
-                    throw new IllegalArgumentException("Non-hex character in input: " + s);
+                    throw new IllegalArgumentException(
+                            "Non-hex character in input: " + s);
                 }
                 result[i / 2] = (byte) ((msb << 4) | lsb);
             }
