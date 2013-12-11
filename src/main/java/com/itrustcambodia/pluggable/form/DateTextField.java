@@ -4,10 +4,10 @@ import java.util.Date;
 
 import org.apache.wicket.markup.head.IHeaderResponse;
 import org.apache.wicket.markup.head.OnDomReadyHeaderItem;
-import org.apache.wicket.markup.html.form.TextField;
 import org.apache.wicket.model.IModel;
 
-public class DateTextField extends TextField<Date> {
+public class DateTextField extends
+        org.apache.wicket.extensions.markup.html.form.DateTextField {
 
     /**
      * 
@@ -16,28 +16,15 @@ public class DateTextField extends TextField<Date> {
 
     private String format;
 
-    public DateTextField(String id, String format) {
-        super(id);
-        this.format = format;
+    public DateTextField(String id, String datePattern) {
+        super(id, datePattern);
+        this.format = datePattern.replaceAll("y", "Y").replaceAll("d", "D");
         initializeInterceptor();
     }
 
-    public DateTextField(String id, Class<Date> type, String format) {
-        super(id, type);
-        this.format = format;
-        initializeInterceptor();
-    }
-
-    public DateTextField(String id, IModel<Date> model, String format) {
-        super(id, model);
-        this.format = format;
-        initializeInterceptor();
-    }
-
-    public DateTextField(String id, IModel<Date> model, Class<Date> type,
-            String format) {
-        super(id, model, type);
-        this.format = format;
+    public DateTextField(String id, IModel<Date> model, String datePattern) {
+        super(id, model, datePattern);
+        this.format = datePattern.replaceAll("y", "Y").replaceAll("d", "D");
         initializeInterceptor();
     }
 
@@ -56,8 +43,7 @@ public class DateTextField extends TextField<Date> {
         StringBuffer jsDate = new StringBuffer();
         jsDate.append("var _" + markupId + " = new Pikaday({");
         jsDate.append("field: document.getElementById('" + markupId + "'),");
-        jsDate.append("format: '"
-                + this.format.replaceAll("y", "Y").replaceAll("d", "D") + "',");
+        jsDate.append("format: '" + this.format + "',");
         jsDate.append("onSelect: function() {");
         jsDate.append("}");
         jsDate.append("})");
