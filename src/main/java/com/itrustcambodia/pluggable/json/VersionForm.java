@@ -1,4 +1,4 @@
-package com.itrustcambodia.pluggable.form;
+package com.itrustcambodia.pluggable.json;
 
 import java.io.Serializable;
 

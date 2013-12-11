@@ -21,7 +21,7 @@ import com.itrustcambodia.pluggable.core.Mount;
 import com.itrustcambodia.pluggable.core.Version;
 import com.itrustcambodia.pluggable.database.EntityRowMapper;
 import com.itrustcambodia.pluggable.entity.ApplicationRegistry;
-import com.itrustcambodia.pluggable.form.VersionForm;
+import com.itrustcambodia.pluggable.json.VersionForm;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.migration.AbstractApplicationMigrator;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;

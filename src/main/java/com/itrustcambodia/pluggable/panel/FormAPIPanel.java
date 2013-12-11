@@ -10,7 +10,7 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 
-import com.itrustcambodia.pluggable.form.ObjectAPIForm;
+import com.itrustcambodia.pluggable.json.ObjectAPIForm;
 
 /**
  * @author Socheat KHAUV

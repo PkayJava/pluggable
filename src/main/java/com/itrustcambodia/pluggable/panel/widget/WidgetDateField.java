@@ -64,7 +64,6 @@ public class WidgetDateField extends Panel {
         jsDate.append("field: document.getElementById('" + this.textField.getMarkupId(true) + "'),");
         jsDate.append("format: '" + this.widget.getTextField().pattern().replaceAll("y", "Y").replaceAll("d", "D") + "',");
         jsDate.append("onSelect: function() {");
-        // js.append("console.log(this.getMoment().format('Do MMMM YYYY'));");
         jsDate.append("}");
         jsDate.append("})");
 

@@ -11,7 +11,7 @@ import org.apache.wicket.model.CompoundPropertyModel;
 import com.itrustcambodia.pluggable.core.ILoginPage;
 import com.itrustcambodia.pluggable.core.Menu;
 import com.itrustcambodia.pluggable.core.Mount;
-import com.itrustcambodia.pluggable.form.LoginForm;
+import com.itrustcambodia.pluggable.json.LoginForm;
 import com.itrustcambodia.pluggable.layout.AbstractLayout;
 import com.itrustcambodia.pluggable.layout.BlankLayout;
 import com.itrustcambodia.pluggable.wicket.authroles.authentication.AuthenticatedWebSession;
