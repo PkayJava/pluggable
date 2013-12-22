@@ -37,18 +37,29 @@ public class MySQLSchema extends Schema {
      * @param name
      *            The name of the schema.
      */
-    public MySQLSchema(JdbcTemplate jdbcTemplate, DbSupport dbSupport, String name) {
+    public MySQLSchema(JdbcTemplate jdbcTemplate, DbSupport dbSupport,
+            String name) {
         super(jdbcTemplate, dbSupport, name);
     }
 
     @Override
     protected boolean doExists() throws SQLException {
-        return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name=?", int.class, name) > 0;
+        return jdbcTemplate
+                .queryForObject(
+                        "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name=?",
+                        int.class, name) > 0;
     }
 
     @Override
     protected boolean doEmpty() throws SQLException {
-        int objectCount = jdbcTemplate.queryForObject("Select " + "(Select count(*) from information_schema.TABLES Where TABLE_SCHEMA=?) + " + "(Select count(*) from information_schema.VIEWS Where TABLE_SCHEMA=?) + " + "(Select count(*) from information_schema.TABLE_CONSTRAINTS Where TABLE_SCHEMA=?) + " + "(Select count(*) from information_schema.ROUTINES Where ROUTINE_SCHEMA=?)", int.class, name, name, name, name);
+        int objectCount = jdbcTemplate
+                .queryForObject(
+                        "Select "
+                                + "(Select count(*) from information_schema.TABLES Where TABLE_SCHEMA=?) + "
+                                + "(Select count(*) from information_schema.VIEWS Where TABLE_SCHEMA=?) + "
+                                + "(Select count(*) from information_schema.TABLE_CONSTRAINTS Where TABLE_SCHEMA=?) + "
+                                + "(Select count(*) from information_schema.ROUTINES Where ROUTINE_SCHEMA=?)",
+                        int.class, name, name, name, name);
         return objectCount == 0;
     }
 
@@ -87,13 +98,17 @@ public class MySQLSchema extends Schema {
      *             when the clean statements could not be generated.
      */
     private List<String> cleanRoutines() throws SQLException {
-        List<Map<String, Object>> routineNames = jdbcTemplate.queryForList("SELECT routine_name, routine_type FROM information_schema.routines WHERE routine_schema=?", name);
+        List<Map<String, Object>> routineNames = jdbcTemplate
+                .queryForList(
+                        "SELECT routine_name, routine_type FROM information_schema.routines WHERE routine_schema=?",
+                        name);
 
         List<String> statements = new ArrayList<String>();
         for (Map<String, Object> row : routineNames) {
             String routineName = (String) row.get("routine_name");
             String routineType = (String) row.get("routine_type");
-            statements.add("DROP " + routineType + " " + dbSupport.quote(name, routineName));
+            statements.add("DROP " + routineType + " "
+                    + dbSupport.quote(name, routineName));
         }
         return statements;
     }
@@ -106,7 +121,10 @@ public class MySQLSchema extends Schema {
      *             when the clean statements could not be generated.
      */
     private List<String> cleanViews() throws SQLException {
-        List<String> viewNames = jdbcTemplate.queryForList("SELECT table_name FROM information_schema.views WHERE table_schema=?", String.class, name);
+        List<String> viewNames = jdbcTemplate
+                .queryForList(
+                        "SELECT table_name FROM information_schema.views WHERE table_schema=?",
+                        String.class, name);
 
         List<String> statements = new ArrayList<String>();
         for (String viewName : viewNames) {
@@ -117,11 +135,15 @@ public class MySQLSchema extends Schema {
 
     @Override
     protected Table[] doAllTables() throws SQLException {
-        List<String> tableNames = jdbcTemplate.queryForList("SELECT table_name FROM information_schema.tables WHERE table_schema=? AND table_type='BASE TABLE'", String.class, name);
+        List<String> tableNames = jdbcTemplate
+                .queryForList(
+                        "SELECT table_name FROM information_schema.tables WHERE table_schema=? AND table_type='BASE TABLE'",
+                        String.class, name);
 
         Table[] tables = new Table[tableNames.size()];
         for (int i = 0; i < tableNames.size(); i++) {
-            tables[i] = new MySQLTable(jdbcTemplate, dbSupport, this, tableNames.get(i));
+            tables[i] = new MySQLTable(jdbcTemplate, dbSupport, this,
+                    tableNames.get(i));
         }
         return tables;
     }
@@ -161,32 +183,47 @@ public class MySQLSchema extends Schema {
         List<String> columns = new ArrayList<String>();
         List<String> idColumns = new ArrayList<String>();
         Map<String, List<String>> uniqueGroups = new HashMap<String, List<String>>();
+        for (String field : fields) {
+            if (field.contains(" ")) {
+                columns.add(field);
+            }
+        }
 
         for (Field field : org.reflections.ReflectionUtils.getAllFields(entity)) {
             Column column = field.getAnnotation(Column.class);
             if (column != null) {
                 if (fields.contains(column.name())) {
                     Id id = field.getAnnotation(Id.class);
-                    GeneratedValue generatedValue = field.getAnnotation(GeneratedValue.class);
+                    GeneratedValue generatedValue = field
+                            .getAnnotation(GeneratedValue.class);
                     Unique unique = field.getAnnotation(Unique.class);
                     String ddl = "";
 
                     if (unique != null) {
-                        if (unique.group() != null && !"".equals(unique.group())) {
+                        if (unique.group() != null
+                                && !"".equals(unique.group())) {
                             if (!uniqueGroups.containsKey(unique.group())) {
-                                uniqueGroups.put(unique.group(), new ArrayList<String>());
+                                uniqueGroups.put(unique.group(),
+                                        new ArrayList<String>());
                             }
-                            List<String> group = uniqueGroups.get(unique.group());
+                            List<String> group = uniqueGroups.get(unique
+                                    .group());
                             group.add(column.name());
-                            ddl = column.name() + " " + column.columnDefinition() + (column.nullable() ? "" : " NOT NULL");
+                            ddl = column.name() + " "
+                                    + column.columnDefinition()
+                                    + (column.nullable() ? "" : " NOT NULL");
                         } else {
-                            ddl = column.name() + " " + column.columnDefinition() + " UNIQUE" + (column.nullable() ? "" : " NOT NULL");
+                            ddl = column.name() + " "
+                                    + column.columnDefinition() + " UNIQUE"
+                                    + (column.nullable() ? "" : " NOT NULL");
                         }
                     } else {
-                        ddl = column.name() + " " + column.columnDefinition() + (column.nullable() ? "" : " NOT NULL");
+                        ddl = column.name() + " " + column.columnDefinition()
+                                + (column.nullable() ? "" : " NOT NULL");
                     }
 
-                    if (generatedValue != null && generatedValue.strategy() == GenerationType.IDENTITY) {
+                    if (generatedValue != null
+                            && generatedValue.strategy() == GenerationType.IDENTITY) {
                         ddl = ddl + " AUTO_INCREMENT";
                     }
                     if (id != null) {
@@ -208,7 +245,8 @@ public class MySQLSchema extends Schema {
         if (uniqueGroups != null && !uniqueGroups.isEmpty()) {
             for (Entry<String, List<String>> item : uniqueGroups.entrySet()) {
                 if (item.getValue() != null && !item.getValue().isEmpty()) {
-                    field.add("UNIQUE (" + StringUtils.join(item.getValue(), ",") + ")");
+                    field.add("UNIQUE ("
+                            + StringUtils.join(item.getValue(), ",") + ")");
                 }
             }
         }
@@ -216,7 +254,8 @@ public class MySQLSchema extends Schema {
             field.add("PRIMARY KEY (" + StringUtils.join(idColumns, ",") + ")");
         }
 
-        jdbcTemplate.execute("CREATE TABLE " + name + "(" + StringUtils.join(field, ",") + ")");
+        jdbcTemplate.execute("CREATE TABLE " + name + "("
+                + StringUtils.join(field, ",") + ")");
     }
 
     @Override
@@ -230,7 +269,8 @@ public class MySQLSchema extends Schema {
         String tableName = TableUtilities.getTableName(entity);
         Field field = null;
         for (Field tmp : org.reflections.ReflectionUtils.getAllFields(entity)) {
-            if (tmp.isAnnotationPresent(Column.class) && name.equals(tmp.getAnnotation(Column.class).name())) {
+            if (tmp.isAnnotationPresent(Column.class)
+                    && name.equals(tmp.getAnnotation(Column.class).name())) {
                 field = tmp;
                 break;
             }
@@ -238,7 +278,14 @@ public class MySQLSchema extends Schema {
         if (field != null) {
             Column column = field.getAnnotation(Column.class);
             if (column != null) {
-                jdbcTemplate.execute("ALTER TABLE " + tableName + " ADD COLUMN " + column.name() + " " + column.columnDefinition());
+                jdbcTemplate.execute("ALTER TABLE " + tableName
+                        + " ADD COLUMN " + column.name() + " "
+                        + column.columnDefinition());
+            }
+        } else {
+            if (name.contains(" ")) {
+                jdbcTemplate.execute("ALTER TABLE " + tableName
+                        + " ADD COLUMN " + name);
             }
         }
     }
