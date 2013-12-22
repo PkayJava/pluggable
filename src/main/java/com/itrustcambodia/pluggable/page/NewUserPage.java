@@ -22,7 +22,6 @@ import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.validation.constraints.NotNull;
 import com.itrustcambodia.pluggable.validation.constraints.Unique;
 import com.itrustcambodia.pluggable.validation.controller.Navigation;
-import com.itrustcambodia.pluggable.validation.type.TextFieldType;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
@@ -38,9 +37,10 @@ public class NewUserPage extends KnownPage {
      */
     private static final long serialVersionUID = 9069154930857964195L;
 
-    @com.itrustcambodia.pluggable.widget.TextField(label = "Login", placeholder = "Login", type = TextFieldType.EMAIL, order = 1)
+    @com.itrustcambodia.pluggable.widget.TextField(label = "Login", placeholder = "Login", order = 1)
     @NotNull
-    @Unique(entity = AbstractUser.class, where = AbstractUser.LOGIN + " = :login")
+    @Unique(entity = AbstractUser.class, where = AbstractUser.LOGIN
+            + " = :login")
     private String login;
 
     @NotNull
@@ -68,7 +68,8 @@ public class NewUserPage extends KnownPage {
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
-        insert.withTableName(TableUtilities.getTableName(application.getUserEntity()));
+        insert.withTableName(TableUtilities.getTableName(application
+                .getUserEntity()));
         insert.usingGeneratedKeyColumns(AbstractUser.ID);
 
         Map<String, Object> fields = new HashMap<String, Object>();
@@ -109,7 +110,8 @@ public class NewUserPage extends KnownPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }
