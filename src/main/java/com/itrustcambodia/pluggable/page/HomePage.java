@@ -14,12 +14,10 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 
 import com.itrustcambodia.pluggable.core.Menu;
-import com.itrustcambodia.pluggable.core.Mount;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 
-@Mount("/h")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_HOME", description = "Access Home Page") })
 public final class HomePage extends WebPage {
 
