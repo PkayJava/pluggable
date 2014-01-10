@@ -26,7 +26,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/p")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_PLUGIN_MANAGEMENT", description = "Access Plugin Management Page") })
-public class PluginManagementPage extends WebPage {
+public final class PluginManagementPage extends WebPage {
 
     private static final long serialVersionUID = -384903579385084809L;
 
@@ -45,9 +45,12 @@ public class PluginManagementPage extends WebPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
-        List<PluginRegistry> plugins = jdbcTemplate.query("select * from " + TableUtilities.getTableName(PluginRegistry.class), new EntityRowMapper<PluginRegistry>(PluginRegistry.class));
+        List<PluginRegistry> plugins = jdbcTemplate.query("select * from "
+                + TableUtilities.getTableName(PluginRegistry.class),
+                new EntityRowMapper<PluginRegistry>(PluginRegistry.class));
 
-        ListView<PluginRegistry> table = new ListView<PluginRegistry>("table", plugins) {
+        ListView<PluginRegistry> table = new ListView<PluginRegistry>("table",
+                plugins) {
 
             private static final long serialVersionUID = -4046518104364999697L;
 
@@ -59,20 +62,26 @@ public class PluginManagementPage extends WebPage {
 
                 AbstractWebApplication application = (AbstractWebApplication) getApplication();
 
-                AbstractPlugin plugin = application.getPlugin(pluginRegistry.getIdentity());
+                AbstractPlugin plugin = application.getPlugin(pluginRegistry
+                        .getIdentity());
 
                 if (pluginRegistry.isPresented()) {
-                    identity = new Fragment("identity", "linkFragment", PluginManagementPage.this);
+                    identity = new Fragment("identity", "linkFragment",
+                            PluginManagementPage.this);
                     BookmarkablePageLink<Void> link = null;
 
-                    link = new BookmarkablePageLink<Void>("link", plugin.getSettingPage());
+                    link = new BookmarkablePageLink<Void>("link",
+                            plugin.getSettingPage());
 
-                    Label label = new Label("label", pluginRegistry.getIdentity());
+                    Label label = new Label("label",
+                            pluginRegistry.getIdentity());
                     link.add(label);
                     identity.add(link);
                 } else {
-                    identity = new Fragment("identity", "labelFragment", PluginManagementPage.this);
-                    Label label = new Label("label", pluginRegistry.getIdentity());
+                    identity = new Fragment("identity", "labelFragment",
+                            PluginManagementPage.this);
+                    Label label = new Label("label",
+                            pluginRegistry.getIdentity());
                     identity.add(label);
                 }
 
@@ -80,10 +89,16 @@ public class PluginManagementPage extends WebPage {
 
                 Label name = new Label("name", pluginRegistry.getName());
                 item.add(name);
-                Label codeVersion = new Label("codeVersion", !pluginRegistry.isPresented() ? "N/A" : ((AbstractPluginMigrator) application.getBean(plugin.getMigrator().getName())).getVersion());
+                Label codeVersion = new Label(
+                        "codeVersion",
+                        !pluginRegistry.isPresented() ? "N/A"
+                                : ((AbstractPluginMigrator) application
+                                        .getBean(plugin.getMigrator().getName()))
+                                        .getVersion());
                 item.add(codeVersion);
 
-                Label databaseVersion = new Label("databaseVersion", pluginRegistry.getVersion());
+                Label databaseVersion = new Label("databaseVersion",
+                        pluginRegistry.getVersion());
                 item.add(databaseVersion);
 
                 String statusString = "N/A";
@@ -91,7 +106,8 @@ public class PluginManagementPage extends WebPage {
                     if (!plugin.isMigrated()) {
                         statusString = "To Be Upgrade";
                     } else {
-                        statusString = pluginRegistry.isActivated() ? "Enabled" : "Disabled";
+                        statusString = pluginRegistry.isActivated() ? "Enabled"
+                                : "Disabled";
                     }
                 } else {
                     statusString = "N/A";

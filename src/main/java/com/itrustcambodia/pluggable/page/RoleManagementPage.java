@@ -24,7 +24,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/r")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_ROLE_MANAGEMENT", description = "Access Role Management Page") })
-public class RoleManagementPage extends WebPage {
+public final class RoleManagementPage extends WebPage {
 
     /**
      * 
@@ -44,7 +44,9 @@ public class RoleManagementPage extends WebPage {
 
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
 
-        List<Role> roles = application.getJdbcTemplate().query("select * from " + TableUtilities.getTableName(Role.class), new EntityRowMapper<Role>(Role.class));
+        List<Role> roles = application.getJdbcTemplate().query(
+                "select * from " + TableUtilities.getTableName(Role.class),
+                new EntityRowMapper<Role>(Role.class));
 
         ListView<Role> table = new ListView<Role>("table", roles) {
 
@@ -54,15 +56,19 @@ public class RoleManagementPage extends WebPage {
             protected void populateItem(ListItem<Role> item) {
                 PageParameters parameters = new PageParameters();
                 parameters.add("roleId", item.getModelObject().getId());
-                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>("nameLink", EditRolePage.class, parameters);
+                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>(
+                        "nameLink", EditRolePage.class, parameters);
                 item.add(nameLink);
 
-                Label nameLabel = new Label("nameLabel", item.getModelObject().getName());
+                Label nameLabel = new Label("nameLabel", item.getModelObject()
+                        .getName());
                 nameLink.add(nameLabel);
 
-                Label description = new Label("description", item.getModelObject().getDescription());
+                Label description = new Label("description", item
+                        .getModelObject().getDescription());
                 item.add(description);
-                Label disable = new Label("disable", item.getModelObject().isDisable());
+                Label disable = new Label("disable", item.getModelObject()
+                        .isDisable());
                 item.add(disable);
             }
         };
@@ -72,7 +78,8 @@ public class RoleManagementPage extends WebPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

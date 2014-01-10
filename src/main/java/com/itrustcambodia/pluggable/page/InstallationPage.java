@@ -39,7 +39,7 @@ import com.itrustcambodia.pluggable.widget.Button;
  * @author Socheat KHAUV
  */
 @Mount("/s")
-public class InstallationPage extends KnownPage {
+public final class InstallationPage extends KnownPage {
 
     private static final long serialVersionUID = -8037168822749291356L;
 
@@ -55,7 +55,9 @@ public class InstallationPage extends KnownPage {
     @NotNull
     private String serverAddress;
 
-    @com.itrustcambodia.pluggable.widget.DropDownChoice(label = "Repository", order = 2, choices = { @Choice(value = PluggableConstants.REPOSITORY_LOCAL, display = PluggableConstants.REPOSITORY_LOCAL), @Choice(value = PluggableConstants.REPOSITORY_AMAZON_S3, display = PluggableConstants.REPOSITORY_AMAZON_S3) })
+    @com.itrustcambodia.pluggable.widget.DropDownChoice(label = "Repository", order = 2, choices = {
+            @Choice(value = PluggableConstants.REPOSITORY_LOCAL, display = PluggableConstants.REPOSITORY_LOCAL),
+            @Choice(value = PluggableConstants.REPOSITORY_AMAZON_S3, display = PluggableConstants.REPOSITORY_AMAZON_S3) })
     @NotNull
     private String repository;
 
@@ -77,7 +79,9 @@ public class InstallationPage extends KnownPage {
     public InstallationPage() {
         initializeInterceptor();
         this.local = FileUtils.getTempDirectoryPath();
-        this.serverAddress = FrameworkUtilities.getServerAddress((HttpServletRequest) getRequest().getContainerRequest());
+        this.serverAddress = FrameworkUtilities
+                .getServerAddress((HttpServletRequest) getRequest()
+                        .getContainerRequest());
     }
 
     private void initializeInterceptor() {
@@ -85,9 +89,14 @@ public class InstallationPage extends KnownPage {
         for (Field field : ReflectionUtils.getAllFields(this.getClass())) {
             if (field.getAnnotation(Setting.class) != null) {
                 Setting setting = field.getAnnotation(Setting.class);
-                if (field.getType() != FileUpload.class && field.getType() != FileUpload[].class) {
+                if (field.getType() != FileUpload.class
+                        && field.getType() != FileUpload[].class) {
                     try {
-                        FieldUtils.writeField(field, this, application.select(setting.name(), field.getType()), true);
+                        FieldUtils.writeField(
+                                field,
+                                this,
+                                application.select(setting.name(),
+                                        field.getType()), true);
                     } catch (IllegalAccessException e) {
                     }
                 }
@@ -102,7 +111,9 @@ public class InstallationPage extends KnownPage {
         org.apache.wicket.markup.html.form.TextField<String> secretKey = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("secretKey");
         org.apache.wicket.markup.html.form.TextField<String> bucketName = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketName");
         org.apache.wicket.markup.html.form.TextField<String> bucketPath = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketPath");
-        getForm().add(new AmazonS3RepositoryValidator(repository, accessKey, secretKey, bucketName, bucketPath));
+        getForm().add(
+                new AmazonS3RepositoryValidator(repository, accessKey,
+                        secretKey, bucketName, bucketPath));
     }
 
     @Override
@@ -122,7 +133,8 @@ public class InstallationPage extends KnownPage {
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
         SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
-        insert.withTableName(TableUtilities.getTableName(application.getUserEntity()));
+        insert.withTableName(TableUtilities.getTableName(application
+                .getUserEntity()));
         insert.usingGeneratedKeyColumns(AbstractUser.ID);
 
         Map<String, Object> fields = new HashMap<String, Object>();
@@ -132,18 +144,27 @@ public class InstallationPage extends KnownPage {
 
         Long userId = insert.executeAndReturnKey(fields).longValue();
 
-        Group group = GroupUtilities.createGroup(jdbcTemplate, AbstractWebApplication.SUPER_ADMIN_GROUP, AbstractWebApplication.SUPER_ADMIN_GROUP, false);
+        Group group = GroupUtilities.createGroup(jdbcTemplate,
+                AbstractWebApplication.SUPER_ADMIN_GROUP,
+                AbstractWebApplication.SUPER_ADMIN_GROUP, false);
         SecurityUtilities.grantAccess(jdbcTemplate, group, userId);
 
         application.update(PluggableConstants.REPOSITORY, this.repository);
         application.update(PluggableConstants.LOCAL, this.local);
-        application.update(PluggableConstants.AWS_S3_ACCESS_KEY, this.accessKey);
-        application.update(PluggableConstants.AWS_S3_SECRET_KEY, this.secretKey);
-        application.update(PluggableConstants.AWS_S3_BUCKET_NAME, this.bucketName);
+        application
+                .update(PluggableConstants.AWS_S3_ACCESS_KEY, this.accessKey);
+        application
+                .update(PluggableConstants.AWS_S3_SECRET_KEY, this.secretKey);
+        application.update(PluggableConstants.AWS_S3_BUCKET_NAME,
+                this.bucketName);
         if (bucketPath != null && !"".equals(bucketPath)) {
-            application.update(PluggableConstants.AWS_S3_BUCKET_PATH, this.bucketPath.endsWith("/") ? this.bucketPath.substring(0, this.bucketPath.length() - 1) : this.bucketPath);
+            application.update(
+                    PluggableConstants.AWS_S3_BUCKET_PATH,
+                    this.bucketPath.endsWith("/") ? this.bucketPath.substring(
+                            0, this.bucketPath.length() - 1) : this.bucketPath);
         }
-        application.update(PluggableConstants.SERVER_ADDRESS, this.serverAddress);
+        application.update(PluggableConstants.SERVER_ADDRESS,
+                this.serverAddress);
         application.update(PluggableConstants.DEBUG, false);
         application.update(PluggableConstants.DEPRECATED, false);
 

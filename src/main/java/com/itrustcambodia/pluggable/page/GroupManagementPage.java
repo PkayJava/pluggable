@@ -25,7 +25,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/g")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_GROUP_MANAGEMENT", description = "Access Group Management Page") })
-public class GroupManagementPage extends WebPage {
+public final class GroupManagementPage extends WebPage {
 
     /**
      * 
@@ -46,9 +46,12 @@ public class GroupManagementPage extends WebPage {
         final AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
-        layout.add(new BookmarkablePageLink<Void>("newGroupPageLink", application.getNewGroupPage()));
+        layout.add(new BookmarkablePageLink<Void>("newGroupPageLink",
+                application.getNewGroupPage()));
 
-        List<Group> groups = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class), new EntityRowMapper<Group>(Group.class));
+        List<Group> groups = jdbcTemplate.query("select * from "
+                + TableUtilities.getTableName(Group.class),
+                new EntityRowMapper<Group>(Group.class));
         ListView<Group> table = new ListView<Group>("table", groups) {
 
             private static final long serialVersionUID = -8045778852435218474L;
@@ -59,16 +62,20 @@ public class GroupManagementPage extends WebPage {
                 PageParameters parameters = new PageParameters();
                 parameters.add("groupId", item.getModelObject().getId());
 
-                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>("nameLink", application.getEditGroupPage(), parameters);
+                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>(
+                        "nameLink", application.getEditGroupPage(), parameters);
                 item.add(nameLink);
 
-                Label nameLabel = new Label("nameLabel", item.getModelObject().getName());
+                Label nameLabel = new Label("nameLabel", item.getModelObject()
+                        .getName());
                 nameLink.add(nameLabel);
 
-                Label description = new Label("description", item.getModelObject().getDescription());
+                Label description = new Label("description", item
+                        .getModelObject().getDescription());
                 item.add(description);
 
-                Label disable = new Label("disable", item.getModelObject().isDisable());
+                Label disable = new Label("disable", item.getModelObject()
+                        .isDisable());
                 item.add(disable);
             }
         };
@@ -79,7 +86,8 @@ public class GroupManagementPage extends WebPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

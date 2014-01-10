@@ -33,14 +33,15 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/m")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_MIGRATION", description = "Access Migration Page") })
-public class MigrationPage extends WebPage {
+public final class MigrationPage extends WebPage {
 
     /**
      * 
      */
     private static final long serialVersionUID = 8329671858656695222L;
 
-    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,###,##0.00###");
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat(
+            "#,###,##0.00###");
 
     @Override
     public String getPageTitle() {
@@ -58,16 +59,28 @@ public class MigrationPage extends WebPage {
         AbstractLayout layout = requestLayout("layout");
         add(layout);
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) application.getBean(application.getMigrator().getName());
+        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) application
+                .getBean(application.getMigrator().getName());
 
-        Label newVersion1 = new Label("newVersion1", DECIMAL_FORMAT.format(migrator.getVersion()));
+        Label newVersion1 = new Label("newVersion1",
+                DECIMAL_FORMAT.format(migrator.getVersion()));
         layout.add(newVersion1);
 
-        Label newVersion2 = new Label("newVersion2", DECIMAL_FORMAT.format(migrator.getVersion()));
+        Label newVersion2 = new Label("newVersion2",
+                DECIMAL_FORMAT.format(migrator.getVersion()));
         layout.add(newVersion2);
 
-        ApplicationRegistry applicationRegistry = application.getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(ApplicationRegistry.class) + " order by " + ApplicationRegistry.VERSION + " desc limit 1", new EntityRowMapper<ApplicationRegistry>(ApplicationRegistry.class));
-        Label oldVersion = new Label("oldVersion", DECIMAL_FORMAT.format(applicationRegistry.getVersion()));
+        ApplicationRegistry applicationRegistry = application
+                .getJdbcTemplate()
+                .queryForObject(
+                        "select * from "
+                                + TableUtilities.getTableName(ApplicationRegistry.class)
+                                + " order by " + ApplicationRegistry.VERSION
+                                + " desc limit 1",
+                        new EntityRowMapper<ApplicationRegistry>(
+                                ApplicationRegistry.class));
+        Label oldVersion = new Label("oldVersion",
+                DECIMAL_FORMAT.format(applicationRegistry.getVersion()));
         layout.add(oldVersion);
 
         Map<Double, String> versions = new TreeMap<Double, String>();
@@ -87,15 +100,18 @@ public class MigrationPage extends WebPage {
             versionInfos.add(0, item);
         }
 
-        ListView<VersionForm> descriptions = new ListView<VersionForm>("descriptions", versionInfos) {
+        ListView<VersionForm> descriptions = new ListView<VersionForm>(
+                "descriptions", versionInfos) {
 
             private static final long serialVersionUID = -139639597325251874L;
 
             @Override
             protected void populateItem(ListItem<VersionForm> item) {
-                Label version = new Label("version", DECIMAL_FORMAT.format(item.getModelObject().getVersion()));
+                Label version = new Label("version", DECIMAL_FORMAT.format(item
+                        .getModelObject().getVersion()));
                 item.add(version);
-                Label description = new Label("description", item.getModelObject().getDescription());
+                Label description = new Label("description", item
+                        .getModelObject().getDescription());
                 item.add(description);
             }
         };
@@ -124,7 +140,8 @@ public class MigrationPage extends WebPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         application.update(PluggableConstants.DEBUG, true);
         application.update(PluggableConstants.DEPRECATED, true);
-        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) application.getBean(application.getMigrator().getName());
+        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) application
+                .getBean(application.getMigrator().getName());
         if (migrator.upgrade()) {
             setResponsePage(application.getSettingPage());
         } else {

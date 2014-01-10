@@ -30,7 +30,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/nu")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_NEW_USER", description = "Access New User Page") })
-public class NewUserPage extends KnownPage {
+public final class NewUserPage extends KnownPage {
 
     /**
      * 

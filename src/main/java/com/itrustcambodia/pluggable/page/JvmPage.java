@@ -23,7 +23,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/jv")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_JVM", description = "Access JVM Page") })
-public class JvmPage extends WebPage {
+public final class JvmPage extends WebPage {
 
     private static final long serialVersionUID = -8711509323120746132L;
 
@@ -41,15 +41,18 @@ public class JvmPage extends WebPage {
             envs.add(env);
         }
 
-        ListView<Map<String, String>> envtable = new ListView<Map<String, String>>("envtable", envs) {
+        ListView<Map<String, String>> envtable = new ListView<Map<String, String>>(
+                "envtable", envs) {
 
             private static final long serialVersionUID = -6077251552007209672L;
 
             @Override
             protected void populateItem(ListItem<Map<String, String>> item) {
-                Label name = new Label("name", item.getModelObject().get("name"));
+                Label name = new Label("name", item.getModelObject()
+                        .get("name"));
                 item.add(name);
-                Label value = new Label("value", item.getModelObject().get("value"));
+                Label value = new Label("value", item.getModelObject().get(
+                        "value"));
                 item.add(value);
             }
         };
@@ -66,15 +69,18 @@ public class JvmPage extends WebPage {
             systems.add(system);
         }
 
-        ListView<Map<String, String>> systemtable = new ListView<Map<String, String>>("systemtable", systems) {
+        ListView<Map<String, String>> systemtable = new ListView<Map<String, String>>(
+                "systemtable", systems) {
 
             private static final long serialVersionUID = -6077251552007209672L;
 
             @Override
             protected void populateItem(ListItem<Map<String, String>> item) {
-                Label name = new Label("name", item.getModelObject().get("name"));
+                Label name = new Label("name", item.getModelObject()
+                        .get("name"));
                 item.add(name);
-                Label value = new Label("value", item.getModelObject().get("value"));
+                Label value = new Label("value", item.getModelObject().get(
+                        "value"));
                 item.add(value);
             }
         };
@@ -89,7 +95,8 @@ public class JvmPage extends WebPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

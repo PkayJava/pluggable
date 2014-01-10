@@ -28,14 +28,15 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/q")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_JOB_MANAGEMENT", description = "Access Job Management Page") })
-public class JobManagementPage extends WebPage {
+public final class JobManagementPage extends WebPage {
 
     /**
      * 
      */
     private static final long serialVersionUID = -8827747090739298001L;
 
-    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss ZZ");
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat(
+            "yyyy-MM-dd HH:mm:ss ZZ");
 
     @Override
     public String getPageTitle() {
@@ -51,7 +52,9 @@ public class JobManagementPage extends WebPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
-        List<Job> jobs = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Job.class), new EntityRowMapper<Job>(Job.class));
+        List<Job> jobs = jdbcTemplate.query(
+                "select * from " + TableUtilities.getTableName(Job.class),
+                new EntityRowMapper<Job>(Job.class));
 
         ListView<Job> table = new ListView<Job>("table", jobs) {
 
@@ -65,13 +68,15 @@ public class JobManagementPage extends WebPage {
                 PageParameters parameters = new PageParameters();
                 parameters.add("jobId", job.getId());
 
-                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>("nameLink", EditJobPage.class, parameters);
+                BookmarkablePageLink<Void> nameLink = new BookmarkablePageLink<Void>(
+                        "nameLink", EditJobPage.class, parameters);
                 item.add(nameLink);
 
                 Label nameLabel = new Label("nameLabel", job.getId());
                 nameLink.add(nameLabel);
 
-                Label description = new Label("description", job.getDescription());
+                Label description = new Label("description",
+                        job.getDescription());
                 item.add(description);
 
                 Label disable = new Label("disable", job.isDisable());
@@ -83,13 +88,20 @@ public class JobManagementPage extends WebPage {
                 Label pause = new Label("pause", job.isPause());
                 item.add(pause);
 
-                Label cron = new Label("cron", job.getNewCron() == null || "".equals(job.getNewCron()) ? job.getCron() : job.getNewCron());
+                Label cron = new Label("cron", job.getNewCron() == null
+                        || "".equals(job.getNewCron()) ? job.getCron()
+                        : job.getNewCron());
                 item.add(cron);
 
-                Label lastError = new Label("lastError", job.getLastError() == null || "".equals(job.getLastError()) ? "N/A" : job.getLastError());
+                Label lastError = new Label("lastError",
+                        job.getLastError() == null
+                                || "".equals(job.getLastError()) ? "N/A"
+                                : job.getLastError());
                 item.add(lastError);
 
-                Label lastProcess = new Label("lastProcess", job.getLastProcess() == null ? "N/A" : DATE_FORMAT.format(job.getLastProcess()));
+                Label lastProcess = new Label("lastProcess",
+                        job.getLastProcess() == null ? "N/A"
+                                : DATE_FORMAT.format(job.getLastProcess()));
                 item.add(lastProcess);
             }
         };
@@ -99,7 +111,8 @@ public class JobManagementPage extends WebPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

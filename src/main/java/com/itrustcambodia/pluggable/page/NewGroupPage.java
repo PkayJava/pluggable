@@ -30,7 +30,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/ng")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_NEW_GROUP", description = "Access New Group Page") })
-public class NewGroupPage extends KnownPage {
+public final class NewGroupPage extends KnownPage {
 
     /**
      * 
@@ -107,7 +107,8 @@ public class NewGroupPage extends KnownPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

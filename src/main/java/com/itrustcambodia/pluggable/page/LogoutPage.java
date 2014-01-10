@@ -10,7 +10,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  * @author Socheat KHAUV
  */
 @Mount("/o")
-public class LogoutPage extends WebPage {
+public final class LogoutPage extends WebPage {
 
     /**
      * 

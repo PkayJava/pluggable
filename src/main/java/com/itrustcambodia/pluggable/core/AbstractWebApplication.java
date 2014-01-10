@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.quartz.CronTrigger;
@@ -37,8 +39,18 @@ import com.itrustcambodia.pluggable.entity.Group;
 import com.itrustcambodia.pluggable.entity.Role;
 import com.itrustcambodia.pluggable.migration.AbstractApplicationMigrator;
 import com.itrustcambodia.pluggable.migration.AbstractPluginMigrator;
+import com.itrustcambodia.pluggable.migration.ApplicationMigrator;
 import com.itrustcambodia.pluggable.page.ApplicationSettingPage;
+import com.itrustcambodia.pluggable.page.DashboardPage;
+import com.itrustcambodia.pluggable.page.EditGroupPage;
+import com.itrustcambodia.pluggable.page.EditUserPage;
+import com.itrustcambodia.pluggable.page.GroupManagementPage;
+import com.itrustcambodia.pluggable.page.HomePage;
 import com.itrustcambodia.pluggable.page.LoginPage;
+import com.itrustcambodia.pluggable.page.NewGroupPage;
+import com.itrustcambodia.pluggable.page.NewUserPage;
+import com.itrustcambodia.pluggable.page.SettingPage;
+import com.itrustcambodia.pluggable.page.UserManagementPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.quartz.Job;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
@@ -55,14 +67,16 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
 /**
  * @author Socheat KHAUV
  */
-public abstract class AbstractWebApplication extends AuthenticatedWebApplication implements Serializable {
+public abstract class AbstractWebApplication extends
+        AuthenticatedWebApplication implements Serializable {
 
     /**
      * 
      */
     private static final long serialVersionUID = -6922345480297586360L;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractWebApplication.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(AbstractWebApplication.class);
 
     public static final String SUPER_ADMIN_GROUP = "Super Admin Group";
 
@@ -112,15 +126,14 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         return LoginPage.class;
     }
 
-    protected abstract DataSource initDataSource();
+    protected abstract DataSource getDataSource();
 
     @Override
     protected void init() {
         super.init();
-
         LOGGER.info("starting application framework");
 
-        DataSource dataSource = initDataSource();
+        DataSource dataSource = getDataSource();
         addBean(DataSource.class, dataSource);
 
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -129,7 +142,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
         addBean(DbSupport.class, support);
 
-        Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting()
+                .create();
         addBean(Gson.class, gson);
 
         Schema schema = support.getSchema();
@@ -144,7 +158,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         }
         for (AbstractPlugin plugin : this.plugins.values()) {
             try {
-                AbstractPluginMigrator migrator = plugin.getMigrator().newInstance();
+                AbstractPluginMigrator migrator = plugin.getMigrator()
+                        .newInstance();
                 migrator.setApplication(this);
                 addBean(plugin.getMigrator().getName(), migrator);
             } catch (InstantiationException e) {
@@ -152,20 +167,31 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
             }
         }
 
-        FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate, plugins);
+        FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
+                plugins);
 
-        FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate, plugins);
+        FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
+                plugins);
 
-        List<String> pooledRoles = jdbcTemplate.queryForList("select " + Role.NAME + " from " + TableUtilities.getTableName(Role.class), String.class);
+        List<String> pooledRoles = jdbcTemplate
+                .queryForList(
+                        "select " + Role.NAME + " from "
+                                + TableUtilities.getTableName(Role.class),
+                        String.class);
 
         Map<String, Role> mapping = new HashMap<String, Role>();
 
-        Group adminGroup = GroupUtilities.createGroup(jdbcTemplate, AbstractWebApplication.SUPER_ADMIN_GROUP, AbstractWebApplication.SUPER_ADMIN_GROUP, false);
+        Group adminGroup = GroupUtilities.createGroup(jdbcTemplate,
+                AbstractWebApplication.SUPER_ADMIN_GROUP,
+                AbstractWebApplication.SUPER_ADMIN_GROUP, false);
         if (roles != null && !roles.isEmpty()) {
             for (Entry<String, String> role : roles.entrySet()) {
                 pooledRoles.remove(role.getKey());
-                mapping.put(role.getKey(), RoleUtilities.createRole(getJdbcTemplate(), role.getKey(), role.getValue(), false));
-                SecurityUtilities.grantAccess(jdbcTemplate, adminGroup, mapping.get(role.getKey()));
+                mapping.put(role.getKey(), RoleUtilities.createRole(
+                        getBean(DataSource.class), role.getKey(),
+                        role.getValue(), false));
+                SecurityUtilities.grantAccess(jdbcTemplate, adminGroup,
+                        mapping.get(role.getKey()));
             }
         }
 
@@ -179,14 +205,17 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         }
 
         for (Entry<String, List<String>> roles : this.groups.entrySet()) {
-            Group group = GroupUtilities.createGroup(jdbcTemplate, roles.getKey(), getPlugin(roles.getKey()).getName(), false);
+            Group group = GroupUtilities.createGroup(jdbcTemplate,
+                    roles.getKey(), getPlugin(roles.getKey()).getName(), false);
             for (String role : roles.getValue()) {
-                SecurityUtilities.grantAccess(jdbcTemplate, group, mapping.get(role));
+                SecurityUtilities.grantAccess(jdbcTemplate, group,
+                        mapping.get(role));
             }
         }
 
         for (Entry<String, Class<? extends WebPage>> page : mounts.entrySet()) {
-            LOGGER.info("mounted {} to {}", page.getKey(), page.getValue().getName());
+            LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
+                    .getName());
             mountPage(page.getKey(), page.getValue());
         }
 
@@ -194,7 +223,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
         getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
 
-        getExceptionSettings().setUnexpectedExceptionDisplay(IExceptionSettings.SHOW_EXCEPTION_PAGE);
+        getExceptionSettings().setUnexpectedExceptionDisplay(
+                IExceptionSettings.SHOW_EXCEPTION_PAGE);
 
         if (plugins != null) {
             for (AbstractPlugin plugin : plugins.values()) {
@@ -204,25 +234,52 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
         SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
 
-        List<String> jobs = jdbcTemplate.queryForList("select " + com.itrustcambodia.pluggable.entity.Job.ID + " from " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class), String.class);
+        List<String> jobs = jdbcTemplate
+                .queryForList(
+                        "select "
+                                + com.itrustcambodia.pluggable.entity.Job.ID
+                                + " from "
+                                + TableUtilities
+                                        .getTableName(com.itrustcambodia.pluggable.entity.Job.class),
+                        String.class);
 
         for (Class<? extends Job> job : this.jobs) {
-            com.itrustcambodia.pluggable.entity.Job meta = JobUtilities.createJob(jdbcTemplate, job);
+            com.itrustcambodia.pluggable.entity.Job meta = JobUtilities
+                    .createJob(jdbcTemplate, job);
             jobs.remove(meta.getId());
             if (!meta.isDisable()) {
                 try {
-                    JobDetail jobDetail = newJob(job).withIdentity(job.getName()).build();
-                    jobDetail.getJobDataMap().put(AbstractWebApplication.class.getName(), this);
-                    CronTrigger trigger = newTrigger().withIdentity(meta.getId()).withSchedule(cronSchedule(meta.getCron())).build();
-                    schedulerFactory.getScheduler().scheduleJob(jobDetail, trigger);
+                    JobDetail jobDetail = newJob(job).withIdentity(
+                            job.getName()).build();
+                    jobDetail.getJobDataMap().put(
+                            AbstractWebApplication.class.getName(), this);
+                    CronTrigger trigger = newTrigger()
+                            .withIdentity(meta.getId())
+                            .withSchedule(cronSchedule(meta.getCron())).build();
+                    schedulerFactory.getScheduler().scheduleJob(jobDetail,
+                            trigger);
                 } catch (SchedulerException e) {
-                    jdbcTemplate.update("update " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class) + " set " + com.itrustcambodia.pluggable.entity.Job.DISABLE + " = ? where " + com.itrustcambodia.pluggable.entity.Job.ID + " = ?", true, meta.getId());
+                    jdbcTemplate
+                            .update("update "
+                                    + TableUtilities
+                                            .getTableName(com.itrustcambodia.pluggable.entity.Job.class)
+                                    + " set "
+                                    + com.itrustcambodia.pluggable.entity.Job.DISABLE
+                                    + " = ? where "
+                                    + com.itrustcambodia.pluggable.entity.Job.ID
+                                    + " = ?", true, meta.getId());
                 }
             }
         }
         if (jobs != null && !jobs.isEmpty()) {
             for (String job : jobs) {
-                jdbcTemplate.update("delete from " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Job.class) + " where " + com.itrustcambodia.pluggable.entity.Job.ID + " = ?", job);
+                jdbcTemplate
+                        .update("delete from "
+                                + TableUtilities
+                                        .getTableName(com.itrustcambodia.pluggable.entity.Job.class)
+                                + " where "
+                                + com.itrustcambodia.pluggable.entity.Job.ID
+                                + " = ?", job);
             }
         }
         try {
@@ -243,20 +300,26 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         return this.plugins.get(identity);
     }
 
-    public abstract String getRealm();
+    public String getRealm() {
+        return "Security";
+    }
 
-    public abstract String getSecretKey();
+    public String getSecretKey() {
+        return DigestUtils.shaHex(this.getClass().getName());
+    }
 
     public void addRole(String name, String description) {
         if (this.roles.containsKey(name)) {
-            throw new WicketRuntimeException("role " + name + " is not avaiable");
+            throw new WicketRuntimeException("role " + name
+                    + " is not avaiable");
         }
         this.roles.put(name, description);
     }
 
     public void addGroup(String name, List<String> roles) {
         if (this.groups.containsKey(name)) {
-            throw new WicketRuntimeException("group " + name + " is not avaiable");
+            throw new WicketRuntimeException("group " + name
+                    + " is not avaiable");
         }
         this.groups.put(name, roles);
     }
@@ -267,14 +330,21 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
     public void addBean(String name, Object bean) {
         if (this.beans.containsKey(name)) {
-            throw new WicketRuntimeException("bean registry is ambiguation " + bean.getClass().getSimpleName() + " with " + this.beans.get(name).getClass().getSimpleName());
+            throw new WicketRuntimeException("bean registry is ambiguation "
+                    + bean.getClass().getSimpleName() + " with "
+                    + this.beans.get(name).getClass().getSimpleName());
         }
         this.beans.put(name, bean);
     }
 
     public void addController(String path, Class<?> clazz, Method method) {
         if (this.controllers.containsKey(path)) {
-            throw new WicketRuntimeException("controller registry is ambiguation " + clazz.getSimpleName() + " with " + this.controllers.get(path).getClazz().getSimpleName());
+            throw new WicketRuntimeException(
+                    "controller registry is ambiguation "
+                            + clazz.getSimpleName()
+                            + " with "
+                            + this.controllers.get(path).getClazz()
+                                    .getSimpleName());
         }
         RequestMappingInfo info = new RequestMappingInfo();
         info.setClazz(clazz);
@@ -288,7 +358,10 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
     public void addMount(String path, Class<? extends WebPage> clazz) {
         if (this.mounts.containsKey(path)) {
-            throw new WicketRuntimeException("page mount registry is ambiguation " + clazz.getSimpleName() + " with " + this.mounts.get(path).getSimpleName());
+            throw new WicketRuntimeException(
+                    "page mount registry is ambiguation "
+                            + clazz.getSimpleName() + " with "
+                            + this.mounts.get(path).getSimpleName());
         }
         this.mounts.put(path, clazz);
     }
@@ -312,7 +385,8 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         DataSource dataSource = getBean(DataSource.class);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         Gson gson = getBean(Gson.class);
-        return RegistryUtilities.select(jdbcTemplate, gson, identity, name, clazz);
+        return RegistryUtilities.select(jdbcTemplate, gson, identity, name,
+                clazz);
     }
 
     public void update(String name, Object value) {
@@ -336,12 +410,18 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
     }
 
     public double getVersion() {
-        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) getBean(getMigrator().getName());
+        AbstractApplicationMigrator migrator = (AbstractApplicationMigrator) getBean(getMigrator()
+                .getName());
         return migrator.getVersion();
     }
 
     public final int getNullType() {
         return nullType;
+    }
+
+    @Override
+    public RuntimeConfigurationType getConfigurationType() {
+        return RuntimeConfigurationType.DEPLOYMENT;
     }
 
     public final void setNullType(int nullType) {
@@ -359,7 +439,15 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
 
     public final boolean isMigrated() {
         try {
-            ApplicationRegistry applicationRegistry = getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(ApplicationRegistry.class) + " order by " + ApplicationRegistry.VERSION + " desc limit 1", new EntityRowMapper<ApplicationRegistry>(ApplicationRegistry.class));
+            ApplicationRegistry applicationRegistry = getJdbcTemplate()
+                    .queryForObject(
+                            "select * from "
+                                    + TableUtilities.getTableName(ApplicationRegistry.class)
+                                    + " order by "
+                                    + ApplicationRegistry.VERSION
+                                    + " desc limit 1",
+                            new EntityRowMapper<ApplicationRegistry>(
+                                    ApplicationRegistry.class));
             return applicationRegistry.getVersion() == getVersion();
         } catch (BadSqlGrammarException e) {
             return false;
@@ -370,29 +458,53 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         return controllers;
     }
 
-    public abstract List<Menu> getApplicationMenus(Roles roles);
+    public List<Menu> getApplicationMenus(Roles roles) {
+        return null;
+    }
 
-    public abstract String[] getPackages();
+    public String[] getPackages() {
+        return new String[] { this.getClass().getPackage().getName() };
+    }
 
-    public abstract Class<? extends WebPage> getHomePage();
+    public Class<? extends WebPage> getHomePage() {
+        return HomePage.class;
+    }
 
-    public abstract Class<? extends WebPage> getDashboardPage();
+    public Class<? extends WebPage> getDashboardPage() {
+        return DashboardPage.class;
+    }
 
-    public abstract Class<? extends AbstractUser> getUserEntity();
+    public Class<? extends AbstractUser> getUserEntity() {
+        return com.itrustcambodia.pluggable.entity.User.class;
+    }
 
-    public abstract Class<? extends WebPage> getNewUserPage();
+    public Class<? extends WebPage> getNewUserPage() {
+        return NewUserPage.class;
+    }
 
-    public abstract Class<? extends WebPage> getEditUserPage();
+    public Class<? extends WebPage> getEditUserPage() {
+        return EditUserPage.class;
+    }
 
-    public abstract Class<? extends WebPage> getUserManagementPage();
+    public Class<? extends WebPage> getUserManagementPage() {
+        return UserManagementPage.class;
+    }
 
-    public abstract Class<? extends WebPage> getNewGroupPage();
+    public Class<? extends WebPage> getNewGroupPage() {
+        return NewGroupPage.class;
+    }
 
-    public abstract Class<? extends WebPage> getEditGroupPage();
-    
-    public abstract Class<? extends WebPage> getGroupManagementPage();
+    public Class<? extends WebPage> getEditGroupPage() {
+        return EditGroupPage.class;
+    }
 
-    public abstract Class<? extends AbstractApplicationMigrator> getMigrator();
+    public Class<? extends WebPage> getGroupManagementPage() {
+        return GroupManagementPage.class;
+    }
+
+    public Class<? extends AbstractApplicationMigrator> getMigrator() {
+        return ApplicationMigrator.class;
+    }
 
     public Schema getSchema() {
         return getBean(Schema.class);
@@ -402,11 +514,22 @@ public abstract class AbstractWebApplication extends AuthenticatedWebApplication
         return getBean(JdbcTemplate.class);
     }
 
-    public abstract Class<? extends ApplicationSettingPage> getSettingPage();
+    public Class<? extends ApplicationSettingPage> getSettingPage() {
+        return SettingPage.class;
+    }
 
-    public abstract String getBrandLabel();
+    public String getBrandLabel() {
+        String label = getServletContext().getServletContextName();
+        if (label == null || "".equals(label)) {
+            return this.getClass().getSimpleName();
+        } else {
+            return label;
+        }
+    }
 
-    public abstract String getPluginLabel();
+    public String getPluginLabel() {
+        return "Plugins";
+    }
 
     public Gson getGson() {
         return getBean(Gson.class);

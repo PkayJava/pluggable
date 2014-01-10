@@ -1,14 +1,10 @@
 package com.itrustcambodia.pluggable.page;
 
-import static org.quartz.TriggerBuilder.newTrigger;
-
 import java.util.List;
 
 import org.apache.wicket.request.mapper.parameter.PageParameters;
-import org.quartz.JobDetail;
 import org.quartz.JobKey;
 import org.quartz.SchedulerException;
-import org.quartz.Trigger;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.itrustcambodia.pluggable.core.AbstractWebApplication;
@@ -35,7 +31,7 @@ import com.itrustcambodia.pluggable.widget.TextField;
  */
 @Mount("/z")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_EDIT_JOB", description = "Access Edit Job Page") })
-public class EditJobPage extends KnownPage {
+public final class EditJobPage extends KnownPage {
 
     /**
      * 
@@ -63,9 +59,13 @@ public class EditJobPage extends KnownPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         this.jobId = parameters.get("jobId").toString();
-        Job job = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Job.class) + " where " + Job.ID + " = ?", new EntityRowMapper<Job>(Job.class), this.jobId);
+        Job job = jdbcTemplate.queryForObject(
+                "select * from " + TableUtilities.getTableName(Job.class)
+                        + " where " + Job.ID + " = ?",
+                new EntityRowMapper<Job>(Job.class), this.jobId);
         this.description = job.getDescription();
-        this.cron = (job.getNewCron() == null || "".equals(job.getNewCron())) ? job.getCron() : job.getNewCron();
+        this.cron = (job.getNewCron() == null || "".equals(job.getNewCron())) ? job
+                .getCron() : job.getNewCron();
         this.disable = job.isDisable();
         this.pause = job.isPause();
         initializeInterceptor();
@@ -82,7 +82,11 @@ public class EditJobPage extends KnownPage {
     public Navigation okay() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
-        jdbcTemplate.update("UPDATE " + TableUtilities.getTableName(Job.class) + " SET " + Job.DESCRIPTION + " = ?, " + Job.DISABLE + " = ?, " + Job.PAUSE + " = ? , " + Job.NEW_CRON + " = ? where " + Job.ID + " = ?", this.description, this.disable, this.pause, this.cron, this.jobId);
+        jdbcTemplate.update("UPDATE " + TableUtilities.getTableName(Job.class)
+                + " SET " + Job.DESCRIPTION + " = ?, " + Job.DISABLE + " = ?, "
+                + Job.PAUSE + " = ? , " + Job.NEW_CRON + " = ? where " + Job.ID
+                + " = ?", this.description, this.disable, this.pause,
+                this.cron, this.jobId);
         return new Navigation(JobManagementPage.class);
     }
 
@@ -90,10 +94,14 @@ public class EditJobPage extends KnownPage {
     public Navigation once() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
-        Job job = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Job.class) + " where " + Job.ID + " = ?", new EntityRowMapper<Job>(Job.class), this.jobId);
+        Job job = jdbcTemplate.queryForObject(
+                "select * from " + TableUtilities.getTableName(Job.class)
+                        + " where " + Job.ID + " = ?",
+                new EntityRowMapper<Job>(Job.class), this.jobId);
         if (Job.Status.IDLE.equals(job.getStatus())) {
             try {
-                application.getSchedulerFactory().getScheduler().triggerJob(JobKey.jobKey(job.getId()));
+                application.getSchedulerFactory().getScheduler()
+                        .triggerJob(JobKey.jobKey(job.getId()));
             } catch (SchedulerException e) {
             }
         }
@@ -113,7 +121,8 @@ public class EditJobPage extends KnownPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

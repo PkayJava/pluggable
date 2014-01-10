@@ -24,7 +24,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/j")
 @AuthorizeInstantiation(roles = { @com.itrustcambodia.pluggable.wicket.authroles.Role(name = "ROLE_PAGE_JSON_DOC", description = "Access Json Doc Page") })
-public class JsonDocPage extends WebPage {
+public final class JsonDocPage extends WebPage {
 
     /**
      * 
@@ -41,8 +41,10 @@ public class JsonDocPage extends WebPage {
         restAPIForms = new ArrayList<RestAPIForm>();
         objectAPIForms = new ArrayList<ObjectAPIForm>();
 
-        HttpServletRequest request = (HttpServletRequest) getRequest().getContainerRequest();
-        RestDocUtilities.fillRestAPI(request, application, restAPIForms, objectAPIForms);
+        HttpServletRequest request = (HttpServletRequest) getRequest()
+                .getContainerRequest();
+        RestDocUtilities.fillRestAPI(request, application, restAPIForms,
+                objectAPIForms);
     }
 
     @Override
@@ -51,10 +53,12 @@ public class JsonDocPage extends WebPage {
         Border layout = requestLayout("layout");
         add(layout);
 
-        RestAPIPanel restAPIPanel = new RestAPIPanel("restAPIPanel", restAPIForms);
+        RestAPIPanel restAPIPanel = new RestAPIPanel("restAPIPanel",
+                restAPIForms);
         layout.add(restAPIPanel);
 
-        FormAPIPanel formAPIPanel = new FormAPIPanel("formAPIPanel", objectAPIForms);
+        FormAPIPanel formAPIPanel = new FormAPIPanel("formAPIPanel",
+                objectAPIForms);
         layout.add(formAPIPanel);
     }
 
@@ -66,7 +70,8 @@ public class JsonDocPage extends WebPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }

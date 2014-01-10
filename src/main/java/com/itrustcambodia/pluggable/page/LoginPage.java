@@ -21,7 +21,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  * @author Socheat KHAUV
  */
 @Mount("/i")
-public class LoginPage extends WebPage implements ILoginPage {
+public final class LoginPage extends WebPage implements ILoginPage {
 
     /**
      * 
@@ -42,7 +42,8 @@ public class LoginPage extends WebPage implements ILoginPage {
         AbstractLayout layout = requestLayout("layout");
         add(layout);
 
-        Form<LoginForm> form = new Form<LoginForm>("loginForm", new CompoundPropertyModel<LoginForm>(this.loginForm));
+        Form<LoginForm> form = new Form<LoginForm>("loginForm",
+                new CompoundPropertyModel<LoginForm>(this.loginForm));
         layout.add(form);
 
         TextField<String> login = new TextField<String>("login");
@@ -67,7 +68,8 @@ public class LoginPage extends WebPage implements ILoginPage {
 
     public void okayClick() {
         AuthenticatedWebSession session = (AuthenticatedWebSession) getSession();
-        boolean valid = session.signIn(this.loginForm.getLogin(), this.loginForm.getPassword());
+        boolean valid = session.signIn(this.loginForm.getLogin(),
+                this.loginForm.getPassword());
         if (valid) {
             continueToOriginalDestination();
             setResponsePage(getApplication().getHomePage());

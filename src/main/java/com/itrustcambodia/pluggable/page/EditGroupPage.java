@@ -30,7 +30,7 @@ import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.ro
  */
 @Mount("/eg")
 @AuthorizeInstantiation(roles = { @Role(name = "ROLE_PAGE_EDIT_GROUP", description = "Access Edit Group Page") })
-public class EditGroupPage extends KnownPage {
+public final class EditGroupPage extends KnownPage {
 
     /**
      * 
@@ -60,7 +60,10 @@ public class EditGroupPage extends KnownPage {
 
         groupId = parameters.get("groupId").toLong();
 
-        Group group = jdbcTemplate.queryForObject("select * from " + TableUtilities.getTableName(Group.class) + " where " + Group.ID + " = ?", new EntityRowMapper<Group>(Group.class), groupId);
+        Group group = jdbcTemplate.queryForObject("select * from "
+                + TableUtilities.getTableName(Group.class) + " where "
+                + Group.ID + " = ?", new EntityRowMapper<Group>(Group.class),
+                groupId);
 
         this.name = group.getName();
 
@@ -69,17 +72,34 @@ public class EditGroupPage extends KnownPage {
 
         StringBuffer ddl = null;
         ddl = new StringBuffer();
-        ddl.append("select role.* from " + TableUtilities.getTableName(com.itrustcambodia.pluggable.entity.Role.class) + " role ");
-        ddl.append("inner join " + TableUtilities.getTableName(RoleGroup.class) + " role_group on role." + com.itrustcambodia.pluggable.entity.Role.ID + " = role_group." + RoleGroup.ROLE_ID + " ");
+        ddl.append("select role.* from "
+                + TableUtilities
+                        .getTableName(com.itrustcambodia.pluggable.entity.Role.class)
+                + " role ");
+        ddl.append("inner join " + TableUtilities.getTableName(RoleGroup.class)
+                + " role_group on role."
+                + com.itrustcambodia.pluggable.entity.Role.ID
+                + " = role_group." + RoleGroup.ROLE_ID + " ");
         ddl.append("where role_group." + RoleGroup.GROUP_ID + " = ?");
-        List<com.itrustcambodia.pluggable.entity.Role> roles = jdbcTemplate.query(ddl.toString(), new EntityRowMapper<com.itrustcambodia.pluggable.entity.Role>(com.itrustcambodia.pluggable.entity.Role.class), groupId);
-        this.roles = roles.toArray(new com.itrustcambodia.pluggable.entity.Role[roles.size()]);
+        List<com.itrustcambodia.pluggable.entity.Role> roles = jdbcTemplate
+                .query(ddl.toString(),
+                        new EntityRowMapper<com.itrustcambodia.pluggable.entity.Role>(
+                                com.itrustcambodia.pluggable.entity.Role.class),
+                        groupId);
+        this.roles = roles
+                .toArray(new com.itrustcambodia.pluggable.entity.Role[roles
+                        .size()]);
 
         ddl = new StringBuffer();
-        ddl.append("select user.* from " + TableUtilities.getTableName(application.getUserEntity()) + " user ");
-        ddl.append("inner join " + TableUtilities.getTableName(UserGroup.class) + " user_group on user." + AbstractUser.ID + " = user_group." + UserGroup.USER_ID + " ");
+        ddl.append("select user.* from "
+                + TableUtilities.getTableName(application.getUserEntity())
+                + " user ");
+        ddl.append("inner join " + TableUtilities.getTableName(UserGroup.class)
+                + " user_group on user." + AbstractUser.ID + " = user_group."
+                + UserGroup.USER_ID + " ");
         ddl.append("where user_group." + UserGroup.GROUP_ID + " = ?");
-        List<AbstractUser> users = jdbcTemplate.query(ddl.toString(), new EntityRowMapper<AbstractUser>(AbstractUser.class), groupId);
+        List<AbstractUser> users = jdbcTemplate.query(ddl.toString(),
+                new EntityRowMapper<AbstractUser>(AbstractUser.class), groupId);
         this.users = users.toArray(new AbstractUser[users.size()]);
     }
 
@@ -93,9 +113,17 @@ public class EditGroupPage extends KnownPage {
     public Navigation deleteClick() {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
-        jdbcTemplate.update("delete from " + TableUtilities.getTableName(UserGroup.class) + " where " + UserGroup.GROUP_ID + " = ?", this.groupId);
-        jdbcTemplate.update("delete from " + TableUtilities.getTableName(Group.class) + " where " + Group.ID + " = ?", this.groupId);
-        jdbcTemplate.update("delete from " + TableUtilities.getTableName(RoleGroup.class) + " where " + RoleGroup.GROUP_ID + " = ?", this.groupId);
+        jdbcTemplate
+                .update("delete from "
+                        + TableUtilities.getTableName(UserGroup.class)
+                        + " where " + UserGroup.GROUP_ID + " = ?", this.groupId);
+        jdbcTemplate.update(
+                "delete from " + TableUtilities.getTableName(Group.class)
+                        + " where " + Group.ID + " = ?", this.groupId);
+        jdbcTemplate
+                .update("delete from "
+                        + TableUtilities.getTableName(RoleGroup.class)
+                        + " where " + RoleGroup.GROUP_ID + " = ?", this.groupId);
         return new Navigation(application.getGroupManagementPage());
     }
 
@@ -104,10 +132,16 @@ public class EditGroupPage extends KnownPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         StringBuffer ddl = new StringBuffer();
-        ddl.append("update " + TableUtilities.getTableName(Group.class) + " set " + Group.DESCRIPTION + " = ?, " + Group.DISABLE + " = ? where " + Group.ID + " = ?");
-        jdbcTemplate.update(ddl.toString(), this.description, this.disable, this.groupId);
+        ddl.append("update " + TableUtilities.getTableName(Group.class)
+                + " set " + Group.DESCRIPTION + " = ?, " + Group.DISABLE
+                + " = ? where " + Group.ID + " = ?");
+        jdbcTemplate.update(ddl.toString(), this.description, this.disable,
+                this.groupId);
 
-        jdbcTemplate.update("delete from " + TableUtilities.getTableName(RoleGroup.class) + " where " + RoleGroup.GROUP_ID + " = ?", this.groupId);
+        jdbcTemplate
+                .update("delete from "
+                        + TableUtilities.getTableName(RoleGroup.class)
+                        + " where " + RoleGroup.GROUP_ID + " = ?", this.groupId);
 
         if (roles != null && roles.length > 0) {
             SimpleJdbcInsert mapping = new SimpleJdbcInsert(jdbcTemplate);
@@ -120,7 +154,10 @@ public class EditGroupPage extends KnownPage {
             }
         }
 
-        jdbcTemplate.update("delete from " + TableUtilities.getTableName(UserGroup.class) + " where " + UserGroup.GROUP_ID + " = ?", this.groupId);
+        jdbcTemplate
+                .update("delete from "
+                        + TableUtilities.getTableName(UserGroup.class)
+                        + " where " + UserGroup.GROUP_ID + " = ?", this.groupId);
         if (users != null && users.length > 0) {
             SimpleJdbcInsert mapping = new SimpleJdbcInsert(jdbcTemplate);
             mapping.withTableName(TableUtilities.getTableName(UserGroup.class));
@@ -142,7 +179,8 @@ public class EditGroupPage extends KnownPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
 }
