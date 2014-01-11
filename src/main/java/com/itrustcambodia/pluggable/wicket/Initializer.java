@@ -35,7 +35,8 @@ import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
  */
 public class Initializer implements IInitializer {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Initializer.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(Initializer.class);
 
     @Override
     public void init(Application application) {
@@ -43,50 +44,73 @@ public class Initializer implements IInitializer {
         if (application instanceof AbstractWebApplication) {
             List<String> packages = new ArrayList<String>();
             packages.add("com.itrustcambodia.pluggable");
-            packages.addAll(Arrays.asList(((AbstractWebApplication) application).getPackages()));
+            packages.addAll(Arrays
+                    .asList(((AbstractWebApplication) application)
+                            .getPackages()));
 
             if (packages != null && !packages.isEmpty()) {
 
-                Map<String, String> roles = FrameworkUtilities.lookupRoles(packages.toArray(new String[packages.size()]));
+                Map<String, String> roles = FrameworkUtilities
+                        .lookupRoles(packages.toArray(new String[packages
+                                .size()]));
                 if (roles != null && !roles.isEmpty()) {
                     for (Entry<String, String> role : roles.entrySet()) {
-                        ((AbstractWebApplication) application).addRole(role.getKey(), role.getValue());
+                        ((AbstractWebApplication) application).addRole(
+                                role.getKey(), role.getValue());
                     }
                 }
 
                 for (String javaPackage : packages) {
                     Reflections reflections = new Reflections(javaPackage);
 
-                    Set<Class<?>> pages = reflections.getTypesAnnotatedWith(Mount.class);
+                    Set<Class<?>> pages = reflections
+                            .getTypesAnnotatedWith(Mount.class);
                     if (pages != null && !pages.isEmpty()) {
                         for (Class<?> page : pages) {
                             Mount mount = page.getAnnotation(Mount.class);
                             if (mount.value().equals("")) {
-                                throw new WicketRuntimeException(page.getSimpleName() + " mount page is not allow empty");
+                                throw new WicketRuntimeException(
+                                        page.getSimpleName()
+                                                + " mount page is not allow empty");
                             }
                             if (mount.value().equals("/")) {
-                                throw new WicketRuntimeException(page.getSimpleName() + " mount page is not allow with /");
+                                throw new WicketRuntimeException(
+                                        page.getSimpleName()
+                                                + " mount page is not allow with /");
                             }
-                            if (mount.value().startsWith("/" + RestController.PATH)) {
-                                throw new WicketRuntimeException(page.getSimpleName() + " mount page is not allow start with /" + RestController.PATH);
+                            if (mount.value().startsWith(
+                                    "/" + RestController.PATH)) {
+                                throw new WicketRuntimeException(
+                                        page.getSimpleName()
+                                                + " mount page is not allow start with /"
+                                                + RestController.PATH);
                             }
-                            ((AbstractWebApplication) application).addMount(mount.value(), (Class<? extends WebPage>) page);
+                            ((AbstractWebApplication) application).addMount(
+                                    mount.value(),
+                                    (Class<? extends WebPage>) page);
                         }
                     }
 
-                    Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
+                    Set<Class<?>> controllers = reflections
+                            .getTypesAnnotatedWith(Controller.class);
                     if (controllers != null && !controllers.isEmpty()) {
                         for (Class<?> controller : controllers) {
-                            for (Method method : ReflectionUtils.getAllMethods(controller)) {
+                            for (Method method : ReflectionUtils
+                                    .getAllMethods(controller)) {
                                 if (method.getAnnotation(RequestMapping.class) != null) {
-                                    RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
-                                    ((AbstractWebApplication) application).addController(requestMapping.value(), controller, method);
+                                    RequestMapping requestMapping = method
+                                            .getAnnotation(RequestMapping.class);
+                                    ((AbstractWebApplication) application)
+                                            .addController(
+                                                    requestMapping.value(),
+                                                    controller, method);
                                 }
                             }
                         }
                     }
 
-                    Set<Class<? extends Job>> jobs = reflections.getSubTypesOf(Job.class);
+                    Set<Class<? extends Job>> jobs = reflections
+                            .getSubTypesOf(Job.class);
                     for (Class<? extends Job> job : jobs) {
                         if (!Modifier.isAbstract(job.getModifiers())) {
                             ((AbstractWebApplication) application).addJob(job);
@@ -96,10 +120,12 @@ public class Initializer implements IInitializer {
             }
 
             SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            ((AbstractWebApplication) application).addBean(SchedulerFactory.class, schedulerFactory);
+            ((AbstractWebApplication) application).addBean(
+                    SchedulerFactory.class, schedulerFactory);
         }
 
-        ResourceReference reference = new ResourceReference(RestController.class.getName()) {
+        ResourceReference reference = new ResourceReference(
+                RestController.class.getName()) {
             /**
              * 
              */
@@ -114,10 +140,12 @@ public class Initializer implements IInitializer {
         };
 
         if (reference.canBeRegistered()) {
-            application.getResourceReferenceRegistry().registerResourceReference(reference);
+            application.getResourceReferenceRegistry()
+                    .registerResourceReference(reference);
         }
 
-        application.getRootRequestMapperAsCompound().add(new ResourceMapper("/" + RestController.PATH, reference));
+        application.getRootRequestMapperAsCompound().add(
+                new ResourceMapper("/" + RestController.PATH, reference));
     }
 
     @Override

@@ -7,6 +7,7 @@ import static org.quartz.TriggerBuilder.newTrigger;
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,7 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.quartz.CronTrigger;
 import org.quartz.JobDetail;
+import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.slf4j.Logger;
@@ -98,21 +100,75 @@ public abstract class AbstractWebApplication extends
 
     public static final String JVM_LABEL = "JVM";
 
-    private final Map<String, AbstractPlugin> plugins = new HashMap<String, AbstractPlugin>();
+    private Map<String, String> getPluginMapping() {
+        Map<String, String> pluginMapping = (Map<String, String>) getServletContext()
+                .getAttribute("PluginMapping");
+        if (pluginMapping == null) {
+            pluginMapping = new HashMap<String, String>();
+            getServletContext().setAttribute("PluginMapping", pluginMapping);
+        }
+        return pluginMapping;
+    }
 
-    private final Map<String, String> pluginMapping = new HashMap<String, String>();
+    private Map<String, Class<? extends WebPage>> getMounts() {
+        Map<String, Class<? extends WebPage>> mounts = (Map<String, Class<? extends WebPage>>) getServletContext()
+                .getAttribute("Mounts");
+        if (mounts == null) {
+            mounts = new HashMap<String, Class<? extends WebPage>>();
+            getServletContext().setAttribute("Mounts", mounts);
+        }
+        return mounts;
+    }
 
-    private final Map<String, Class<? extends WebPage>> mounts = new HashMap<String, Class<? extends WebPage>>();
+    public Map<String, RequestMappingInfo> getControllers() {
+        Map<String, RequestMappingInfo> controllers = (Map<String, RequestMappingInfo>) getServletContext()
+                .getAttribute("Controllers");
+        if (controllers == null) {
+            controllers = new HashMap<String, RequestMappingInfo>();
+            getServletContext().setAttribute("Controllers", controllers);
+        }
+        return controllers;
+    }
 
-    private final Map<String, RequestMappingInfo> controllers = new HashMap<String, RequestMappingInfo>();
+    public Map<String, Object> getBeans() {
+        Map<String, Object> beans = (Map<String, Object>) getServletContext()
+                .getAttribute("Beans");
+        if (beans == null) {
+            beans = new HashMap<String, Object>();
+            getServletContext().setAttribute("Beans", beans);
+        }
+        return beans;
+    }
 
-    private final Map<String, Object> beans = new HashMap<String, Object>();
+    private Map<String, String> getRoles() {
+        Map<String, String> roles = (Map<String, String>) getServletContext()
+                .getAttribute("Roles");
+        if (roles == null) {
+            roles = new HashMap<String, String>();
+            getServletContext().setAttribute("Roles", roles);
+        }
+        return roles;
+    }
 
-    private final Map<String, String> roles = new HashMap<String, String>();
+    private Map<String, List<String>> getGroups() {
+        Map<String, List<String>> groups = (Map<String, List<String>>) getServletContext()
+                .getAttribute("Groups");
+        if (groups == null) {
+            groups = new HashMap<String, List<String>>();
+            getServletContext().setAttribute("Groups", groups);
+        }
+        return groups;
+    }
 
-    private final Map<String, List<String>> groups = new HashMap<String, List<String>>();
-
-    private final List<Class<? extends Job>> jobs = new ArrayList<Class<? extends Job>>();
+    private List<Class<? extends Job>> getJobs() {
+        List<Class<? extends Job>> jobs = (List<Class<? extends Job>>) getServletContext()
+                .getAttribute("Jobs");
+        if (jobs == null) {
+            jobs = new ArrayList<Class<? extends Job>>();
+            getServletContext().setAttribute("Jobs", jobs);
+        }
+        return jobs;
+    }
 
     private int nullType;
 
@@ -156,7 +212,9 @@ public abstract class AbstractWebApplication extends
         } catch (InstantiationException e) {
         } catch (IllegalAccessException e) {
         }
-        for (AbstractPlugin plugin : this.plugins.values()) {
+
+        Map<String, AbstractPlugin> plugins = getPlugins();
+        for (AbstractPlugin plugin : plugins.values()) {
             try {
                 AbstractPluginMigrator migrator = plugin.getMigrator()
                         .newInstance();
@@ -184,8 +242,8 @@ public abstract class AbstractWebApplication extends
         Group adminGroup = GroupUtilities.createGroup(jdbcTemplate,
                 AbstractWebApplication.SUPER_ADMIN_GROUP,
                 AbstractWebApplication.SUPER_ADMIN_GROUP, false);
-        if (roles != null && !roles.isEmpty()) {
-            for (Entry<String, String> role : roles.entrySet()) {
+        if (getRoles() != null && !getRoles().isEmpty()) {
+            for (Entry<String, String> role : getRoles().entrySet()) {
                 pooledRoles.remove(role.getKey());
                 mapping.put(role.getKey(), RoleUtilities.createRole(
                         getBean(DataSource.class), role.getKey(),
@@ -204,7 +262,7 @@ public abstract class AbstractWebApplication extends
             pooledRoles.clear();
         }
 
-        for (Entry<String, List<String>> roles : this.groups.entrySet()) {
+        for (Entry<String, List<String>> roles : getGroups().entrySet()) {
             Group group = GroupUtilities.createGroup(jdbcTemplate,
                     roles.getKey(), getPlugin(roles.getKey()).getName(), false);
             for (String role : roles.getValue()) {
@@ -213,7 +271,8 @@ public abstract class AbstractWebApplication extends
             }
         }
 
-        for (Entry<String, Class<? extends WebPage>> page : mounts.entrySet()) {
+        for (Entry<String, Class<? extends WebPage>> page : getMounts()
+                .entrySet()) {
             LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
                     .getName());
             mountPage(page.getKey(), page.getValue());
@@ -243,7 +302,7 @@ public abstract class AbstractWebApplication extends
                                         .getTableName(com.itrustcambodia.pluggable.entity.Job.class),
                         String.class);
 
-        for (Class<? extends Job> job : this.jobs) {
+        for (Class<? extends Job> job : getJobs()) {
             com.itrustcambodia.pluggable.entity.Job meta = JobUtilities
                     .createJob(jdbcTemplate, job);
             jobs.remove(meta.getId());
@@ -288,16 +347,27 @@ public abstract class AbstractWebApplication extends
         }
     }
 
+    @SuppressWarnings("unchecked")
+    private Map<String, AbstractPlugin> getPlugins() {
+        Map<String, AbstractPlugin> plugins = (Map<String, AbstractPlugin>) getServletContext()
+                .getAttribute("Plugins");
+        if (plugins == null) {
+            plugins = new HashMap<String, AbstractPlugin>();
+            getServletContext().setAttribute("Plugins", plugins);
+        }
+        return plugins;
+    }
+
     public SchedulerFactory getSchedulerFactory() {
         return getBean(SchedulerFactory.class);
     }
 
     public void addJob(Class<? extends Job> job) {
-        this.jobs.add(job);
+        getJobs().add(job);
     }
 
     public AbstractPlugin getPlugin(String identity) {
-        return this.plugins.get(identity);
+        return getPlugins().get(identity);
     }
 
     public String getRealm() {
@@ -309,19 +379,19 @@ public abstract class AbstractWebApplication extends
     }
 
     public void addRole(String name, String description) {
-        if (this.roles.containsKey(name)) {
+        if (getRoles().containsKey(name)) {
             throw new WicketRuntimeException("role " + name
                     + " is not avaiable");
         }
-        this.roles.put(name, description);
+        getRoles().put(name, description);
     }
 
     public void addGroup(String name, List<String> roles) {
-        if (this.groups.containsKey(name)) {
+        if (getGroups().containsKey(name)) {
             throw new WicketRuntimeException("group " + name
                     + " is not avaiable");
         }
-        this.groups.put(name, roles);
+        getGroups().put(name, roles);
     }
 
     public <T> void addBean(Class<T> clazz, T bean) {
@@ -329,49 +399,49 @@ public abstract class AbstractWebApplication extends
     }
 
     public void addBean(String name, Object bean) {
-        if (this.beans.containsKey(name)) {
+        if (getBeans().containsKey(name)) {
             throw new WicketRuntimeException("bean registry is ambiguation "
                     + bean.getClass().getSimpleName() + " with "
-                    + this.beans.get(name).getClass().getSimpleName());
+                    + getBeans().get(name).getClass().getSimpleName());
         }
-        this.beans.put(name, bean);
+        getBeans().put(name, bean);
     }
 
     public void addController(String path, Class<?> clazz, Method method) {
-        if (this.controllers.containsKey(path)) {
+        if (getControllers().containsKey(path)) {
             throw new WicketRuntimeException(
                     "controller registry is ambiguation "
                             + clazz.getSimpleName()
                             + " with "
-                            + this.controllers.get(path).getClazz()
+                            + getControllers().get(path).getClazz()
                                     .getSimpleName());
         }
         RequestMappingInfo info = new RequestMappingInfo();
         info.setClazz(clazz);
         info.setMethod(method);
-        this.controllers.put(path, info);
+        getControllers().put(path, info);
     }
 
     public void addPlugin(String identity, AbstractPlugin plugin) {
-        this.plugins.put(identity, plugin);
+        getPlugins().put(identity, plugin);
     }
 
     public void addMount(String path, Class<? extends WebPage> clazz) {
-        if (this.mounts.containsKey(path)) {
+        if (getMounts().containsKey(path)) {
             throw new WicketRuntimeException(
                     "page mount registry is ambiguation "
                             + clazz.getSimpleName() + " with "
-                            + this.mounts.get(path).getSimpleName());
+                            + getMounts().get(path).getSimpleName());
         }
-        this.mounts.put(path, clazz);
+        getMounts().put(path, clazz);
     }
 
     public void addPluginMapping(String clazz, String identity) {
-        this.pluginMapping.put(clazz, identity);
+        getPluginMapping().put(clazz, identity);
     }
 
     public String getPluginMapping(String clazz) {
-        return this.pluginMapping.get(clazz);
+        return getPluginMapping().get(clazz);
     }
 
     public void update(String identity, String name, Object value) {
@@ -406,7 +476,7 @@ public abstract class AbstractWebApplication extends
     public List<Menu> getPluginMenus() {
         DataSource dataSource = getBean(DataSource.class);
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        return FrameworkUtilities.getPluginMenus(jdbcTemplate, plugins);
+        return FrameworkUtilities.getPluginMenus(jdbcTemplate, getPlugins());
     }
 
     public double getVersion() {
@@ -429,7 +499,7 @@ public abstract class AbstractWebApplication extends
     }
 
     public Object getBean(String name) {
-        return this.beans.get(name);
+        return getBeans().get(name);
     }
 
     @SuppressWarnings("unchecked")
@@ -452,10 +522,6 @@ public abstract class AbstractWebApplication extends
         } catch (BadSqlGrammarException e) {
             return false;
         }
-    }
-
-    public Map<String, RequestMappingInfo> getControllers() {
-        return controllers;
     }
 
     public List<Menu> getApplicationMenus(Roles roles) {
@@ -539,10 +605,22 @@ public abstract class AbstractWebApplication extends
     protected void onDestroy() {
         super.onDestroy();
         SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
-        try {
-            schedulerFactory.getScheduler().shutdown(false);
-        } catch (SchedulerException e) {
+        if (schedulerFactory != null) {
+            Collection<Scheduler> schedulers = null;
+            try {
+                schedulers = schedulerFactory.getAllSchedulers();
+            } catch (SchedulerException e) {
+                e.printStackTrace();
+            }
+            if (schedulers != null && !schedulers.isEmpty()) {
+                for (Scheduler scheduler : schedulers) {
+                    try {
+                        scheduler.shutdown(true);
+                    } catch (SchedulerException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         }
     }
-
 }
