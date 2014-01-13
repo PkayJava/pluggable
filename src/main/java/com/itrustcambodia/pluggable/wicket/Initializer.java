@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
 import org.apache.wicket.Application;
@@ -15,6 +16,7 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.core.request.mapper.ResourceMapper;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
+import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.quartz.impl.StdSchedulerFactory;
 import org.reflections.ReflectionUtils;
@@ -119,9 +121,21 @@ public class Initializer implements IInitializer {
                 }
             }
 
-            SchedulerFactory schedulerFactory = new StdSchedulerFactory();
-            ((AbstractWebApplication) application).addBean(
-                    SchedulerFactory.class, schedulerFactory);
+            SchedulerFactory schedulerFactory = null;
+            try {
+                Properties properties = new java.util.Properties();
+                properties
+                        .put(StdSchedulerFactory.PROP_SCHED_MAKE_SCHEDULER_THREAD_DAEMON,
+                                "true");
+                properties.put("org.quartz.threadPool.makeThreadsDaemons",
+                        "true");
+                properties.put("org.quartz.threadPool.threadCount", "5");
+
+                schedulerFactory = new StdSchedulerFactory(properties);
+                ((AbstractWebApplication) application).addBean(
+                        SchedulerFactory.class, schedulerFactory);
+            } catch (SchedulerException e) {
+            }
         }
 
         ResourceReference reference = new ResourceReference(
