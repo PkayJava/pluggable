@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Properties;
 import java.util.Set;
 
 import org.apache.wicket.Application;
@@ -16,9 +15,6 @@ import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.core.request.mapper.ResourceMapper;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.request.resource.ResourceReference;
-import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
-import org.quartz.impl.StdSchedulerFactory;
 import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -41,6 +37,7 @@ public class Initializer implements IInitializer {
             .getLogger(Initializer.class);
 
     @Override
+    @SuppressWarnings("unchecked")
     public void init(Application application) {
         LOGGER.info("starting framework initializer");
         if (application instanceof AbstractWebApplication) {
@@ -114,27 +111,12 @@ public class Initializer implements IInitializer {
                     Set<Class<? extends Job>> jobs = reflections
                             .getSubTypesOf(Job.class);
                     for (Class<? extends Job> job : jobs) {
-                        if (!Modifier.isAbstract(job.getModifiers())) {
+                        if (!Modifier.isAbstract(job.getModifiers())
+                                && job.isAnnotationPresent(com.itrustcambodia.pluggable.quartz.Scheduled.class)) {
                             ((AbstractWebApplication) application).addJob(job);
                         }
                     }
                 }
-            }
-
-            SchedulerFactory schedulerFactory = null;
-            try {
-                Properties properties = new java.util.Properties();
-                properties
-                        .put(StdSchedulerFactory.PROP_SCHED_MAKE_SCHEDULER_THREAD_DAEMON,
-                                "true");
-                properties.put("org.quartz.threadPool.makeThreadsDaemons",
-                        "true");
-                properties.put("org.quartz.threadPool.threadCount", "5");
-
-                schedulerFactory = new StdSchedulerFactory(properties);
-                ((AbstractWebApplication) application).addBean(
-                        SchedulerFactory.class, schedulerFactory);
-            } catch (SchedulerException e) {
             }
         }
 

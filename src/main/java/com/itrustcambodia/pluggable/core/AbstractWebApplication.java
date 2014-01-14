@@ -1,13 +1,8 @@
 package com.itrustcambodia.pluggable.core;
 
-import static org.quartz.CronScheduleBuilder.cronSchedule;
-import static org.quartz.JobBuilder.newJob;
-import static org.quartz.TriggerBuilder.newTrigger;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +14,13 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.settings.IExceptionSettings;
-import org.quartz.CronTrigger;
-import org.quartz.JobDetail;
-import org.quartz.Scheduler;
-import org.quartz.SchedulerException;
 import org.quartz.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -55,6 +48,7 @@ import com.itrustcambodia.pluggable.page.SettingPage;
 import com.itrustcambodia.pluggable.page.UserManagementPage;
 import com.itrustcambodia.pluggable.page.WebPage;
 import com.itrustcambodia.pluggable.quartz.Job;
+import com.itrustcambodia.pluggable.quartz.Scheduled;
 import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.GroupUtilities;
 import com.itrustcambodia.pluggable.utilities.JobUtilities;
@@ -108,6 +102,22 @@ public abstract class AbstractWebApplication extends
             getServletContext().setAttribute("PluginMapping", pluginMapping);
         }
         return pluginMapping;
+    }
+
+    private ScheduledTaskRegistrar getScheduledTaskRegistrar() {
+        ScheduledTaskRegistrar registrar = (ScheduledTaskRegistrar) getServletContext()
+                .getAttribute("ScheduledTaskRegistrar");
+        if (registrar == null) {
+            registrar = new ScheduledTaskRegistrar();
+            ThreadPoolTaskScheduler executor = new ThreadPoolTaskScheduler();
+            executor.setDaemon(true);
+            executor.setPoolSize(10);
+            executor.afterPropertiesSet();
+            registrar.setTaskScheduler(executor);
+            getServletContext().setAttribute("ScheduledTaskRegistrar",
+                    registrar);
+        }
+        return registrar;
     }
 
     private Map<String, Class<? extends WebPage>> getMounts() {
@@ -291,7 +301,7 @@ public abstract class AbstractWebApplication extends
             }
         }
 
-        SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
+        ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
 
         List<String> jobs = jdbcTemplate
                 .queryForList(
@@ -307,26 +317,16 @@ public abstract class AbstractWebApplication extends
                     .createJob(jdbcTemplate, job);
             jobs.remove(meta.getId());
             if (!meta.isDisable()) {
+                Scheduled scheduled = job.getAnnotation(Scheduled.class);
+                Job bean = null;
                 try {
-                    JobDetail jobDetail = newJob(job).withIdentity(
-                            job.getName()).build();
-                    jobDetail.getJobDataMap().put(
-                            AbstractWebApplication.class.getName(), this);
-                    CronTrigger trigger = newTrigger()
-                            .withIdentity(meta.getId())
-                            .withSchedule(cronSchedule(meta.getCron())).build();
-                    schedulerFactory.getScheduler().scheduleJob(jobDetail,
-                            trigger);
-                } catch (SchedulerException e) {
-                    jdbcTemplate
-                            .update("update "
-                                    + TableUtilities
-                                            .getTableName(com.itrustcambodia.pluggable.entity.Job.class)
-                                    + " set "
-                                    + com.itrustcambodia.pluggable.entity.Job.DISABLE
-                                    + " = ? where "
-                                    + com.itrustcambodia.pluggable.entity.Job.ID
-                                    + " = ?", true, meta.getId());
+                    bean = job.newInstance();
+                } catch (InstantiationException e) {
+                } catch (IllegalAccessException e) {
+                }
+                if (bean != null && scheduled != null) {
+                    bean.setApplication(this);
+                    JobUtilities.register(registrar, scheduled, bean);
                 }
             }
         }
@@ -341,10 +341,7 @@ public abstract class AbstractWebApplication extends
                                 + " = ?", job);
             }
         }
-        try {
-            schedulerFactory.getScheduler().start();
-        } catch (SchedulerException e) {
-        }
+        registrar.afterPropertiesSet();
     }
 
     @SuppressWarnings("unchecked")
@@ -604,23 +601,8 @@ public abstract class AbstractWebApplication extends
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        SchedulerFactory schedulerFactory = getBean(SchedulerFactory.class);
-        if (schedulerFactory != null) {
-            Collection<Scheduler> schedulers = null;
-            try {
-                schedulers = schedulerFactory.getAllSchedulers();
-            } catch (SchedulerException e) {
-                e.printStackTrace();
-            }
-            if (schedulers != null && !schedulers.isEmpty()) {
-                for (Scheduler scheduler : schedulers) {
-                    try {
-                        scheduler.shutdown(true);
-                    } catch (SchedulerException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
+        if (getScheduledTaskRegistrar() != null) {
+            getScheduledTaskRegistrar().destroy();
         }
     }
 }

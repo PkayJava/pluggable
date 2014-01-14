@@ -1,6 +1,7 @@
 package com.itrustcambodia.pluggable.core;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -197,9 +198,10 @@ public abstract class AbstractPlugin implements IInitializer {
                     Set<Class<? extends Job>> jobs = reflections
                             .getSubTypesOf(Job.class);
                     for (Class<? extends Job> job : jobs) {
-                        ((AbstractWebApplication) application).addJob(job);
-                        getApplication().addPluginMapping(job.getName(),
-                                getIdentity());
+                        if (!Modifier.isAbstract(job.getModifiers())
+                                && job.isAnnotationPresent(com.itrustcambodia.pluggable.quartz.Scheduled.class)) {
+                            ((AbstractWebApplication) application).addJob(job);
+                        }
                     }
                 }
             }
