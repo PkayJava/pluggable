@@ -14,7 +14,6 @@ import com.itrustcambodia.pluggable.utilities.FrameworkUtilities;
 import com.itrustcambodia.pluggable.utilities.TableUtilities;
 import com.itrustcambodia.pluggable.validation.constraints.NotNull;
 import com.itrustcambodia.pluggable.validation.controller.Navigation;
-import com.itrustcambodia.pluggable.validator.CronExpressionValidator;
 import com.itrustcambodia.pluggable.wicket.authroles.Role;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.Roles;
 import com.itrustcambodia.pluggable.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
@@ -69,10 +68,6 @@ public final class EditJobPage extends KnownPage {
     }
 
     private void initializeInterceptor() {
-        org.apache.wicket.markup.html.form.TextField<String> cron = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("cron");
-        cron.add(new CronExpressionValidator());
-        org.apache.wicket.markup.html.form.Button once = (org.apache.wicket.markup.html.form.Button) getFormButton("once");
-        once.setVisible(!this.disable);
     }
 
     @Button(label = "Okay", order = 3, validate = true)
@@ -81,9 +76,8 @@ public final class EditJobPage extends KnownPage {
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
         jdbcTemplate.update("UPDATE " + TableUtilities.getTableName(Job.class)
                 + " SET " + Job.DESCRIPTION + " = ?, " + Job.DISABLE + " = ?, "
-                + Job.PAUSE + " = ? , " + Job.NEW_CRON + " = ? where " + Job.ID
-                + " = ?", this.description, this.disable, this.pause,
-                this.cron, this.jobId);
+                + Job.PAUSE + " = ? where " + Job.ID + " = ?",
+                this.description, this.disable, this.pause, this.jobId);
         return new Navigation(JobManagementPage.class);
     }
 
