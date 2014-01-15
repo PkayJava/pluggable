@@ -41,7 +41,10 @@ public abstract class Job {
                         new EntityRowMapper<com.itrustcambodia.pluggable.entity.Job>(
                                 com.itrustcambodia.pluggable.entity.Job.class),
                         this.getClass().getName());
-        if (job.isDisable() || job.isPause()) {
+        if (job.isDisable()
+                || job.isPause()
+                || com.itrustcambodia.pluggable.entity.Job.Status.BUSY
+                        .equals(job.getStatus())) {
             return;
         }
         // LOGGER.info("job {}", this.getClass().getName());
