@@ -50,7 +50,7 @@ public class JobUtilities {
 
             // Check cron expression
             String cron = scheduled.cron();
-            if (!"".equals(cron)) {
+            if (!"".equals(cron) && cron != null) {
                 Assert.isTrue(initialDelay == -1,
                         "'initialDelay' not supported for cron triggers");
                 processedSchedule = true;

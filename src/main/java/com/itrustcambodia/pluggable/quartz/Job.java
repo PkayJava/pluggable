@@ -87,24 +87,27 @@ public abstract class Job {
                                     com.itrustcambodia.pluggable.entity.Job.class),
                             this.getClass().getName());
         } catch (Throwable e) {
-            jdbcTemplate
-                    .update("update "
-                            + TableUtilities
-                                    .getTableName(com.itrustcambodia.pluggable.entity.Job.class)
-                            + " set "
-                            + com.itrustcambodia.pluggable.entity.Job.STATUS
-                            + " = ?, "
-                            + com.itrustcambodia.pluggable.entity.Job.LAST_PROCESS
-                            + " = ?, "
-                            + com.itrustcambodia.pluggable.entity.Job.LAST_ERROR
-                            + " = ? ,"
-                            + com.itrustcambodia.pluggable.entity.Job.PAUSE
-                            + " = ? where "
-                            + com.itrustcambodia.pluggable.entity.Job.ID
-                            + " = ?",
-                            com.itrustcambodia.pluggable.entity.Job.Status.IDLE,
-                            new Date(), e.getMessage(), true, this.getClass()
-                                    .getName());
+            try {
+                jdbcTemplate
+                        .update("update "
+                                + TableUtilities
+                                        .getTableName(com.itrustcambodia.pluggable.entity.Job.class)
+                                + " set "
+                                + com.itrustcambodia.pluggable.entity.Job.STATUS
+                                + " = ?, "
+                                + com.itrustcambodia.pluggable.entity.Job.LAST_PROCESS
+                                + " = ?, "
+                                + com.itrustcambodia.pluggable.entity.Job.LAST_ERROR
+                                + " = ? ,"
+                                + com.itrustcambodia.pluggable.entity.Job.PAUSE
+                                + " = ? where "
+                                + com.itrustcambodia.pluggable.entity.Job.ID
+                                + " = ?",
+                                com.itrustcambodia.pluggable.entity.Job.Status.IDLE,
+                                new Date(), e.getMessage(), true, this
+                                        .getClass().getName());
+            } catch (Throwable e1) {
+            }
         }
     }
 

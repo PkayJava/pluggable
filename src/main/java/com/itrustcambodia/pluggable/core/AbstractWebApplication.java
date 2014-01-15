@@ -108,11 +108,16 @@ public abstract class AbstractWebApplication extends
         ScheduledTaskRegistrar registrar = (ScheduledTaskRegistrar) getServletContext()
                 .getAttribute("ScheduledTaskRegistrar");
         if (registrar == null) {
-            registrar = new ScheduledTaskRegistrar();
             ThreadPoolTaskScheduler executor = new ThreadPoolTaskScheduler();
             executor.setDaemon(true);
             executor.setPoolSize(10);
+            executor.setThreadNamePrefix(getServletContext()
+                    .getServletContextName() + "-Thread-");
             executor.afterPropertiesSet();
+            getServletContext().setAttribute("ThreadPoolTaskScheduler",
+                    executor);
+
+            registrar = new ScheduledTaskRegistrar();
             registrar.setTaskScheduler(executor);
             getServletContext().setAttribute("ScheduledTaskRegistrar",
                     registrar);
@@ -600,9 +605,16 @@ public abstract class AbstractWebApplication extends
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         if (getScheduledTaskRegistrar() != null) {
             getScheduledTaskRegistrar().destroy();
         }
+
+        if (getServletContext().getAttribute("ThreadPoolTaskScheduler") != null) {
+            ThreadPoolTaskScheduler executor = (ThreadPoolTaskScheduler) getServletContext()
+                    .getAttribute("ThreadPoolTaskScheduler");
+            executor.destroy();
+        }
+
+        super.onDestroy();
     }
 }
