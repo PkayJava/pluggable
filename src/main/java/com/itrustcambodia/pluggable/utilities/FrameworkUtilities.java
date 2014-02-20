@@ -23,6 +23,7 @@ import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.apache.wicket.settings.IExceptionSettings.AjaxErrorStrategy;
 import org.apache.wicket.settings.IExceptionSettings.ThreadDumpStrategy;
+import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -171,7 +172,7 @@ public class FrameworkUtilities {
 
             Set<Class<?>> controllers = reflections.getTypesAnnotatedWith(Controller.class);
             for (Class<?> controller : controllers) {
-                for (Method method : org.reflections.ReflectionUtils.getAllMethods(controller)) {
+                for (Method method : ReflectionUtils.getAllMethods(controller)) {
                     Secured secured = method.getAnnotation(Secured.class);
                     if (secured != null && secured.roles() != null && secured.roles().length > 0) {
                         for (com.itrustcambodia.pluggable.wicket.authroles.Role role : secured.roles()) {

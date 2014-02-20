@@ -2,7 +2,11 @@ package com.itrustcambodia.pluggable.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +15,7 @@ import java.util.Map.Entry;
 import javax.sql.DataSource;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.settings.IExceptionSettings;
@@ -197,14 +202,30 @@ public abstract class AbstractWebApplication extends
         return LoginPage.class;
     }
 
-    protected abstract DataSource getDataSource();
+    protected abstract String getDriverClass();
+
+    protected abstract String getJdbcUrl();
+
+    protected abstract String getUsername();
+
+    protected abstract String getPassword();
+
+    protected abstract void initJdbcSetting();
 
     @Override
-    protected void init() {
+    protected final void init() {
         super.init();
         LOGGER.info("starting application framework");
+        initJdbcSetting();
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(getDriverClass());
+        dataSource.setUrl(getJdbcUrl());
+        dataSource.setUsername(getUsername());
+        dataSource.setPassword(getPassword());
+        dataSource.setInitialSize(5);
+        dataSource.setTestOnBorrow(false);
+        dataSource.setTestWhileIdle(true);
 
-        DataSource dataSource = getDataSource();
         addBean(DataSource.class, dataSource);
 
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -347,6 +368,7 @@ public abstract class AbstractWebApplication extends
             }
         }
         registrar.afterPropertiesSet();
+        doInit();
     }
 
     @SuppressWarnings("unchecked")
@@ -604,17 +626,61 @@ public abstract class AbstractWebApplication extends
     }
 
     @Override
-    protected void onDestroy() {
-        if (getScheduledTaskRegistrar() != null) {
-            getScheduledTaskRegistrar().destroy();
+    public void internalDestroy() {
+        try {
+            super.internalDestroy();
+        } catch (Throwable e) {
+            onDestroy();
         }
-
-        if (getServletContext().getAttribute("ThreadPoolTaskScheduler") != null) {
-            ThreadPoolTaskScheduler executor = (ThreadPoolTaskScheduler) getServletContext()
-                    .getAttribute("ThreadPoolTaskScheduler");
-            executor.destroy();
-        }
-
-        super.onDestroy();
     }
+
+    @Override
+    protected void onDestroy() {
+        try {
+            if (getServletContext().getAttribute("ThreadPoolTaskScheduler") != null) {
+                ThreadPoolTaskScheduler executor = (ThreadPoolTaskScheduler) getServletContext()
+                        .getAttribute("ThreadPoolTaskScheduler");
+                executor.setWaitForTasksToCompleteOnShutdown(false);
+                executor.destroy();
+            }
+
+            if (getScheduledTaskRegistrar() != null) {
+                getScheduledTaskRegistrar().destroy();
+            }
+            ((BasicDataSource) getBean(DataSource.class)).close();
+
+            Enumeration<Driver> drivers = DriverManager.getDrivers();
+            Driver d = null;
+            while (drivers.hasMoreElements()) {
+                try {
+                    d = drivers.nextElement();
+                    DriverManager.deregisterDriver(d);
+                    LOGGER.info("Driver {} deregistered", d);
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+            try {
+                Class<?> cls = Class
+                        .forName("com.mysql.jdbc.AbandonedConnectionCleanupThread");
+                Method mth = (cls == null ? null : cls.getMethod("shutdown"));
+                if (mth != null) {
+                    LOGGER.info("MySQL connection cleanup thread shutdown");
+                    mth.invoke(null);
+                    LOGGER.info("MySQL connection cleanup thread shutdown successful");
+                }
+            } catch (Throwable thr) {
+                thr.printStackTrace();
+            }
+
+            doDestroy();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    protected abstract void doDestroy();
+
+    protected abstract void doInit();
 }
