@@ -15,11 +15,11 @@ public class ResourceReference {
     public static final JavaScriptResourceReference BOOTSTRAP_RC1_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.0.RC1/js/bootstrap.min.js");
 
     /**
-     * Bootstrap 3.0.x
+     * Bootstrap 3.1.1
      */
-    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.3/css/bootstrap.min.css");
-    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.3/css/bootstrap-theme.min.css");
-    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.3/js/bootstrap.min.js");
+    public static final CssResourceReference BOOTSTRAP_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.1.1/css/bootstrap.min.css");
+    public static final CssResourceReference BOOTSTRAP_THEME_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.1.1/css/bootstrap-theme.min.css");
+    public static final JavaScriptResourceReference BOOTSTRAP_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.1.1/js/bootstrap.min.js");
 
     /**
      * Bootstrap 3.0.0.M1
@@ -27,11 +27,11 @@ public class ResourceReference {
     public static final CssResourceReference BOOTSTRAP_M1_CSS = new CssResourceReference(ResourceReference.class, "bootstrap/3.0.0.M1/css/bootstrap.min.css");
     public static final JavaScriptResourceReference BOOTSTRAP_M1_JS = new JavaScriptResourceReference(ResourceReference.class, "bootstrap/3.0.0.M1/js/bootstrap.min.js");
     
-    public static final JavaScriptResourceReference HTML5SHIV_JS = new JavaScriptResourceReference(ResourceReference.class, "html5shiv/3.6.2pre/html5shiv.min.js");
+    public static final JavaScriptResourceReference HTML5SHIV_JS = new JavaScriptResourceReference(ResourceReference.class, "html5shiv/3.7.0/html5shiv.min.js");
 
-    public static final JavaScriptResourceReference JQUERY_JS = new JavaScriptResourceReference(ResourceReference.class, "jquery/1.10.0/jquery-1.10.0.min.js");
+    public static final JavaScriptResourceReference JQUERY_JS = new JavaScriptResourceReference(ResourceReference.class, "jquery/1.11.0/jquery-1.11.0.js");
 
-    public static final JavaScriptResourceReference RESPOND_JS = new JavaScriptResourceReference(ResourceReference.class, "respond/1.1.0/respond.min.js");
+    public static final JavaScriptResourceReference RESPOND_JS = new JavaScriptResourceReference(ResourceReference.class, "respond/1.4.2/respond.min.js");
 
     public static final CssResourceReference BOOTSTRAP_GLYPHICONS_CSS = new CssResourceReference(ResourceReference.class, "bootstrap-glyphicons/css/bootstrap-glyphicons.css");
 
