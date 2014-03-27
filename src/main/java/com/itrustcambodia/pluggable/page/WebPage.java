@@ -33,22 +33,21 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
 
     public WebPage() {
         securityInterceptor();
-        initializeInterceptor();
     }
 
     public WebPage(IModel<?> model) {
         super(model);
         securityInterceptor();
-        initializeInterceptor();
     }
 
     public WebPage(PageParameters parameters) {
         super(parameters);
         securityInterceptor();
-        initializeInterceptor();
     }
 
-    private void initializeInterceptor() {
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
         Label title = new Label("pageTitle", getPageTitle());
         add(title);
     }
@@ -77,14 +76,16 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
 
-        String identity = application.getPluginMapping(this.getClass().getName());
+        String identity = application.getPluginMapping(this.getClass()
+                .getName());
 
         if (identity != null && !"".equals(identity)) {
             if (!(this instanceof PluginSettingPage)) {
                 if (application.isMigrated()) {
                     AbstractPlugin plugin = application.getPlugin(identity);
                     if (!plugin.isActivated()) {
-                        throw new RestartResponseException(plugin.getSettingPage());
+                        throw new RestartResponseException(
+                                plugin.getSettingPage());
                     }
                 } else {
                     throw new RestartResponseException(MigrationPage.class);
@@ -92,27 +93,41 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
             }
         } else {
             if (this instanceof ILoginPage) {
-                Long count = jdbcTemplate.queryForObject("select count(*) from " + TableUtilities.getTableName(application.getUserEntity()), Long.class);
+                Long count = jdbcTemplate.queryForObject(
+                        "select count(*) from "
+                                + TableUtilities.getTableName(application
+                                        .getUserEntity()), Long.class);
                 if (count <= 0) {
                     throw new RestartResponseException(InstallationPage.class);
                 }
             } else if (this instanceof InstallationPage) {
-                Long count = jdbcTemplate.queryForObject("select count(*) from " + TableUtilities.getTableName(application.getUserEntity()), Long.class);
+                Long count = jdbcTemplate.queryForObject(
+                        "select count(*) from "
+                                + TableUtilities.getTableName(application
+                                        .getUserEntity()), Long.class);
                 if (count > 0) {
-                    throw new RestartResponseException(getApplication().getHomePage());
+                    throw new RestartResponseException(getApplication()
+                            .getHomePage());
                 }
             } else if (this instanceof MigrationPage) {
                 if (application.isMigrated()) {
-                    throw new RestartResponseException(getApplication().getHomePage());
+                    throw new RestartResponseException(getApplication()
+                            .getHomePage());
                 }
             } else {
-                if (!(this instanceof AbstractErrorPage) && !(this instanceof LogoutPage)) {
-                    Long count = jdbcTemplate.queryForObject("select count(*) from " + TableUtilities.getTableName(application.getUserEntity()), Long.class);
+                if (!(this instanceof AbstractErrorPage)
+                        && !(this instanceof LogoutPage)) {
+                    Long count = jdbcTemplate.queryForObject(
+                            "select count(*) from "
+                                    + TableUtilities.getTableName(application
+                                            .getUserEntity()), Long.class);
                     if (count <= 0) {
-                        throw new RestartResponseException(InstallationPage.class);
+                        throw new RestartResponseException(
+                                InstallationPage.class);
                     } else {
                         if (!application.isMigrated()) {
-                            throw new RestartResponseException(MigrationPage.class);
+                            throw new RestartResponseException(
+                                    MigrationPage.class);
                         }
                     }
                 }
