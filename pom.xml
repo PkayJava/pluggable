@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.itrustcambodia.pluggable</groupId>
 	<artifactId>pluggable</artifactId>
-	<version>0.6.3.10-SNAPSHOT</version>
+	<version>0.6.4.0-SNAPSHOT</version>
 	<name>pluggable</name>
 	<packaging>jar</packaging>
 
