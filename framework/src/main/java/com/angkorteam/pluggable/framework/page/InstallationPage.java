@@ -27,10 +27,8 @@ import com.angkorteam.pluggable.framework.utilities.GroupUtilities;
 import com.angkorteam.pluggable.framework.utilities.SecurityUtilities;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 import com.angkorteam.pluggable.framework.validation.constraints.NotNull;
-import com.angkorteam.pluggable.framework.validation.type.Choice;
 import com.angkorteam.pluggable.framework.validation.type.Setting;
 import com.angkorteam.pluggable.framework.validation.type.TextFieldType;
-import com.angkorteam.pluggable.framework.validator.AmazonS3RepositoryValidator;
 import com.angkorteam.pluggable.framework.validator.LocalRepositoryValidator;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
 import com.angkorteam.pluggable.framework.widget.Button;
@@ -55,26 +53,8 @@ public final class InstallationPage extends KnownPage {
     @NotNull
     private String serverAddress;
 
-    @com.angkorteam.pluggable.framework.widget.DropDownChoice(label = "Repository", order = 2, choices = {
-            @Choice(value = FrameworkConstants.REPOSITORY_LOCAL, display = FrameworkConstants.REPOSITORY_LOCAL),
-            @Choice(value = FrameworkConstants.REPOSITORY_AMAZON_S3, display = FrameworkConstants.REPOSITORY_AMAZON_S3) })
-    @NotNull
-    private String repository;
-
     @com.angkorteam.pluggable.framework.widget.TextField(label = "Local", placeholder = "Local", order = 3)
     private String local;
-
-    @com.angkorteam.pluggable.framework.widget.TextField(label = "Bucket Name", placeholder = "Bucket Name", order = 4)
-    private String bucketName;
-
-    @com.angkorteam.pluggable.framework.widget.TextField(label = "Bucket Path", placeholder = "Bucket Path", order = 5, type = TextFieldType.URL)
-    private String bucketPath;
-
-    @com.angkorteam.pluggable.framework.widget.TextField(label = "AWS Access Key", placeholder = "AWS Access Key", order = 6)
-    private String accessKey;
-
-    @com.angkorteam.pluggable.framework.widget.TextField(label = "AWS Secret Key", placeholder = "AWS Secret Key", order = 7)
-    private String secretKey;
 
     public InstallationPage() {
         initializeInterceptor();
@@ -103,17 +83,9 @@ public final class InstallationPage extends KnownPage {
             }
         }
 
-        org.apache.wicket.markup.html.form.DropDownChoice<String> repository = (org.apache.wicket.markup.html.form.DropDownChoice<String>) getFormComponent("repository");
         org.apache.wicket.markup.html.form.TextField<String> local = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("local");
-        getForm().add(new LocalRepositoryValidator(repository, local));
+        getForm().add(new LocalRepositoryValidator(local));
 
-        org.apache.wicket.markup.html.form.TextField<String> accessKey = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("accessKey");
-        org.apache.wicket.markup.html.form.TextField<String> secretKey = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("secretKey");
-        org.apache.wicket.markup.html.form.TextField<String> bucketName = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketName");
-        org.apache.wicket.markup.html.form.TextField<String> bucketPath = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketPath");
-        getForm().add(
-                new AmazonS3RepositoryValidator(repository, accessKey,
-                        secretKey, bucketName, bucketPath));
     }
 
     @Override
@@ -149,20 +121,8 @@ public final class InstallationPage extends KnownPage {
                 AbstractWebApplication.SUPER_ADMIN_GROUP, false);
         SecurityUtilities.grantAccess(jdbcTemplate, group, userId);
 
-        application.update(FrameworkConstants.REPOSITORY, this.repository);
         application.update(FrameworkConstants.LOCAL, this.local);
-        application
-                .update(FrameworkConstants.AWS_S3_ACCESS_KEY, this.accessKey);
-        application
-                .update(FrameworkConstants.AWS_S3_SECRET_KEY, this.secretKey);
-        application.update(FrameworkConstants.AWS_S3_BUCKET_NAME,
-                this.bucketName);
-        if (bucketPath != null && !"".equals(bucketPath)) {
-            application.update(
-                    FrameworkConstants.AWS_S3_BUCKET_PATH,
-                    this.bucketPath.endsWith("/") ? this.bucketPath.substring(
-                            0, this.bucketPath.length() - 1) : this.bucketPath);
-        }
+
         application.update(FrameworkConstants.SERVER_ADDRESS,
                 this.serverAddress);
         application.update(FrameworkConstants.DEBUG, false);

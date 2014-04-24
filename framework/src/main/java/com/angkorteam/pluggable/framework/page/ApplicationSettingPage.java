@@ -19,17 +19,14 @@ import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
 import com.angkorteam.pluggable.framework.validation.constraints.NotNull;
 import com.angkorteam.pluggable.framework.validation.controller.Navigation;
 import com.angkorteam.pluggable.framework.validation.type.ButtonType;
-import com.angkorteam.pluggable.framework.validation.type.Choice;
 import com.angkorteam.pluggable.framework.validation.type.Setting;
 import com.angkorteam.pluggable.framework.validation.type.TextFieldType;
-import com.angkorteam.pluggable.framework.validator.AmazonS3RepositoryValidator;
 import com.angkorteam.pluggable.framework.validator.LocalRepositoryValidator;
 import com.angkorteam.pluggable.framework.wicket.authroles.Role;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.annotations.AuthorizeInstantiation;
 import com.angkorteam.pluggable.framework.widget.Button;
 import com.angkorteam.pluggable.framework.widget.CheckBox;
-import com.angkorteam.pluggable.framework.widget.DropDownChoice;
 import com.angkorteam.pluggable.framework.widget.TextField;
 
 /**
@@ -48,30 +45,9 @@ public abstract class ApplicationSettingPage extends KnownPage {
     @NotNull
     private String serverAddress;
 
-    @Setting(name = FrameworkConstants.REPOSITORY)
-    @DropDownChoice(label = "Repository", order = 2, choices = { @Choice(value = FrameworkConstants.REPOSITORY_LOCAL, display = FrameworkConstants.REPOSITORY_LOCAL), @Choice(value = FrameworkConstants.REPOSITORY_AMAZON_S3, display = FrameworkConstants.REPOSITORY_AMAZON_S3) })
-    @NotNull
-    private String repository;
-
     @Setting(name = FrameworkConstants.LOCAL)
     @TextField(label = "Local", placeholder = "Local", order = 3)
     private String local;
-
-    @Setting(name = FrameworkConstants.AWS_S3_BUCKET_NAME)
-    @TextField(label = "Bucket Name", placeholder = "Bucket Name", order = 4)
-    private String bucketName;
-
-    @Setting(name = FrameworkConstants.AWS_S3_BUCKET_PATH)
-    @TextField(label = "Bucket Path", placeholder = "Bucket Path", order = 5, type = TextFieldType.URL)
-    private String bucketPath;
-
-    @Setting(name = FrameworkConstants.AWS_S3_ACCESS_KEY)
-    @TextField(label = "AWS Access Key", placeholder = "AWS Access Key", order = 6)
-    private String accessKey;
-
-    @Setting(name = FrameworkConstants.AWS_S3_SECRET_KEY)
-    @TextField(label = "AWS Secret Key", placeholder = "AWS Secret Key", order = 7)
-    private String secretKey;
 
     @Setting(name = FrameworkConstants.DEBUG)
     @CheckBox(label = "Debug Mode", placeholder = "Run in Debug Mode ?", order = 8)
@@ -103,24 +79,23 @@ public abstract class ApplicationSettingPage extends KnownPage {
         for (Field field : ReflectionUtils.getAllFields(this.getClass())) {
             if (field.getAnnotation(Setting.class) != null) {
                 Setting setting = field.getAnnotation(Setting.class);
-                if (field.getType() != FileUpload.class && field.getType() != FileUpload[].class) {
+                if (field.getType() != FileUpload.class
+                        && field.getType() != FileUpload[].class) {
                     try {
-                        FieldUtils.writeField(field, this, application.select(setting.name(), field.getType()), true);
+                        FieldUtils.writeField(
+                                field,
+                                this,
+                                application.select(setting.name(),
+                                        field.getType()), true);
                     } catch (IllegalAccessException e) {
                     }
                 }
             }
         }
 
-        org.apache.wicket.markup.html.form.DropDownChoice<String> repository = (org.apache.wicket.markup.html.form.DropDownChoice<String>) getFormComponent("repository");
         org.apache.wicket.markup.html.form.TextField<String> local = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("local");
-        getForm().add(new LocalRepositoryValidator(repository, local));
+        getForm().add(new LocalRepositoryValidator(local));
 
-        org.apache.wicket.markup.html.form.TextField<String> accessKey = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("accessKey");
-        org.apache.wicket.markup.html.form.TextField<String> secretKey = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("secretKey");
-        org.apache.wicket.markup.html.form.TextField<String> bucketName = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketName");
-        org.apache.wicket.markup.html.form.TextField<String> bucketPath = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("bucketPath");
-        getForm().add(new AmazonS3RepositoryValidator(repository, accessKey, secretKey, bucketName, bucketPath));
     }
 
     @Button(label = "Cancel", order = 1, type = ButtonType.DEFAULT, validate = false)
@@ -139,7 +114,9 @@ public abstract class ApplicationSettingPage extends KnownPage {
                     if (value != null) {
                         if (field.getType() == FileUpload.class) {
                             try {
-                                byte bytes[] = IOUtils.toByteArray(((FileUpload) value).getInputStream());
+                                byte bytes[] = IOUtils
+                                        .toByteArray(((FileUpload) value)
+                                                .getInputStream());
                                 ((FileUpload) value).closeStreams();
                                 application.update(setting.name(), bytes);
                             } catch (IOException e) {
@@ -148,7 +125,9 @@ public abstract class ApplicationSettingPage extends KnownPage {
                             List<byte[]> pp = new ArrayList<byte[]>();
                             for (FileUpload fileUpload : ((FileUpload[]) value)) {
                                 try {
-                                    byte[] bytes = IOUtils.toByteArray(fileUpload.getInputStream());
+                                    byte[] bytes = IOUtils
+                                            .toByteArray(fileUpload
+                                                    .getInputStream());
                                     fileUpload.closeStreams();
                                     pp.add(bytes);
                                 } catch (IOException e) {
@@ -169,7 +148,8 @@ public abstract class ApplicationSettingPage extends KnownPage {
     @Override
     public List<Menu> getPageMenus(Roles roles) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        return FrameworkUtilities.getSecurityMenu(application, roles).getChildren();
+        return FrameworkUtilities.getSecurityMenu(application, roles)
+                .getChildren();
     }
 
     @Override
