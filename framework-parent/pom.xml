@@ -32,52 +32,7 @@
 		<maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
 		<maven.source.plugin.version>2.2.1</maven.source.plugin.version>
 	</properties>
-
-	<scm>
-		<url>https://github.com/PkayJava/pluggable</url>
-		<connection>scm:git:git://github.com/PkayJava/pluggable.git</connection>
-		<developerConnection>scm:git:git@github.com:PkayJava/pluggable.git</developerConnection>
-		<tag>HEAD</tag>
-	</scm>
-
-	<distributionManagement>
-		<!-- use the following if you're not using a snapshot version. -->
-		<repository>
-			<id>nexus</id>
-			<name>Release</name>
-			<url>http://nexus.angkorteam.com/content/repositories/releases</url>
-		</repository>
-		<!-- use the following if you ARE using a snapshot version. -->
-		<snapshotRepository>
-			<id>nexus</id>
-			<name>snapshot</name>
-			<url>http://nexus.angkorteam.com/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<repositories>
-		<repository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>Sonatype Nexus Snapshots</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-			<releases>
-				<enabled>false</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-
-	<developers>
-		<developer>
-			<id>pkayjava</id>
-			<email>pkayjava@gmail.com</email>
-			<url>www.linkedin.com/in/socheatkhauv</url>
-			<organization>iTrust Cambodia</organization>
-			<organizationUrl>http://www.itrustcam.com</organizationUrl>
-			<timezone>7</timezone>
-		</developer>
-	</developers>
+	
+	  
 
 </project>
