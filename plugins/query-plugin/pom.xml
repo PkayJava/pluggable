@@ -6,7 +6,7 @@
 		<relativePath>../../plugin-parent</relativePath>
 		<groupId>com.angkorteam.pluggable.plugin</groupId>
 		<artifactId>plugin-parent</artifactId>
-		<version>0.6.4.0</version>
+		<version>0.6.4.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.angkorteam.pluggable.plugin</groupId>
@@ -70,7 +70,7 @@
 		<dependency>
 			<groupId>com.angkorteam.pluggable.framework</groupId>
 			<artifactId>framework</artifactId>
-			<version>0.6.4.0</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 
 		<!-- Servlet -->

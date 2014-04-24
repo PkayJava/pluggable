@@ -6,7 +6,7 @@
 		<relativePath>../framework-parent</relativePath>
 		<groupId>com.angkorteam.pluggable.framework</groupId>
 		<artifactId>framework-parent</artifactId>
-		<version>0.6.4.0</version>
+		<version>0.6.4.1-SNAPSHOT</version>
 	</parent>
 
 	<groupId>com.angkorteam.pluggable.framework</groupId>
