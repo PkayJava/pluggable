@@ -5,7 +5,6 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.jdbc.SimpleJdbcUpdate;
-import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 
 public class JdbcUpdateUtilities {
 

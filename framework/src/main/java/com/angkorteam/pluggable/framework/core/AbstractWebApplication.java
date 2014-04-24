@@ -2,6 +2,7 @@ package com.angkorteam.pluggable.framework.core;
 
 import java.io.Serializable;
 import java.lang.reflect.Method;
+import java.net.UnknownHostException;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -64,6 +65,8 @@ import com.angkorteam.pluggable.framework.wicket.authroles.authentication.Authen
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.DB;
+import com.mongodb.MongoClient;
 
 /**
  * @author Socheat KHAUV
@@ -98,6 +101,10 @@ public abstract class AbstractWebApplication extends
     public static final String GROUP_LAEBL = "Group";
 
     public static final String JVM_LABEL = "JVM";
+
+    public static final String DATABASE_TYPE_MONGODB = "MongoDB";
+
+    public static final String DATABASE_TYPE_MYSQL = "MySQL";
 
     private Map<String, String> getPluginMapping() {
         Map<String, String> pluginMapping = (Map<String, String>) getServletContext()
@@ -206,40 +213,62 @@ public abstract class AbstractWebApplication extends
 
     protected abstract String getJdbcUrl();
 
+    protected abstract String getMongoServer();
+
+    protected abstract String getMongoPort();
+
+    protected abstract String getMongoDb();
+
     protected abstract String getUsername();
 
     protected abstract String getPassword();
 
-    protected abstract void initJdbcSetting();
+    protected abstract String getDatabaseType();
+
+    protected abstract void initDatabaseSetting();
 
     @Override
     protected final void init() {
         super.init();
         LOGGER.info("starting application framework");
-        initJdbcSetting();
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(getDriverClass());
-        dataSource.setUrl(getJdbcUrl());
-        dataSource.setUsername(getUsername());
-        dataSource.setPassword(getPassword());
-        dataSource.setInitialSize(5);
-        dataSource.setTestOnBorrow(false);
-        dataSource.setTestWhileIdle(true);
+        initDatabaseSetting();
+        if (DATABASE_TYPE_MYSQL.equalsIgnoreCase(getDatabaseType())) {
+            BasicDataSource dataSource = new BasicDataSource();
+            dataSource.setDriverClassName(getDriverClass());
+            dataSource.setUrl(getJdbcUrl());
+            dataSource.setUsername(getUsername());
+            dataSource.setPassword(getPassword());
+            dataSource.setInitialSize(5);
+            dataSource.setTestOnBorrow(false);
+            dataSource.setTestWhileIdle(true);
+            addBean(DataSource.class, dataSource);
+            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+            addBean(JdbcTemplate.class, jdbcTemplate);
+            DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
+            addBean(DbSupport.class, support);
+            Schema schema = support.getSchema();
+            addBean(Schema.class, schema);
+        } else if (DATABASE_TYPE_MONGODB.equalsIgnoreCase(getDatabaseType())) {
+            try {
+                MongoClient mongoClient = null;
+                if (getMongoPort() != null && !"".equals(getMongoPort())) {
+                    mongoClient = new MongoClient(getMongoServer(),
+                            Integer.valueOf(getMongoPort()));
 
-        addBean(DataSource.class, dataSource);
-
-        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        addBean(JdbcTemplate.class, jdbcTemplate);
-
-        DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
-        addBean(DbSupport.class, support);
+                } else {
+                    mongoClient = new MongoClient(getMongoServer());
+                }
+                addBean(MongoClient.class, mongoClient);
+                DB db = mongoClient.getDB(getMongoDb());
+                addBean(DB.class, db);
+            } catch (NumberFormatException e) {
+            } catch (UnknownHostException e) {
+            }
+        }
 
         Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting()
                 .create();
         addBean(Gson.class, gson);
-
-        Schema schema = support.getSchema();
-        addBean(Schema.class, schema);
 
         try {
             AbstractApplicationMigrator migrator = getMigrator().newInstance();
@@ -261,8 +290,12 @@ public abstract class AbstractWebApplication extends
             }
         }
 
-        FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
-                plugins);
+        JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
+        Schema schema = getBean(Schema.class);
+        if (DATABASE_TYPE_MYSQL.equalsIgnoreCase(getDatabaseType())) {
+            FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
+                    plugins);
+        }
 
         FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
                 plugins);
@@ -399,7 +432,7 @@ public abstract class AbstractWebApplication extends
     }
 
     public String getSecretKey() {
-        return DigestUtils.shaHex(this.getClass().getName());
+        return DigestUtils.sha1Hex(this.getClass().getName());
     }
 
     public void addRole(String name, String description) {
@@ -602,6 +635,14 @@ public abstract class AbstractWebApplication extends
 
     public JdbcTemplate getJdbcTemplate() {
         return getBean(JdbcTemplate.class);
+    }
+
+    public MongoClient getMongoClient() {
+        return getBean(MongoClient.class);
+    }
+
+    public DB getMongoDB() {
+        return getBean(DB.class);
     }
 
     public Class<? extends ApplicationSettingPage> getSettingPage() {
