@@ -8,10 +8,13 @@ import com.angkorteam.pluggable.framework.page.WebPage;
 import com.angkorteam.pluggable.plugin.query.page.SQLQueryPage;
 import com.angkorteam.pluggable.plugin.query.page.SettingPage;
 
-
 public class QueryPlugin extends AbstractPlugin {
 
-    public static final String ID = "com.angkorteam.plugin.query";
+    public static final String ID;
+    static {
+        String pkg = QueryPlugin.class.getPackage().getName();
+        ID = pkg.substring(0, pkg.lastIndexOf("."));
+    }
 
     @Override
     public String getName() {
