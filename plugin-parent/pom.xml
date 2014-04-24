@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -22,15 +21,6 @@
 		<wicket.version>6.14.0</wicket.version>
 		<jodatime.version>2.3</jodatime.version>
 
-		<maven.clean.plugin.version>2.5</maven.clean.plugin.version>
-		<maven.install.plugin.version>2.5</maven.install.plugin.version>
-		<maven.release.plugin.version>2.4</maven.release.plugin.version>
-		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
-		<maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
-		<maven.deploy.plugin.version>2.7</maven.deploy.plugin.version>
-		<maven.gpg.plugin.version>1.4</maven.gpg.plugin.version>
-		<maven.javadoc.plugin.version>2.9.1</maven.javadoc.plugin.version>
-		<maven.source.plugin.version>2.2.1</maven.source.plugin.version>
 	</properties>
 	
 	<distributionManagement>
