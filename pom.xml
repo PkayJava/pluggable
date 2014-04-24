@@ -10,7 +10,7 @@
 	<properties>
 		<java.version>1.6</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.version>4.0.2.RELEASE</spring.version>
+		<spring.version>4.0.3.RELEASE</spring.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<wicket.version>6.14.0</wicket.version>
 		<jodatime.version>2.3</jodatime.version>
@@ -170,6 +170,12 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-jdbc</artifactId>
+			<version>${spring.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
 			<version>${spring.version}</version>
 		</dependency>
 
