@@ -1,0 +1,5 @@
+1. mvn release:update-versions -DautoVersionSubmodules=true
+2. mvn clean install deploy
+3. github tag new release label
+4. pom.xml version to next SNAPSHOT
+5. push
