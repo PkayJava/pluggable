@@ -157,7 +157,7 @@ public class RestController implements IResource {
                         }
                         username = credential[0];
                         String password = credential[1];
-                        boolean valid = SecurityUtilities.authenticate(
+                        boolean valid = SecurityUtilities.authenticateJdbc(
                                 jdbcTemplate, username, password);
                         if (!valid) {
                             response.setHeader(WWW_AUTHENTICATE, basicRealm);
@@ -165,7 +165,7 @@ public class RestController implements IResource {
                             return;
                         } else {
                             roles = new Roles();
-                            for (String role : RoleUtilities.lookupRoles(
+                            for (String role : RoleUtilities.lookupJdbcRoles(
                                     jdbcTemplate, username)) {
                                 roles.add(role);
                             }
@@ -213,7 +213,7 @@ public class RestController implements IResource {
 
                         username = digest.getUsername();
 
-                        boolean valid = SecurityUtilities.authenticate(
+                        boolean valid = SecurityUtilities.authenticateJdbc(
                                 jdbcTemplate, username, password);
                         if (!valid) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
@@ -221,7 +221,7 @@ public class RestController implements IResource {
                             return;
                         } else {
                             roles = new Roles();
-                            for (String role : RoleUtilities.lookupRoles(
+                            for (String role : RoleUtilities.lookupJdbcRoles(
                                     jdbcTemplate, username)) {
                                 roles.add(role);
                             }
@@ -257,7 +257,7 @@ public class RestController implements IResource {
                         }
                         username = credential[0];
                         String password = credential[1];
-                        valid = SecurityUtilities.authenticate(jdbcTemplate,
+                        valid = SecurityUtilities.authenticateJdbc(jdbcTemplate,
                                 username, password);
                     } else if (DIGEST.equals(authentication)) {
                         if (authorization == null) {
@@ -302,7 +302,7 @@ public class RestController implements IResource {
 
                         username = digest.getUsername();
 
-                        valid = SecurityUtilities.authenticate(jdbcTemplate,
+                        valid = SecurityUtilities.authenticateJdbc(jdbcTemplate,
                                 username, password);
                     }
                 } else {
@@ -443,7 +443,7 @@ public class RestController implements IResource {
             this.principal = principal;
             this.jdbcTemplate = jdbcTemplate;
             if (principal != null) {
-                roles = RoleUtilities.lookupRoles(jdbcTemplate,
+                roles = RoleUtilities.lookupJdbcRoles(jdbcTemplate,
                         principal.getName());
             } else {
                 roles = Collections.emptyList();

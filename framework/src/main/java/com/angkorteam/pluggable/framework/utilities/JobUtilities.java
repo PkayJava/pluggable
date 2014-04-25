@@ -17,13 +17,18 @@ import org.springframework.util.StringUtils;
 import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.entity.Job;
 import com.angkorteam.pluggable.framework.quartz.Scheduled;
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 
 public class JobUtilities {
     private JobUtilities() {
     }
 
     public static final void register(ScheduledTaskRegistrar registrar,
-            Scheduled scheduled, com.angkorteam.pluggable.framework.quartz.Job bean) {
+            Scheduled scheduled,
+            com.angkorteam.pluggable.framework.quartz.Job bean) {
 
         try {
             Runnable runnable = new ScheduledMethodRunnable(bean, "execute");
@@ -130,7 +135,7 @@ public class JobUtilities {
         }
     }
 
-    public static final Job createJob(JdbcTemplate jdbcTemplate,
+    public static final Job createJdbcJob(JdbcTemplate jdbcTemplate,
             Class<? extends com.angkorteam.pluggable.framework.quartz.Job> clazz) {
         Scheduled scheduled = clazz.getAnnotation(Scheduled.class);
         String tableName = TableUtilities.getTableName(Job.class);
@@ -165,6 +170,35 @@ public class JobUtilities {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
             insert.withTableName(tableName);
             insert.execute(fields);
+        }
+        return job;
+    }
+
+    public static final DBObject createMongoJob(DB db,
+            Class<? extends com.angkorteam.pluggable.framework.quartz.Job> clazz) {
+        String tableName = TableUtilities.getTableName(Job.class);
+        DBCollection jobs = db.getCollection(tableName);
+        Scheduled scheduled = clazz.getAnnotation(Scheduled.class);
+        String id = clazz.getName();
+        BasicDBObject query = new BasicDBObject();
+        query.put(Job.ID, id);
+
+        DBObject job = jobs.findOne(query);
+        if (job != null) {
+            job.put(Job.PAUSE, false);
+            job.put(Job.STATUS, Job.Status.IDLE);
+            job.put(Job.CRON, scheduled.cron());
+            jobs.save(job);
+        } else {
+            job = new BasicDBObject();
+            job.put(Job.ID, id);
+            job.put(Job.CRON, scheduled.cron());
+            job.put(Job.DESCRIPTION, scheduled.description());
+            job.put(Job.DISABLE, scheduled.disable());
+            job.put(Job.PAUSE, false);
+            job.put(Job.STATUS, Job.Status.IDLE);
+            Object objectId = jobs.insert(job).getUpsertedId();
+            job.put("_id", objectId);
         }
         return job;
     }

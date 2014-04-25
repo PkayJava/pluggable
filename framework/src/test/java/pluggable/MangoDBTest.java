@@ -1,68 +1,69 @@
-package pluggable;
-
-import java.net.UnknownHostException;
-import java.util.Date;
-
-import org.joda.time.DateTime;
-
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
-
-public class MangoDBTest {
-    public static void main(String[] args) throws UnknownHostException {
-        MongoClient mongoClient = new MongoClient("localhost", 27017);
-        for (String db : mongoClient.getDatabaseNames()) {
-            System.out.println(db);
-        }
-        {
-            DB db = mongoClient.getDB("pkayjava");
-            for (String collection : db.getCollectionNames()) {
-                System.out.println(collection);
-            }
-            DBCollection users = db.getCollection("tbl_user");
-            BasicDBObject doc = new BasicDBObject("name", "MongoDB")
-                    .append("type", "database")
-                    .append("count", 1)
-                    .append("date", new Date())
-                    .append("info",
-                            new BasicDBObject("x", 203).append("y", 102));
-            users.insert(doc);
-            db.dropDatabase();
-        }
-        {
-            for (String db : mongoClient.getDatabaseNames()) {
-                System.out.println(db);
-            }
-            DB db = mongoClient.getDB("pkayjava");
-            for (String collection : db.getCollectionNames()) {
-                System.out.println(collection);
-            }
-        }
-        // {
-        // DB db = mongoClient.getDB("pkayjava");
-        // DBCollection users = db.getCollection("tbl_user");
-        // BasicDBObject basicDBObject = new BasicDBObject("name", 1);
-        //
-        // DBObject o = new BasicDBObject();
-        // o.put("dropDups", true);
-        // o.put("unique", true);
-        // users.createIndex(basicDBObject, o);
-        //
-        // DBCursor cursor = users.find();
-        // while (cursor.hasNext()) {
-        // DBObject object = cursor.next();
-        // if (object.containsField("date")) {
-        // Date date = (Date) object.get("date");
-        // System.out.println(date);
-        // }
-        // System.out.println(object);
-        // }
-        // cursor.close();
-        //
-        // }
-    }
-}
+//package pluggable;
+//
+//import java.net.UnknownHostException;
+//import java.util.Arrays;
+//import java.util.HashMap;
+//import java.util.Map;
+//
+//import org.jongo.Jongo;
+//import org.jongo.MongoCollection;
+//import org.jongo.ResultHandler;
+//
+//import com.angkorteam.pluggable.framework.mongo.aggregate.GroupBuilder;
+//import com.angkorteam.pluggable.framework.mongo.aggregate.SortBuilder;
+//import com.mongodb.BasicDBObject;
+//import com.mongodb.DB;
+//import com.mongodb.DBCollection;
+//import com.mongodb.DBObject;
+//import com.mongodb.DBRef;
+//import com.mongodb.LazyDBObject;
+//import com.mongodb.MongoClient;
+//
+//public class MangoDBTest {
+//    public static void main(String[] args) throws UnknownHostException {
+//        MongoClient mongoClient = new MongoClient("localhost", 27017);
+//        DB db = mongoClient.getDB("dating");
+//
+//        DBCollection role_group_collection = db.getCollection("tbl_role_group");
+//        DBCollection group_collection = db.getCollection("tbl_group");
+//        DBCollection role_collection = db.getCollection("tbl_role");
+//
+//        // System.out.println(db.doEval("db.tbl_group.find()").toString());
+//        Jongo jongo = new Jongo(db);
+//
+//        // for (String ite : jongo.getCollection("tbl_role").distinct("name")
+//        // .as(String.class)) {
+//        // System.out.println(ite.toString());
+//        // }
+//        //
+//        // for (Map ite : jongo.getCollection("tbl_role").find()
+//        // .projection("{'name':1,'_id':1}").as(Map.class)) {
+//        //
+//        // }
+//
+//        DBObject group = new SortBuilder().sort("ref_role_id", true).build();
+////        System.out.println(group.toString());
+//        for (DBObject object : role_group_collection.aggregate(
+//                Arrays.<DBObject> asList(group)).results()) {
+//             System.out.println(object.toString());
+//        }
+//
+//        // MongoCollection s = jongo.getCollection("tbl_role_group");
+//        // for (DBObject ite : s.find()
+//        // .projection("{'_id':0,'ref_role_id':1,'ref_group_id':1}")
+//        // .as(BasicDBObject.class)) {
+//        // // LazyDBObject ob = (LazyDBObject) (ite.get("ref_group_id"));
+//        // // DBRef dbRef = new DBRef(db, ob);
+//        // // System.out.println(dbRef.fetch().toString());
+//        // // System.out.println(ob.toString());
+//        // System.out.println(ite.get("ref_group_id").toString());
+//        // }
+//        //
+//        // for (DBObject ite : s.aggregate(
+//        // "{ $group: {_id : '$ref_group_id', count: {$sum :1}} }").as(
+//        // BasicDBObject.class)) {
+//        // System.out.println(ite.toString());
+//        // }
+//        // jongo.runCommand("db.tbl_group.find()");
+//    }
+//}

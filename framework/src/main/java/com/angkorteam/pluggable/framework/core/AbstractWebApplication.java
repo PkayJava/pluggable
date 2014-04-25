@@ -20,6 +20,7 @@ import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.settings.IExceptionSettings;
+import org.jongo.Jongo;
 import org.quartz.SchedulerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +66,11 @@ import com.angkorteam.pluggable.framework.wicket.authroles.authentication.Authen
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 
 /**
@@ -223,7 +228,7 @@ public abstract class AbstractWebApplication extends
 
     protected abstract String getPassword();
 
-    protected abstract String getDatabaseType();
+    public abstract String getDatabaseType();
 
     protected abstract void initDatabaseSetting();
 
@@ -261,6 +266,9 @@ public abstract class AbstractWebApplication extends
                 addBean(MongoClient.class, mongoClient);
                 DB db = mongoClient.getDB(getMongoDb());
                 addBean(DB.class, db);
+
+                Jongo jongo = new Jongo(db);
+                addBean(Jongo.class, jongo);
             } catch (NumberFormatException e) {
             } catch (UnknownHostException e) {
             }
@@ -290,117 +298,241 @@ public abstract class AbstractWebApplication extends
             }
         }
 
-        JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
-        Schema schema = getBean(Schema.class);
         if (DATABASE_TYPE_MYSQL.equalsIgnoreCase(getDatabaseType())) {
+            JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
+            Schema schema = getBean(Schema.class);
             FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
                     plugins);
-        }
+            FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
+                    plugins);
 
-        FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
-                plugins);
+            List<String> pooledRoles = jdbcTemplate.queryForList(
+                    "select " + Role.NAME + " from "
+                            + TableUtilities.getTableName(Role.class),
+                    String.class);
 
-        List<String> pooledRoles = jdbcTemplate
-                .queryForList(
-                        "select " + Role.NAME + " from "
-                                + TableUtilities.getTableName(Role.class),
-                        String.class);
+            Map<String, Role> mapping = new HashMap<String, Role>();
 
-        Map<String, Role> mapping = new HashMap<String, Role>();
-
-        Group adminGroup = GroupUtilities.createGroup(jdbcTemplate,
-                AbstractWebApplication.SUPER_ADMIN_GROUP,
-                AbstractWebApplication.SUPER_ADMIN_GROUP, false);
-        if (getRoles() != null && !getRoles().isEmpty()) {
-            for (Entry<String, String> role : getRoles().entrySet()) {
-                pooledRoles.remove(role.getKey());
-                mapping.put(role.getKey(), RoleUtilities.createRole(
-                        getBean(DataSource.class), role.getKey(),
-                        role.getValue(), false));
-                SecurityUtilities.grantAccess(jdbcTemplate, adminGroup,
-                        mapping.get(role.getKey()));
+            Group adminGroup = GroupUtilities.createJdbcGroup(jdbcTemplate,
+                    AbstractWebApplication.SUPER_ADMIN_GROUP,
+                    AbstractWebApplication.SUPER_ADMIN_GROUP, false);
+            if (getRoles() != null && !getRoles().isEmpty()) {
+                for (Entry<String, String> role : getRoles().entrySet()) {
+                    pooledRoles.remove(role.getKey());
+                    mapping.put(role.getKey(), RoleUtilities.createJdbcRole(
+                            getBean(DataSource.class), role.getKey(),
+                            role.getValue(), false));
+                    SecurityUtilities.grantJdbcAccess(jdbcTemplate, adminGroup,
+                            mapping.get(role.getKey()));
+                }
             }
-        }
 
-        FrameworkUtilities.initExceptionPages(this);
+            FrameworkUtilities.initExceptionPages(this);
 
-        if (!pooledRoles.isEmpty()) {
-            for (String pooledRole : pooledRoles) {
-                RoleUtilities.removeRole(jdbcTemplate, pooledRole);
+            if (!pooledRoles.isEmpty()) {
+                for (String pooledRole : pooledRoles) {
+                    RoleUtilities.removeJdbcRole(jdbcTemplate, pooledRole);
+                }
+                pooledRoles.clear();
             }
-            pooledRoles.clear();
-        }
 
-        for (Entry<String, List<String>> roles : getGroups().entrySet()) {
-            Group group = GroupUtilities.createGroup(jdbcTemplate,
-                    roles.getKey(), getPlugin(roles.getKey()).getName(), false);
-            for (String role : roles.getValue()) {
-                SecurityUtilities.grantAccess(jdbcTemplate, group,
-                        mapping.get(role));
+            for (Entry<String, List<String>> roles : getGroups().entrySet()) {
+                Group group = GroupUtilities.createJdbcGroup(jdbcTemplate,
+                        roles.getKey(), getPlugin(roles.getKey()).getName(),
+                        false);
+                for (String role : roles.getValue()) {
+                    SecurityUtilities.grantJdbcAccess(jdbcTemplate, group,
+                            mapping.get(role));
+                }
             }
-        }
 
-        for (Entry<String, Class<? extends WebPage>> page : getMounts()
-                .entrySet()) {
-            LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
-                    .getName());
-            mountPage(page.getKey(), page.getValue());
-        }
-
-        getMarkupSettings().setCompressWhitespace(true);
-        getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
-        getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
-
-        getExceptionSettings().setUnexpectedExceptionDisplay(
-                IExceptionSettings.SHOW_EXCEPTION_PAGE);
-
-        if (plugins != null) {
-            for (AbstractPlugin plugin : plugins.values()) {
-                plugin.initialize(this);
+            for (Entry<String, Class<? extends WebPage>> page : getMounts()
+                    .entrySet()) {
+                LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
+                        .getName());
+                mountPage(page.getKey(), page.getValue());
             }
-        }
 
-        ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
+            getMarkupSettings().setCompressWhitespace(true);
+            getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
+            getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
 
-        List<String> jobs = jdbcTemplate
-                .queryForList(
-                        "select "
-                                + com.angkorteam.pluggable.framework.entity.Job.ID
-                                + " from "
-                                + TableUtilities
-                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
-                        String.class);
+            getExceptionSettings().setUnexpectedExceptionDisplay(
+                    IExceptionSettings.SHOW_EXCEPTION_PAGE);
 
-        for (Class<? extends Job> job : getJobs()) {
-            com.angkorteam.pluggable.framework.entity.Job meta = JobUtilities
-                    .createJob(jdbcTemplate, job);
-            jobs.remove(meta.getId());
-            if (!meta.isDisable()) {
-                Scheduled scheduled = job.getAnnotation(Scheduled.class);
-                Job bean = null;
+            if (plugins != null) {
+                for (AbstractPlugin plugin : plugins.values()) {
+                    plugin.initialize(this);
+                }
+            }
+
+            ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
+
+            List<String> jobs = jdbcTemplate
+                    .queryForList(
+                            "select "
+                                    + com.angkorteam.pluggable.framework.entity.Job.ID
+                                    + " from "
+                                    + TableUtilities
+                                            .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
+                            String.class);
+
+            for (Class<? extends Job> job : getJobs()) {
+                com.angkorteam.pluggable.framework.entity.Job meta = JobUtilities
+                        .createJdbcJob(jdbcTemplate, job);
+                jobs.remove(meta.getId());
+                if (!meta.isDisable()) {
+                    Scheduled scheduled = job.getAnnotation(Scheduled.class);
+                    Job bean = null;
+                    try {
+                        bean = job.newInstance();
+                    } catch (InstantiationException e) {
+                    } catch (IllegalAccessException e) {
+                    }
+                    if (bean != null && scheduled != null) {
+                        bean.setApplication(this);
+                        JobUtilities.register(registrar, scheduled, bean);
+                    }
+                }
+            }
+            if (jobs != null && !jobs.isEmpty()) {
+                for (String job : jobs) {
+                    jdbcTemplate
+                            .update("delete from "
+                                    + TableUtilities
+                                            .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
+                                    + " where "
+                                    + com.angkorteam.pluggable.framework.entity.Job.ID
+                                    + " = ?", job);
+                }
+            }
+            registrar.afterPropertiesSet();
+        } else if (DATABASE_TYPE_MONGODB.equalsIgnoreCase(getDatabaseType())) {
+            DB db = getMongoDB();
+            List<String> pooledRoles = new ArrayList<String>();
+            {
+                DBCollection roles = db.getCollection(TableUtilities
+                        .getTableName(Role.class));
+                DBCursor cursor = roles.find();
                 try {
-                    bean = job.newInstance();
-                } catch (InstantiationException e) {
-                } catch (IllegalAccessException e) {
-                }
-                if (bean != null && scheduled != null) {
-                    bean.setApplication(this);
-                    JobUtilities.register(registrar, scheduled, bean);
+                    while (cursor.hasNext()) {
+                        DBObject role = cursor.next();
+                        pooledRoles.add((String) role.get(Role.NAME));
+                    }
+                } finally {
+                    cursor.close();
                 }
             }
-        }
-        if (jobs != null && !jobs.isEmpty()) {
-            for (String job : jobs) {
-                jdbcTemplate
-                        .update("delete from "
-                                + TableUtilities
-                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
-                                + " where "
-                                + com.angkorteam.pluggable.framework.entity.Job.ID
-                                + " = ?", job);
+
+            Map<String, DBObject> mapping = new HashMap<String, DBObject>();
+
+            DBObject adminGroup = GroupUtilities.createMongoGroup(db,
+                    AbstractWebApplication.SUPER_ADMIN_GROUP,
+                    AbstractWebApplication.SUPER_ADMIN_GROUP, false);
+            if (getRoles() != null && !getRoles().isEmpty()) {
+                for (Entry<String, String> role : getRoles().entrySet()) {
+                    pooledRoles.remove(role.getKey());
+                    mapping.put(role.getKey(), RoleUtilities.createMongoRole(
+                            db, role.getKey(), role.getValue(), false));
+
+                    SecurityUtilities.grantMongoAccessGroup(db, adminGroup,
+                            mapping.get(role.getKey()));
+                }
             }
+
+            FrameworkUtilities.initExceptionPages(this);
+
+            if (!pooledRoles.isEmpty()) {
+                for (String pooledRole : pooledRoles) {
+                    RoleUtilities.removeMongoRole(db, pooledRole);
+                }
+                pooledRoles.clear();
+            }
+
+            for (Entry<String, List<String>> roles : getGroups().entrySet()) {
+                DBObject group = GroupUtilities.createMongoGroup(db,
+                        roles.getKey(), getPlugin(roles.getKey()).getName(),
+                        false);
+                for (String role : roles.getValue()) {
+                    SecurityUtilities.grantMongoAccessGroup(db, group,
+                            mapping.get(role));
+                }
+            }
+
+            for (Entry<String, Class<? extends WebPage>> page : getMounts()
+                    .entrySet()) {
+                LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
+                        .getName());
+                mountPage(page.getKey(), page.getValue());
+            }
+
+            getMarkupSettings().setCompressWhitespace(true);
+            getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
+            getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
+
+            getExceptionSettings().setUnexpectedExceptionDisplay(
+                    IExceptionSettings.SHOW_EXCEPTION_PAGE);
+
+            if (plugins != null) {
+                for (AbstractPlugin plugin : plugins.values()) {
+                    plugin.initialize(this);
+                }
+            }
+
+            ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
+
+            List<String> jobs = new ArrayList<String>();
+
+            {
+                DBCursor cursor = db
+                        .getCollection(
+                                TableUtilities
+                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class))
+                        .find();
+                try {
+                    while (cursor.hasNext()) {
+                        DBObject job = cursor.next();
+                        jobs.add((String) job
+                                .get(com.angkorteam.pluggable.framework.entity.Job.ID));
+                    }
+                } finally {
+                    cursor.close();
+                }
+            }
+
+            for (Class<? extends Job> job : getJobs()) {
+                DBObject meta = JobUtilities.createMongoJob(db, job);
+                jobs.remove((String) meta
+                        .get(com.angkorteam.pluggable.framework.entity.Job.ID));
+                if (!((Boolean) meta
+                        .get(com.angkorteam.pluggable.framework.entity.Job.DISABLE))) {
+                    Scheduled scheduled = job.getAnnotation(Scheduled.class);
+                    Job bean = null;
+                    try {
+                        bean = job.newInstance();
+                    } catch (InstantiationException e) {
+                    } catch (IllegalAccessException e) {
+                    }
+                    if (bean != null && scheduled != null) {
+                        bean.setApplication(this);
+                        JobUtilities.register(registrar, scheduled, bean);
+                    }
+                }
+            }
+            if (jobs != null && !jobs.isEmpty()) {
+                DBCollection job_collection = db
+                        .getCollection(TableUtilities
+                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class));
+                for (String job : jobs) {
+                    BasicDBObject query = new BasicDBObject();
+                    query.put(com.angkorteam.pluggable.framework.entity.Job.ID,
+                            job);
+                    job_collection.remove(query);
+                }
+            }
+            registrar.afterPropertiesSet();
         }
-        registrar.afterPropertiesSet();
+
         doInit();
     }
 
@@ -643,6 +775,10 @@ public abstract class AbstractWebApplication extends
 
     public DB getMongoDB() {
         return getBean(DB.class);
+    }
+
+    public Jongo getJongo() {
+        return getBean(Jongo.class);
     }
 
     public Class<? extends ApplicationSettingPage> getSettingPage() {

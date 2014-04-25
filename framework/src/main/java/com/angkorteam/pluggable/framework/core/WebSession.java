@@ -7,6 +7,7 @@ import com.angkorteam.pluggable.framework.utilities.RoleUtilities;
 import com.angkorteam.pluggable.framework.utilities.SecurityUtilities;
 import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebSession;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
+import com.mongodb.DB;
 
 /**
  * @author Socheat KHAUV
@@ -24,7 +25,6 @@ public class WebSession extends AuthenticatedWebSession {
 
     public WebSession(Request request) {
         super(request);
-        // Injector.get().inject(this);
         this.roles = new Roles();
     }
 
@@ -35,12 +35,28 @@ public class WebSession extends AuthenticatedWebSession {
     @Override
     public boolean authenticate(String username, String password) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
-        JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
-        boolean valid = SecurityUtilities.authenticate(jdbcTemplate, username, password);
-        if (valid) {
-            this.username = username;
-            for (String role : RoleUtilities.lookupRoles(jdbcTemplate, username)) {
-                roles.add(role);
+        boolean valid = false;
+        if (AbstractWebApplication.DATABASE_TYPE_MYSQL
+                .equalsIgnoreCase(application.getDatabaseType())) {
+            JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
+            valid = SecurityUtilities.authenticateJdbc(jdbcTemplate, username,
+                    password);
+            if (valid) {
+                this.username = username;
+                for (String role : RoleUtilities.lookupJdbcRoles(jdbcTemplate,
+                        username)) {
+                    roles.add(role);
+                }
+            }
+        } else if (AbstractWebApplication.DATABASE_TYPE_MONGODB
+                .equalsIgnoreCase(application.getDatabaseType())) {
+            DB db = application.getMongoDB();
+            valid = SecurityUtilities.authenticateMongo(db, username, password);
+            if (valid) {
+                this.username = username;
+                for (String role : RoleUtilities.lookupMongoRoles(db, username)) {
+                    roles.add(role);
+                }
             }
         }
         return valid;

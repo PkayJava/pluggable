@@ -116,7 +116,7 @@ public final class InstallationPage extends KnownPage {
 
         Long userId = insert.executeAndReturnKey(fields).longValue();
 
-        Group group = GroupUtilities.createGroup(jdbcTemplate,
+        Group group = GroupUtilities.createJdbcGroup(jdbcTemplate,
                 AbstractWebApplication.SUPER_ADMIN_GROUP,
                 AbstractWebApplication.SUPER_ADMIN_GROUP, false);
         SecurityUtilities.grantAccess(jdbcTemplate, group, userId);

@@ -1,4 +1,4 @@
-package com.angkorteam.pluggable.framework.wicket;
+package com.angkorteam.pluggable.framework;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -27,6 +27,7 @@ import com.angkorteam.pluggable.framework.quartz.Job;
 import com.angkorteam.pluggable.framework.rest.Controller;
 import com.angkorteam.pluggable.framework.rest.RequestMapping;
 import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
+import com.angkorteam.pluggable.framework.wicket.RestController;
 
 /**
  * @author Socheat KHAUV
@@ -42,7 +43,7 @@ public class Initializer implements IInitializer {
         LOGGER.info("starting framework initializer");
         if (application instanceof AbstractWebApplication) {
             List<String> packages = new ArrayList<String>();
-            packages.add("com.angkorteam.pluggable.framework.framework");
+            packages.add(this.getClass().getPackage().getName());
             packages.addAll(Arrays
                     .asList(((AbstractWebApplication) application)
                             .getPackages()));
