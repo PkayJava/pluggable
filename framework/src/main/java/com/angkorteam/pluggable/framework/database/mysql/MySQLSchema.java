@@ -20,6 +20,7 @@ import com.angkorteam.pluggable.framework.database.annotation.Column;
 import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
 import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
 import com.angkorteam.pluggable.framework.database.annotation.Id;
+import com.angkorteam.pluggable.framework.database.annotation.Spatial;
 import com.angkorteam.pluggable.framework.database.annotation.Unique;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 
@@ -182,6 +183,7 @@ public class MySQLSchema extends Schema {
         List<String> ids = new ArrayList<String>();
         List<String> columns = new ArrayList<String>();
         List<String> idColumns = new ArrayList<String>();
+        List<String> spatials = new ArrayList<String>();
         Map<String, List<String>> uniqueGroups = new HashMap<String, List<String>>();
         for (String field : fields) {
             if (field.contains(" ")) {
@@ -222,6 +224,11 @@ public class MySQLSchema extends Schema {
                                 + (column.nullable() ? "" : " NOT NULL");
                     }
 
+                    Spatial spatial = field.getAnnotation(Spatial.class);
+                    if (spatial != null) {
+                        spatials.add(column.name());
+                    }
+
                     if (generatedValue != null
                             && generatedValue.strategy() == GenerationType.IDENTITY) {
                         ddl = ddl + " AUTO_INCREMENT";
@@ -253,9 +260,20 @@ public class MySQLSchema extends Schema {
         if (idColumns != null && !idColumns.isEmpty()) {
             field.add("PRIMARY KEY (" + StringUtils.join(idColumns, ",") + ")");
         }
+        if (spatials != null && !spatials.isEmpty()) {
+            field.add("SPATIAL INDEX (" + StringUtils.join(spatials, ",") + ")");
+        }
 
-        jdbcTemplate.execute("CREATE TABLE " + name + "("
-                + StringUtils.join(field, ",") + ")");
+        jdbcTemplate
+                .execute("CREATE TABLE "
+                        + name
+                        + "("
+                        + StringUtils.join(field, ",")
+                        + ")"
+                        + "ENGINE="
+                        + entity.getAnnotation(
+                                com.angkorteam.pluggable.framework.database.annotation.Table.class)
+                                .engine());
     }
 
     @Override

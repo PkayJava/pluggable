@@ -36,4 +36,6 @@ public @interface Table {
      */
     String schema() default "";
 
+    String engine() default "InnoDB";
+
 }
