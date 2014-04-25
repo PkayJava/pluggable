@@ -5,6 +5,7 @@ import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
 import com.angkorteam.pluggable.framework.page.PluginSettingPage;
 import com.angkorteam.pluggable.framework.page.WebPage;
+import com.angkorteam.pluggable.plugin.query.QueryConstants;
 import com.angkorteam.pluggable.plugin.query.page.SQLQueryPage;
 import com.angkorteam.pluggable.plugin.query.page.SettingPage;
 
@@ -12,8 +13,7 @@ public class QueryPlugin extends AbstractPlugin {
 
     public static final String ID;
     static {
-        String pkg = QueryPlugin.class.getPackage().getName();
-        ID = pkg.substring(0, pkg.lastIndexOf("."));
+        ID = QueryConstants.class.getPackage().getName();
     }
 
     @Override
@@ -56,7 +56,7 @@ public class QueryPlugin extends AbstractPlugin {
 
     @Override
     public String[] getPackages() {
-        return new String[] { "com.angkorteam.plugin.query" };
+        return new String[] { ID };
     }
 
 }
