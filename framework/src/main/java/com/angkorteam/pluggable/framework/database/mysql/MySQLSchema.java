@@ -263,8 +263,10 @@ public class MySQLSchema extends Schema {
         if (spatials != null && !spatials.isEmpty()) {
             field.add("SPATIAL INDEX (" + StringUtils.join(spatials, ",") + ")");
         }
-        com.angkorteam.pluggable.framework.database.annotation.Table table = entity
-                .getAnnotation(com.angkorteam.pluggable.framework.database.annotation.Table.class);
+        com.angkorteam.pluggable.framework.database.annotation.Table table = org.springframework.core.annotation.AnnotationUtils
+                .findAnnotation(
+                        entity,
+                        com.angkorteam.pluggable.framework.database.annotation.Table.class);
         if (table.engine() != null && !"".equals(table.engine())) {
             jdbcTemplate.execute("CREATE TABLE " + name + "("
                     + StringUtils.join(field, ",") + ")" + "ENGINE="
