@@ -263,17 +263,16 @@ public class MySQLSchema extends Schema {
         if (spatials != null && !spatials.isEmpty()) {
             field.add("SPATIAL INDEX (" + StringUtils.join(spatials, ",") + ")");
         }
-
-        jdbcTemplate
-                .execute("CREATE TABLE "
-                        + name
-                        + "("
-                        + StringUtils.join(field, ",")
-                        + ")"
-                        + "ENGINE="
-                        + entity.getAnnotation(
-                                com.angkorteam.pluggable.framework.database.annotation.Table.class)
-                                .engine());
+        com.angkorteam.pluggable.framework.database.annotation.Table table = entity
+                .getAnnotation(com.angkorteam.pluggable.framework.database.annotation.Table.class);
+        if (table.engine() != null && !"".equals(table.engine())) {
+            jdbcTemplate.execute("CREATE TABLE " + name + "("
+                    + StringUtils.join(field, ",") + ")" + "ENGINE="
+                    + table.engine());
+        } else {
+            jdbcTemplate.execute("CREATE TABLE " + name + "("
+                    + StringUtils.join(field, ",") + ")");
+        }
     }
 
     @Override
