@@ -4,7 +4,7 @@
 
 	<groupId>com.angkorteam.pluggable.plugin</groupId>
 	<artifactId>query-plugin</artifactId>
-	<version>0.6.5.1-SNAPSHOT</version>
+	<version>0.6.5.1</version>
 	<name>query-plugin</name>
 	<packaging>jar</packaging>
 
