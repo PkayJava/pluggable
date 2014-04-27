@@ -39,6 +39,4 @@ public @interface ApiObjectField {
      */
     String[] allowedvalues() default {};
 
-    boolean identity() default false;
-
 }

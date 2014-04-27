@@ -32,8 +32,8 @@ public class ImportRestAPI {
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_IMPORT", description = "Access Query Plugin Rest Import") })
     @RequestMapping(value = "/queryplugin/api/import", method = RequestMethod.POST)
-    @ApiMethod(description = "import data", requestObject = Table.class, responseObject = Void.class)
-    public Result importResult(AbstractWebApplication application,
+    @ApiMethod(description = "import data", requestObject = Table.class)
+    public Result<Void> importResult(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
             throws JsonIOException, IOException {
         Gson gson = application.getGson();
@@ -45,7 +45,7 @@ public class ImportRestAPI {
         if (table == null || table.getName() == null
                 || "".equals(table.getName()) || table.getFields() == null
                 || table.getFields().length == 0) {
-            return Result.badRequest(response, "application/json");
+            return Result.badRequest(response, "application/json", Void.class);
         }
         SimpleJdbcInsert insert = new SimpleJdbcInsert(
                 application.getJdbcTemplate());
@@ -59,13 +59,13 @@ public class ImportRestAPI {
         } catch (DuplicateKeyException duplicateKeyException) {
             // LOGGER.info(duplicateKeyException.getMessage());
         }
-        return Result.ok(response, "application/json");
+        return Result.ok(response, "application/json", Void.class);
     }
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_IMPORT_BATCH", description = "Access Query Plugin Rest Import Batch") })
     @RequestMapping(value = "/queryplugin/api/import/batch", method = RequestMethod.POST)
-    @ApiMethod(description = "import data", requestObject = Table[].class, responseObject = Void.class)
-    public Result importBatch(AbstractWebApplication application,
+    @ApiMethod(description = "import data", requestObject = Table[].class)
+    public Result<Void> importBatch(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
             throws JsonIOException, IOException {
         Gson gson = application.getGson();
@@ -75,14 +75,15 @@ public class ImportRestAPI {
 
         Table[] tables = gson.fromJson(streamReader, Table[].class);
         if (tables == null || tables.length == 0) {
-            return Result.badRequest(response, "application/json");
+            return Result.badRequest(response, "application/json", Void.class);
         } else {
             for (Table table : tables) {
                 if (table == null || table.getName() == null
                         || "".equals(table.getName())
                         || table.getFields() == null
                         || table.getFields().length == 0) {
-                    return Result.badRequest(response, "application/json");
+                    return Result.badRequest(response, "application/json",
+                            Void.class);
                 }
             }
         }
@@ -102,7 +103,7 @@ public class ImportRestAPI {
             }
         }
 
-        return Result.ok(response, "application/json");
+        return Result.ok(response, "application/json", Void.class);
     }
 
 }

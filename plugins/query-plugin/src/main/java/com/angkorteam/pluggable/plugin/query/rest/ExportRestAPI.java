@@ -20,6 +20,9 @@ import com.angkorteam.pluggable.framework.rest.RequestMethod;
 import com.angkorteam.pluggable.framework.rest.Result;
 import com.angkorteam.pluggable.framework.wicket.authroles.Role;
 import com.angkorteam.pluggable.framework.wicket.authroles.Secured;
+import com.angkorteam.pluggable.plugin.query.json.ExportQueryResponse;
+import com.angkorteam.pluggable.plugin.query.json.ExportResultsResponse;
+import com.angkorteam.pluggable.plugin.query.json.ExportTablesResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
@@ -28,10 +31,10 @@ public class ExportRestAPI {
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_TABLE", description = "Access Query Plugin Rest Export Table Name") })
     @RequestMapping(value = "/queryplugin/api/export/tables", method = RequestMethod.GET)
-    @ApiMethod(description = "list all table name", responseDescription = "table name", responseObject = String[].class)
-    public Result tables(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws JsonIOException, IOException {
+    @ApiMethod(description = "list all table name", responseDescription = "table name")
+    public Result<ExportTablesResponse> tables(
+            AbstractWebApplication application, HttpServletRequest request,
+            HttpServletResponse response) throws JsonIOException, IOException {
 
         List<String> tables = new ArrayList<String>();
 
@@ -39,17 +42,19 @@ public class ExportRestAPI {
             tables.add(table.getName());
         }
 
+        ExportTablesResponse json = new ExportTablesResponse(200, null, tables);
+
         Gson gson = application.getBean(Gson.class);
         gson.toJson(tables, response.getWriter());
-        return Result.ok(response, "application/json");
+        return Result.ok(response, gson, json);
     }
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_QUERY", description = "Access Query Plugin Rest Export Query Data") })
     @RequestMapping(value = "/queryplugin/api/export/query", method = RequestMethod.POST)
-    @ApiMethod(description = "export data for report", requestParameters = { @ApiParam(name = "query", description = "sql query") }, responseDescription = "result set", responseObject = Map[].class)
-    public Result query(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws JsonIOException, IOException {
+    @ApiMethod(description = "export data for report", requestParameters = { @ApiParam(name = "query", description = "sql query") }, responseDescription = "result set")
+    public Result<ExportQueryResponse> query(
+            AbstractWebApplication application, HttpServletRequest request,
+            HttpServletResponse response) throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
         String query = request.getParameter("query");
@@ -57,14 +62,15 @@ public class ExportRestAPI {
         List<Map<String, Object>> body = null;
 
         if (query == null || "".equals(query)) {
-            return Result.badRequest(response, "application/json");
+            return Result.badRequest(response, "application/json",
+                    ExportQueryResponse.class);
         }
 
         body = jdbcTemplate.queryForList(query);
 
         Gson gson = application.getBean(Gson.class);
-        gson.toJson(body, response.getWriter());
-        return Result.ok(response, "application/json");
+        ExportQueryResponse json = new ExportQueryResponse(200, null, body);
+        return Result.ok(response, gson, json);
     }
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_RESULT", description = "Access Query Plugin Rest Export Data Result") })
@@ -73,10 +79,10 @@ public class ExportRestAPI {
             @ApiParam(name = "sortField", type = String.class, description = "order by field asc"),
             @ApiParam(name = "firstResult", type = Long.class),
             @ApiParam(name = "maxResults", type = Long.class),
-            @ApiParam(name = "table", type = String.class, description = "table name") }, responseObject = Map[].class, responseDescription = "result set")
-    public Result results(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws JsonIOException, IOException {
+            @ApiParam(name = "table", type = String.class, description = "table name") }, responseDescription = "result set")
+    public Result<ExportResultsResponse> results(
+            AbstractWebApplication application, HttpServletRequest request,
+            HttpServletResponse response) throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
         Long firstResult = 0l;
@@ -93,7 +99,8 @@ public class ExportRestAPI {
         String table = request.getParameter("table");
         String sortField = request.getParameter("sortField");
         if (table == null || "".equals(table)) {
-            return Result.badRequest(response, "application/json");
+            return Result.badRequest(response, "application/json",
+                    ExportResultsResponse.class);
         }
 
         List<Map<String, Object>> body = null;
@@ -107,6 +114,7 @@ public class ExportRestAPI {
         }
         Gson gson = application.getBean(Gson.class);
         gson.toJson(body, response.getWriter());
-        return Result.ok(response, "application/json");
+        ExportResultsResponse json = new ExportResultsResponse(200, null, body);
+        return Result.ok(response, gson, json);
     }
 }

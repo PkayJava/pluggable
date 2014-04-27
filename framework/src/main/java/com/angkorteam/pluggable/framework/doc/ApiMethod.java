@@ -34,8 +34,6 @@ public @interface ApiMethod {
 
     ApiError[] errors() default {};
 
-    Class<?> responseObject();
-
     String responseDescription() default "";
 
 }

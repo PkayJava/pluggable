@@ -26,9 +26,9 @@ public class ResourceController {
 
     public static final String IMAGE = "/image";
 
-    @ApiMethod(description = "file download", responseObject = byte[].class)
+    @ApiMethod(description = "file download")
     @RequestMapping(value = FILE, method = RequestMethod.GET)
-    public Result file(AbstractWebApplication application,
+    public Result<byte[]> file(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String filename = request.getParameter("filename");
@@ -47,9 +47,9 @@ public class ResourceController {
         return Result.ok(file, request, response);
     }
 
-    @ApiMethod(description = "image download", requestParameters = { @ApiParam(name = "ratio", description = "keep ratio", type = Boolean.class) }, responseObject = byte[].class)
+    @ApiMethod(description = "image download", requestParameters = { @ApiParam(name = "ratio", description = "keep ratio", type = Boolean.class) })
     @RequestMapping(value = IMAGE, method = RequestMethod.GET)
-    public Result image(AbstractWebApplication application,
+    public Result<byte[]> image(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
             throws IOException {
         String filename = request.getParameter("filename");

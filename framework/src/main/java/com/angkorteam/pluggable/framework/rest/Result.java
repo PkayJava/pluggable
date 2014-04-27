@@ -25,7 +25,7 @@ import com.google.gson.JsonIOException;
 /**
  * @author Socheat KHAUV
  */
-public class Result implements Serializable {
+public class Result<T> implements Serializable {
 
     private static final int DEFAULT_BUFFER_SIZE = 10240;
 
@@ -55,13 +55,17 @@ public class Result implements Serializable {
         response.setContentType(contentType);
     }
 
-    public static final Result ok(HttpServletResponse response) {
-        Result result = new Result(response, 200);
+    public static final <T> Result<T> ok(HttpServletResponse response) {
+        Result<T> result = new Result<T>(response, 200);
         return result;
     }
 
-    public static final Result fake() {
-        return new Result();
+    public static final <T> Result<T> fake(Class<T> clazz) {
+        return new Result<T>();
+    }
+
+    public static final <T> Result<T> fake() {
+        return new Result<T>();
     }
 
     private static boolean matches(String matchHeader, String toMatch) {
@@ -127,7 +131,7 @@ public class Result implements Serializable {
 
     }
 
-    public static final Result ok(File file, HttpServletRequest request,
+    public static final <T> Result<T> ok(File file, HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         DateTime now = new DateTime();
 
@@ -147,7 +151,7 @@ public class Result implements Serializable {
         if (ifNoneMatch != null && matches(ifNoneMatch, eTag)) {
             response.setHeader("ETag", eTag); // Required in 304.
             response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-            return Result.fake();
+            return Result.<T> fake();
         }
 
         // If-Modified-Since header should be greater than LastModified.
@@ -159,7 +163,7 @@ public class Result implements Serializable {
                 && ifModifiedSince + 1000 > lastModified) {
             response.setHeader("ETag", eTag); // Required in 304.
             response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-            return Result.fake();
+            return Result.<T> fake();
         }
 
         // Validate request headers for resume
@@ -170,7 +174,7 @@ public class Result implements Serializable {
         String ifMatch = request.getHeader("If-Match");
         if (ifMatch != null && !matches(ifMatch, eTag)) {
             response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
-            return Result.fake();
+            return Result.<T> fake();
         }
 
         // If-Unmodified-Since header should be greater than
@@ -178,7 +182,7 @@ public class Result implements Serializable {
         long ifUnmodifiedSince = request.getDateHeader("If-Unmodified-Since");
         if (ifUnmodifiedSince != -1 && ifUnmodifiedSince + 1000 <= lastModified) {
             response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
-            return Result.fake();
+            return Result.<T> fake();
         }
 
         Range full = new Range(0, length - 1, length);
@@ -192,7 +196,7 @@ public class Result implements Serializable {
             if (!range.matches("^bytes=\\d*-\\d*(,\\d*-\\d*)*$")) {
                 response.setHeader("Content-Range", "bytes */" + length);
                 response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                return Result.fake();
+                return Result.<T> fake();
             }
 
             String ifRange = request.getHeader("If-Range");
@@ -223,7 +227,7 @@ public class Result implements Serializable {
                     if (start > end) {
                         response.setHeader("Content-Range", "bytes */" + length);
                         response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                        return Result.fake();
+                        return Result.<T> fake();
                     }
 
                     // Add range.
@@ -318,128 +322,140 @@ public class Result implements Serializable {
             IOUtils.closeQuietly(output);
             IOUtils.closeQuietly(input);
         }
-        return Result.fake();
+        return Result.<T> fake();
     }
 
-    public static final Result ok(HttpServletResponse response,
-            String contentType) {
-        Result result = new Result(response, 200, contentType);
+    public static final <T> Result<T> ok(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        Result<T> result = new Result<T>(response, 200, contentType);
         return result;
     }
 
-    public static final Result ok(HttpServletResponse response, Gson gson,
-            HttpMessage<?> content) throws JsonIOException, IOException {
-        Result result = new Result(response, 200, "application/json");
+    public static final <T> Result<T> ok(HttpServletResponse response,
+            Gson gson, T content) throws JsonIOException, IOException {
+        Result<T> result = new Result<T>(response, 200, "application/json");
         gson.toJson(content, response.getWriter());
         return result;
     }
 
-    public static final Result created(HttpServletResponse response) {
-        return new Result(response, 201);
+    public static final <T> Result<T> created(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 201);
     }
 
-    public static final Result created(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 201, contentType);
+    public static final <T> Result<T> created(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 201, contentType);
     }
 
-    public static final Result accepted(HttpServletResponse response) {
-        return new Result(response, 202);
+    public static final <T> Result<T> accepted(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 202);
     }
 
-    public static final Result accepted(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 202, contentType);
+    public static final <T> Result<T> accepted(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 202, contentType);
     }
 
-    public static final Result found(HttpServletResponse response) {
-        return new Result(response, 302);
+    public static final <T> Result<T> found(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 302);
     }
 
-    public static final Result found(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 302, contentType);
+    public static final <T> Result<T> found(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 302, contentType);
     }
 
-    public static final Result badRequest(HttpServletResponse response) {
-        return new Result(response, 400);
+    public static final <T> Result<T> badRequest(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 400);
     }
 
-    public static final Result badRequest(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 400, contentType);
+    public static final <T> Result<T> badRequest(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 400, contentType);
     }
 
-    public static final Result unauthorized(HttpServletResponse response) {
-        return new Result(response, 401);
+    public static final <T> Result<T> unauthorized(
+            HttpServletResponse response, Class<T> clazz) {
+        return new Result<T>(response, 401);
     }
 
-    public static final Result unauthorized(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 401, contentType);
+    public static final <T> Result<T> unauthorized(
+            HttpServletResponse response, String contentType, Class<T> clazz) {
+        return new Result<T>(response, 401, contentType);
     }
 
-    public static final Result forbidden(HttpServletResponse response) {
-        return new Result(response, 403);
+    public static final <T> Result<T> forbidden(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 403);
     }
 
-    public static final Result forbidden(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 403, contentType);
+    public static final <T> Result<T> forbidden(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 403, contentType);
     }
 
-    public static final Result notFound(HttpServletResponse response) {
-        return new Result(response, 404);
+    public static final <T> Result<T> notFound(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 404);
     }
 
-    public static final Result notFound(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 404, contentType);
+    public static final <T> Result<T> notFound(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 404, contentType);
     }
 
-    public static final Result gone(HttpServletResponse response) {
-        return new Result(response, 410);
+    public static final <T> Result<T> gone(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 410);
     }
 
-    public static final Result gone(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 410, contentType);
+    public static final <T> Result<T> gone(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 410, contentType);
     }
 
-    public static final Result locked(HttpServletResponse response) {
-        return new Result(response, 423);
+    public static final <T> Result<T> locked(HttpServletResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 423);
     }
 
-    public static final Result locked(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 423, contentType);
+    public static final <T> Result<T> locked(HttpServletResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 423, contentType);
     }
 
-    public static final Result internalServerError(HttpServletResponse response) {
-        return new Result(response, 500);
+    public static final <T> Result<T> internalServerError(
+            HttpServletResponse response, Class<T> clazz) {
+        return new Result<T>(response, 500);
     }
 
-    public static final Result internalServerError(
-            HttpServletResponse response, String contentType) {
-        return new Result(response, 500, contentType);
+    public static final <T> Result<T> internalServerError(
+            HttpServletResponse response, String contentType, Class<T> clazz) {
+        return new Result<T>(response, 500, contentType);
     }
 
-    public static final Result notImplemented(HttpServletResponse response) {
-        return new Result(response, 501);
+    public static final <T> Result<T> notImplemented(
+            HttpServletResponse response, Class<T> clazz) {
+        return new Result<T>(response, 501);
     }
 
-    public static final Result notImplemented(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 501, contentType);
+    public static final <T> Result<T> notImplemented(
+            HttpServletResponse response, String contentType, Class<T> clazz) {
+        return new Result<T>(response, 501, contentType);
     }
 
-    public static final Result serviceUnavailable(HttpServletResponse response) {
-        return new Result(response, 503);
+    public static final <T> Result<T> serviceUnavailable(
+            HttpServletResponse response, Class<T> clazz) {
+        return new Result<T>(response, 503);
     }
 
-    public static final Result serviceUnavailable(HttpServletResponse response,
-            String contentType) {
-        return new Result(response, 503, contentType);
+    public static final <T> Result<T> serviceUnavailable(
+            HttpServletResponse response, String contentType, Class<T> clazz) {
+        return new Result<T>(response, 503, contentType);
     }
 
     public int getStatus() {

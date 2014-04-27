@@ -18,6 +18,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.ObjectUtils.Null;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.wicket.WicketRuntimeException;
 import org.springframework.beans.BeanUtils;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
@@ -89,12 +91,15 @@ public class RestDocUtilities {
         }
     }
 
-    public static final void fillRestAPI(HttpServletRequest request, AbstractWebApplication application, List<RestAPIForm> restAPIForms, List<ObjectAPIForm> objectAPIForms) {
+    public static final void fillRestAPI(HttpServletRequest request,
+            AbstractWebApplication application, List<RestAPIForm> restAPIForms,
+            List<ObjectAPIForm> objectAPIForms) {
 
         Stack<Class<?>> queueForm = new Stack<Class<?>>();
 
         String contextPath = request.getContextPath();
-        if (contextPath == null || "".equals(contextPath) || contextPath.equals("/")) {
+        if (contextPath == null || "".equals(contextPath)
+                || contextPath.equals("/")) {
             contextPath = "/" + RestController.PATH;
         } else {
             if (contextPath.endsWith("/")) {
@@ -107,12 +112,15 @@ public class RestDocUtilities {
             contextPath = "/" + contextPath;
         }
 
-        for (Entry<String, RequestMappingInfo> info : application.getControllers().entrySet()) {
+        for (Entry<String, RequestMappingInfo> info : application
+                .getControllers().entrySet()) {
 
             Method method = info.getValue().getMethod();
 
-            if (method.isAnnotationPresent(RequestMapping.class) && method.isAnnotationPresent(ApiMethod.class)) {
-                RequestMapping requestMapping = method.getAnnotation(RequestMapping.class);
+            if (method.isAnnotationPresent(RequestMapping.class)
+                    && method.isAnnotationPresent(ApiMethod.class)) {
+                RequestMapping requestMapping = method
+                        .getAnnotation(RequestMapping.class);
                 ApiMethod apiMethod = method.getAnnotation(ApiMethod.class);
                 String path = requestMapping.value();
                 if (path.endsWith("/")) {
@@ -120,7 +128,8 @@ public class RestDocUtilities {
                 }
                 path = contextPath + path.replace(":.*}", "}");
                 RestAPIForm restAPIForm = new RestAPIForm();
-                restAPIForm.setDeprecated(method.isAnnotationPresent(Deprecated.class));
+                restAPIForm.setDeprecated(method
+                        .isAnnotationPresent(Deprecated.class));
                 restAPIForm.setPath(path);
                 restAPIForm.setDescription(apiMethod.description());
 
@@ -130,7 +139,8 @@ public class RestDocUtilities {
                     for (Role role : secured.roles()) {
                         roles.add(role.name());
                     }
-                    restAPIForm.setRoles(roles.toArray(new String[roles.size()]));
+                    restAPIForm
+                            .setRoles(roles.toArray(new String[roles.size()]));
                 } else {
                     restAPIForm.setRoles(new String[] {});
                 }
@@ -138,10 +148,12 @@ public class RestDocUtilities {
                 restAPIForm.setMethod(requestMapping.method());
 
                 List<List<Map<String, String>>> formParameters = new ArrayList<List<Map<String, String>>>();
-                if (apiMethod.requestParameters() != null && apiMethod.requestParameters().length > 0) {
+                if (apiMethod.requestParameters() != null
+                        && apiMethod.requestParameters().length > 0) {
                     for (ApiParam apiParam : apiMethod.requestParameters()) {
                         List<Map<String, String>> formParameter = new ArrayList<Map<String, String>>();
-                        if (apiParam.description() != null && !"".equals(apiParam.description())) {
+                        if (apiParam.description() != null
+                                && !"".equals(apiParam.description())) {
                             Map<String, String> name = new HashMap<String, String>();
                             name.put("name", apiParam.name());
                             name.put("value", apiParam.description());
@@ -152,28 +164,40 @@ public class RestDocUtilities {
                             if (apiParam.type() == Null.class) {
                                 type.put("value", "Type: String");
                             } else {
-                                type.put("value", "Type: " + apiParam.type().getSimpleName());
+                                type.put("value", "Type: "
+                                        + apiParam.type().getSimpleName());
                             }
                             formParameter.add(type);
 
                         } else {
                             Map<String, String> name = new HashMap<String, String>();
                             name.put("name", apiParam.name());
-                            name.put("value", "Type: " + apiParam.type().getSimpleName());
+                            name.put("value", "Type: "
+                                    + apiParam.type().getSimpleName());
                             formParameter.add(name);
                         }
                         Map<String, String> required = new HashMap<String, String>();
                         required.put("name", "");
-                        required.put("value", "Required: " + String.valueOf(apiParam.required()));
+                        required.put(
+                                "value",
+                                "Required: "
+                                        + String.valueOf(apiParam.required()));
                         formParameter.add(required);
 
-                        if (apiParam.allowedvalues() != null && apiParam.allowedvalues().length > 0) {
+                        if (apiParam.allowedvalues() != null
+                                && apiParam.allowedvalues().length > 0) {
                             Map<String, String> allowedvalues = new HashMap<String, String>();
                             allowedvalues.put("name", "");
-                            allowedvalues.put("value", "Allowed values: " + StringUtils.join(apiParam.allowedvalues(), ","));
+                            allowedvalues.put(
+                                    "value",
+                                    "Allowed values: "
+                                            + StringUtils.join(
+                                                    apiParam.allowedvalues(),
+                                                    ","));
                             formParameter.add(allowedvalues);
                         }
-                        if (apiParam.format() != null && !"".equals(apiParam.format())) {
+                        if (apiParam.format() != null
+                                && !"".equals(apiParam.format())) {
                             Map<String, String> format = new HashMap<String, String>();
                             format.put("name", "");
                             format.put("value", "Format: " + apiParam.format());
@@ -186,7 +210,8 @@ public class RestDocUtilities {
                 restAPIForm.setFormParameters(formParameters);
 
                 List<Map<String, String>> headers = new ArrayList<Map<String, String>>();
-                if (apiMethod.headers() != null && apiMethod.headers().length > 0) {
+                if (apiMethod.headers() != null
+                        && apiMethod.headers().length > 0) {
                     for (ApiHeader apiHeader : apiMethod.headers()) {
                         Map<String, String> header = new HashMap<String, String>();
                         header.put("name", apiHeader.name());
@@ -207,31 +232,57 @@ public class RestDocUtilities {
                 }
                 restAPIForm.setErrors(errors);
 
-                if (apiMethod.requestObject() != Null.class && apiMethod.requestObject() != Void.class) {
-                    if (apiMethod.requestObject().isAnnotationPresent(ApiObject.class)) {
+                if (apiMethod.requestObject() != Null.class
+                        && apiMethod.requestObject() != Void.class) {
+                    if (apiMethod.requestObject().isAnnotationPresent(
+                            ApiObject.class)) {
                         queueForm.push(apiMethod.requestObject());
-                        restAPIForm.setRequestObject(apiMethod.requestObject().getName());
+                        restAPIForm.setRequestObject(apiMethod.requestObject()
+                                .getName());
                     } else {
-                        restAPIForm.setRequestObject(apiMethod.requestObject().getSimpleName());
+                        restAPIForm.setRequestObject(apiMethod.requestObject()
+                                .getSimpleName());
                     }
                 } else {
                     restAPIForm.setRequestObject("");
                 }
 
-                if (apiMethod.responseObject() != Null.class) {
-                    if (apiMethod.responseObject() != Void.class) {
-                        if (apiMethod.requestObject().isAnnotationPresent(ApiObject.class)) {
-                            queueForm.push(apiMethod.requestObject());
-                            restAPIForm.setResponseObject(apiMethod.responseObject().getName());
+                Class<?> returnObject = method.getReturnType();
+                if (returnObject == null
+                        || !returnObject
+                                .getName()
+                                .equals(com.angkorteam.pluggable.framework.rest.Result.class
+                                        .getName())) {
+                    throw new WicketRuntimeException(method.getName()
+                            + " is not rest api compatible");
+                }
+
+                Type type = (ParameterizedType) method.getGenericReturnType();
+                if (type == null) {
+                    throw new WicketRuntimeException(method.getName()
+                            + " is not rest api compatible");
+                }
+                ParameterizedType parameterizedType = (ParameterizedType) type;
+                Class<?> responseObject = (Class<?>) parameterizedType
+                        .getActualTypeArguments()[0];
+
+                if (responseObject != Null.class) {
+                    if (responseObject != Void.class) {
+                        if (responseObject.isAnnotationPresent(ApiObject.class)) {
+                            queueForm.push(responseObject);
+                            restAPIForm.setResponseObject(responseObject
+                                    .getName());
                         } else {
-                            restAPIForm.setResponseObject(apiMethod.responseObject().getSimpleName());
+                            restAPIForm.setResponseObject(responseObject
+                                    .getSimpleName());
                         }
                     } else {
                         restAPIForm.setResponseObject("null");
                     }
                 }
 
-                restAPIForm.setResponseDescription(apiMethod.responseDescription());
+                restAPIForm.setResponseDescription(apiMethod
+                        .responseDescription());
 
                 restAPIForms.add(restAPIForm);
             }
@@ -240,32 +291,45 @@ public class RestDocUtilities {
         List<Class<?>> objectForms = new ArrayList<Class<?>>();
         while (!queueForm.isEmpty()) {
             Class<?> clazz = queueForm.pop();
-            PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(clazz);
+            PropertyDescriptor[] propertyDescriptors = BeanUtils
+                    .getPropertyDescriptors(clazz);
             if (propertyDescriptors != null && propertyDescriptors.length > 0) {
                 for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                     if (!objectForms.contains(clazz)) {
                         if (propertyDescriptor.getPropertyType() == List.class) {
                             try {
-                                Field field = clazz.getDeclaredField(propertyDescriptor.getName());
-                                ParameterizedType type = (ParameterizedType) field.getGenericType();
-                                Class<?> cla = (Class<?>) type.getActualTypeArguments()[0];
+                                FieldUtils.getDeclaredField(clazz,
+                                        propertyDescriptor.getName());
+                                Field field = clazz
+                                        .getDeclaredField(propertyDescriptor
+                                                .getName());
+                                ParameterizedType type = (ParameterizedType) field
+                                        .getGenericType();
+                                Class<?> cla = (Class<?>) type
+                                        .getActualTypeArguments()[0];
                                 if (cla.isAnnotationPresent(ApiObject.class)) {
                                     queueForm.push(cla);
                                 }
                             } catch (NoSuchFieldException e) {
                             }
-                        } else if (propertyDescriptor.getPropertyType().isArray()) {
+                        } else if (propertyDescriptor.getPropertyType()
+                                .isArray()) {
                             try {
-                                Field field = clazz.getDeclaredField(propertyDescriptor.getName());
-                                Class<?> cla = ((Class<?>) field.getType()).getComponentType();
+                                Field field = clazz
+                                        .getDeclaredField(propertyDescriptor
+                                                .getName());
+                                Class<?> cla = ((Class<?>) field.getType())
+                                        .getComponentType();
                                 if (cla.isAnnotationPresent(ApiObject.class)) {
                                     queueForm.push(cla);
                                 }
                             } catch (NoSuchFieldException e) {
                             }
                         } else {
-                            if (propertyDescriptor.getPropertyType().isAnnotationPresent(ApiObject.class)) {
-                                queueForm.push(propertyDescriptor.getPropertyType());
+                            if (propertyDescriptor.getPropertyType()
+                                    .isAnnotationPresent(ApiObject.class)) {
+                                queueForm.push(propertyDescriptor
+                                        .getPropertyType());
                             }
                         }
                     }
@@ -279,11 +343,13 @@ public class RestDocUtilities {
         for (Class<?> objectForm : objectForms) {
             ObjectAPIForm objectAPIForm = new ObjectAPIForm();
             ApiObject apiObject = objectForm.getAnnotation(ApiObject.class);
-            objectAPIForm.setDeprecated(objectForm.isAnnotationPresent(Deprecated.class));
+            objectAPIForm.setDeprecated(objectForm
+                    .isAnnotationPresent(Deprecated.class));
             objectAPIForm.setName(objectForm.getName());
             objectAPIForm.setDescription(apiObject.description());
             List<List<Map<String, String>>> fields = new ArrayList<List<Map<String, String>>>();
-            PropertyDescriptor[] propertyDescriptors = BeanUtils.getPropertyDescriptors(objectForm);
+            PropertyDescriptor[] propertyDescriptors = BeanUtils
+                    .getPropertyDescriptors(objectForm);
             if (propertyDescriptors != null && propertyDescriptors.length > 0) {
                 for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
                     if (propertyDescriptor.getName().equals("class")) {
@@ -294,50 +360,92 @@ public class RestDocUtilities {
                     ApiObjectField apiObjectField = null;
                     Field reflectionField = null;
                     try {
-                        reflectionField = objectForm.getDeclaredField(propertyDescriptor.getName());
+                        reflectionField = objectForm
+                                .getDeclaredField(propertyDescriptor.getName());
                     } catch (NoSuchFieldException e) {
                     }
                     if (reflectionField != null) {
-                        if (reflectionField.isAnnotationPresent(ApiObjectField.class)) {
-                            apiObjectField = reflectionField.getAnnotation(ApiObjectField.class);
+                        if (reflectionField
+                                .isAnnotationPresent(ApiObjectField.class)) {
+                            apiObjectField = reflectionField
+                                    .getAnnotation(ApiObjectField.class);
                         }
                     }
 
                     String fieldType = "";
                     if (propertyDescriptor.getPropertyType() == List.class) {
                         try {
-                            Field temp = objectForm.getDeclaredField(propertyDescriptor.getName());
-                            ParameterizedType type = (ParameterizedType) temp.getGenericType();
-                            Class<?> cla = (Class<?>) type.getActualTypeArguments()[0];
-                            if (cla.isAnnotationPresent(ApiObject.class)) {
-                                fieldType = "Type: " + cla.getName() + "[]";
+                            ParameterizedType type = null;
+                            if (!"content".equals(propertyDescriptor.getName())) {
+                                Field temp = objectForm
+                                        .getDeclaredField(propertyDescriptor
+                                                .getName());
+                                type = (ParameterizedType) temp
+                                        .getGenericType();
                             } else {
-                                fieldType = "Type: " + cla.getSimpleName() + "[]";
+                                ParameterizedType parameterizedType = (ParameterizedType) objectForm
+                                        .getGenericSuperclass();
+                                Type[] types = parameterizedType
+                                        .getActualTypeArguments();
+                                type = (ParameterizedType) types[0];
+                            }
+                            Type type1 = type.getActualTypeArguments()[0];
+                            if (type1 instanceof ParameterizedType) {
+                                ParameterizedType pp = (ParameterizedType) type1;
+                                fieldType = "Type : "
+                                        + ((Class) pp.getRawType())
+                                                .getSimpleName()
+                                        + "<"
+                                        + ((Class) pp.getActualTypeArguments()[0])
+                                                .getSimpleName()
+                                        + ","
+                                        + ((Class) pp.getActualTypeArguments()[1])
+                                                .getSimpleName() + ">" + "[]";
+                            } else {
+                                Class<?> cla = (Class<?>) type
+                                        .getActualTypeArguments()[0];
+                                if (cla.isAnnotationPresent(ApiObject.class)) {
+                                    fieldType = "Type : " + cla.getName()
+                                            + "[]";
+                                } else {
+                                    fieldType = "Type : " + cla.getSimpleName()
+                                            + "[]";
+                                }
                             }
                         } catch (NoSuchFieldException e) {
                         }
                     } else if (propertyDescriptor.getPropertyType().isArray()) {
                         try {
-                            Field temp = objectForm.getDeclaredField(propertyDescriptor.getName());
+                            Field temp = objectForm
+                                    .getDeclaredField(propertyDescriptor
+                                            .getName());
 
-                            Class<?> cla = ((Class<?>) temp.getType()).getComponentType();
+                            Class<?> cla = ((Class<?>) temp.getType())
+                                    .getComponentType();
 
                             if (cla.isAnnotationPresent(ApiObject.class)) {
-                                fieldType = "Type: " + cla.getName() + "[]";
+                                fieldType = "Type : " + cla.getName() + "[]";
                             } else {
-                                fieldType = "Type: " + cla.getSimpleName() + "[]";
+                                fieldType = "Type : " + cla.getSimpleName()
+                                        + "[]";
                             }
                         } catch (NoSuchFieldException e) {
                         }
                     } else {
-                        if (propertyDescriptor.getPropertyType().isAnnotationPresent(ApiObject.class)) {
-                            fieldType = "Type: " + propertyDescriptor.getPropertyType().getName();
+                        if (propertyDescriptor.getPropertyType()
+                                .isAnnotationPresent(ApiObject.class)) {
+                            fieldType = "Type : "
+                                    + propertyDescriptor.getPropertyType()
+                                            .getName();
                         } else {
-                            fieldType = "Type: " + propertyDescriptor.getPropertyType().getSimpleName();
+                            fieldType = "Type : "
+                                    + propertyDescriptor.getPropertyType()
+                                            .getSimpleName();
                         }
                     }
 
-                    if (apiObjectField != null && !"".equals(apiObjectField.description())) {
+                    if (apiObjectField != null
+                            && !"".equals(apiObjectField.description())) {
                         Map<String, String> name = new HashMap<String, String>();
                         name.put("name", propertyDescriptor.getName());
                         name.put("value", apiObjectField.description());
@@ -345,19 +453,21 @@ public class RestDocUtilities {
 
                         Map<String, String> type = new HashMap<String, String>();
                         type.put("name", "");
-                        type.put("value", "Type: " + fieldType);
+                        type.put("value", " " + fieldType);
                         field.add(type);
 
-                        if (apiObjectField.format() != null && !"".equals(apiObjectField.format())) {
+                        if (apiObjectField.format() != null
+                                && !"".equals(apiObjectField.format())) {
                             Map<String, String> format = new HashMap<String, String>();
                             format.put("", "");
-                            format.put("value", "Format: " + apiObjectField.format());
+                            format.put("value",
+                                    "Format: " + apiObjectField.format());
                             field.add(format);
                         }
                     } else {
                         Map<String, String> name = new HashMap<String, String>();
                         name.put("name", propertyDescriptor.getName());
-                        name.put("value", "Type: " + fieldType);
+                        name.put("value", " " + fieldType);
                         field.add(name);
                     }
 
