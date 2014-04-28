@@ -26,7 +26,7 @@ public class ResourceController {
 
     public static final String IMAGE = "/image";
 
-    @ApiMethod(description = "file download")
+    @ApiMethod(description = "file download", requestParameters = { @ApiParam(name = "filename", required = true, type = String.class) })
     @RequestMapping(value = FILE, method = RequestMethod.GET)
     public Result<byte[]> file(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
@@ -47,7 +47,9 @@ public class ResourceController {
         return Result.ok(file, request, response);
     }
 
-    @ApiMethod(description = "image download", requestParameters = { @ApiParam(name = "ratio", description = "keep ratio", type = Boolean.class) })
+    @ApiMethod(description = "image download", requestParameters = {
+            @ApiParam(name = "ratio", description = "keep ratio", type = Boolean.class),
+            @ApiParam(name = "filename", required = true, type = String.class) })
     @RequestMapping(value = IMAGE, method = RequestMethod.GET)
     public Result<byte[]> image(AbstractWebApplication application,
             HttpServletRequest request, HttpServletResponse response)
