@@ -8,12 +8,14 @@ import org.apache.wicket.Session;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractPlugin;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.ILoginPage;
 import com.angkorteam.pluggable.framework.core.Menu;
+import com.angkorteam.pluggable.framework.core.WebSession;
 import com.angkorteam.pluggable.framework.error.AbstractErrorPage;
 import com.angkorteam.pluggable.framework.layout.AbstractLayout;
 import com.angkorteam.pluggable.framework.layout.FullLayout;
@@ -34,17 +36,38 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
     private static final long serialVersionUID = 7456361864670996664L;
 
     public WebPage() {
-        securityInterceptor();
+        try {
+            securityInterceptor();
+        } catch (RecoverableDataAccessException e) {
+            AbstractWebApplication application = (AbstractWebApplication) getApplication();
+            WebSession session = (WebSession) getSession();
+            session.invalidateNow();
+            throw new RestartResponseException(application.getHomePage());
+        }
     }
 
     public WebPage(IModel<?> model) {
         super(model);
-        securityInterceptor();
+        try {
+            securityInterceptor();
+        } catch (RecoverableDataAccessException e) {
+            AbstractWebApplication application = (AbstractWebApplication) getApplication();
+            WebSession session = (WebSession) getSession();
+            session.invalidateNow();
+            throw new RestartResponseException(application.getHomePage());
+        }
     }
 
     public WebPage(PageParameters parameters) {
         super(parameters);
-        securityInterceptor();
+        try {
+            securityInterceptor();
+        } catch (RecoverableDataAccessException e) {
+            AbstractWebApplication application = (AbstractWebApplication) getApplication();
+            WebSession session = (WebSession) getSession();
+            session.invalidateNow();
+            throw new RestartResponseException(application.getHomePage());
+        }
     }
 
     @Override
