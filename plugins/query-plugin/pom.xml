@@ -4,7 +4,7 @@
 
 	<groupId>com.angkorteam.pluggable.plugin</groupId>
 	<artifactId>query-plugin</artifactId>
-	<version>0.6.5.4</version>
+	<version>0.6.5.5-SNAPSHOT</version>
 	<name>query-plugin</name>
 	<packaging>jar</packaging>
 
@@ -64,7 +64,7 @@
 		<dependency>
 			<groupId>com.angkorteam.pluggable.framework</groupId>
 			<artifactId>framework</artifactId>
-			<version>0.6.5.4</version>
+			<version>0.6.5.5-SNAPSHOT</version>
 		</dependency>
 
 		<!-- Servlet -->
