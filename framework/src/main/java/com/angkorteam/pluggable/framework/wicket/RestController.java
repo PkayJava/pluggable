@@ -1,5 +1,6 @@
 package com.angkorteam.pluggable.framework.wicket;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -21,6 +22,7 @@ import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.http.WebRequest;
 import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.resource.IResource;
+import org.apache.wicket.util.string.StringValue;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -29,6 +31,7 @@ import com.angkorteam.pluggable.framework.FrameworkConstants;
 import com.angkorteam.pluggable.framework.core.AbstractPlugin;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.WebSession;
+import com.angkorteam.pluggable.framework.doc.ApiParam;
 import com.angkorteam.pluggable.framework.entity.AbstractUser;
 import com.angkorteam.pluggable.framework.error.AccessDeniedPage;
 import com.angkorteam.pluggable.framework.error.Error404Page;
@@ -404,6 +407,34 @@ public class RestController implements IResource {
                         args[i] = application.getJdbcTemplate();
                     } else if (clazz == Gson.class) {
                         args[i] = application.getGson();
+                    } else if (clazz == StringValue.class
+                            || clazz == StringValue[].class) {
+                        Annotation[] annons = info.getMethod()
+                                .getParameterAnnotations()[i];
+                        if (annons == null || annons.length == 0) {
+                            throw new WicketRuntimeException(clazz.getName()
+                                    + " is ambiguous");
+                        } else {
+                            ApiParam param = null;
+                            for (Annotation annon : annons) {
+                                if (annon.annotationType() == ApiParam.class) {
+                                    param = (ApiParam) annon;
+                                    break;
+                                }
+                            }
+                            if (param == null || param.name() == null
+                                    || "".equals(param.name())) {
+                                throw new WicketRuntimeException(
+                                        clazz.getName() + " is ambiguous");
+                            }
+                            if (param.type().isArray()) {
+                                args[i] = request.getRequestParameters()
+                                        .getParameterValues(param.name());
+                            } else {
+                                args[i] = request.getRequestParameters()
+                                        .getParameterValue(param.name());
+                            }
+                        }
                     } else {
                         throw new WicketRuntimeException(clazz.getName()
                                 + " is not supported");

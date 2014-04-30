@@ -13,16 +13,7 @@ public class Field implements Serializable {
 
     private Object value;
 
-    private String clazz;
-
     public Field() {
-    }
-
-    public Field(String name, Object value, String clazz) {
-        super();
-        this.name = name;
-        this.value = value;
-        this.clazz = clazz;
     }
 
     public String getName() {
@@ -41,11 +32,4 @@ public class Field implements Serializable {
         this.value = value;
     }
 
-    public String getClazz() {
-        return clazz;
-    }
-
-    public void setClazz(String clazz) {
-        this.clazz = clazz;
-    }
 }

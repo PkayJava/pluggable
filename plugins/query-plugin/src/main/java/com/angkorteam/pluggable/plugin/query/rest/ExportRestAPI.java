@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.wicket.request.http.WebRequest;
 import org.apache.wicket.request.http.WebResponse;
+import org.apache.wicket.util.string.StringValue;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
@@ -49,23 +50,23 @@ public class ExportRestAPI {
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_QUERY", description = "Access Query Plugin Rest Export Query Data") })
     @RequestMapping(value = "/queryplugin/api/export/query", method = RequestMethod.POST)
-    @ApiMethod(description = "export data for report", requestParameters = { @ApiParam(name = "query", description = "sql query") }, responseDescription = "result set")
+    @ApiMethod(description = "export data for report", responseDescription = "result set")
     public Result<ExportQueryResponse> query(
-            AbstractWebApplication application, WebRequest request,
-            WebResponse response) throws JsonIOException, IOException {
+            AbstractWebApplication application,
+            WebRequest request,
+            WebResponse response,
+            @ApiParam(name = "query", description = "sql query") StringValue query)
+            throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
-
-        String query = request.getRequestParameters()
-                .getParameterValue("query").toOptionalString();
 
         List<Map<String, Object>> body = null;
 
-        if (query == null || "".equals(query)) {
+        if ("".equals(query.toString(""))) {
             return Result.badRequest(response, "application/json",
                     ExportQueryResponse.class);
         }
 
-        body = jdbcTemplate.queryForList(query);
+        body = jdbcTemplate.queryForList(query.toOptionalString());
 
         Gson gson = application.getBean(Gson.class);
         ExportQueryResponse json = new ExportQueryResponse(200, null, body);
@@ -74,39 +75,33 @@ public class ExportRestAPI {
 
     @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_RESULT", description = "Access Query Plugin Rest Export Data Result") })
     @RequestMapping(value = "/queryplugin/api/export/result", method = RequestMethod.POST)
-    @ApiMethod(description = "export data backup", requestParameters = {
-            @ApiParam(name = "sortField", type = String.class, description = "order by field asc"),
-            @ApiParam(name = "firstResult", type = Long.class),
-            @ApiParam(name = "maxResults", type = Long.class),
-            @ApiParam(name = "table", type = String.class, description = "table name") }, responseDescription = "result set")
+    @ApiMethod(description = "export data backup", responseDescription = "result set")
     public Result<ExportResultsResponse> results(
-            AbstractWebApplication application, WebRequest request,
-            WebResponse response) throws JsonIOException, IOException {
+            AbstractWebApplication application,
+            WebRequest request,
+            WebResponse response,
+            @ApiParam(name = "sort_field", type = String.class, description = "order by field asc") StringValue sort_field,
+            @ApiParam(name = "first_result", type = Long.class) StringValue first_result,
+            @ApiParam(name = "max_results", type = Long.class) StringValue max_results,
+            @ApiParam(name = "table", type = String.class, description = "table name") StringValue table)
+            throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
-        Long firstResult = request.getRequestParameters()
-                .getParameterValue("firstResult").toLong(0l);
-
-        Long maxResults = request.getRequestParameters()
-                .getParameterValue("maxResults").toLong(100l);
-
-        String table = request.getRequestParameters()
-                .getParameterValue("table").toOptionalString();
-        String sortField = request.getRequestParameters()
-                .getParameterValue("sortField").toOptionalString();
-        if (table == null || "".equals(table)) {
+        if ("".equals(table.toString(""))) {
             return Result.badRequest(response, "application/json",
                     ExportResultsResponse.class);
         }
 
         List<Map<String, Object>> body = null;
-        if (sortField == null || "".equals(sortField)) {
+        if ("".equals(sort_field.toString(""))) {
             body = jdbcTemplate.queryForList("select * from " + table
-                    + " limit " + firstResult + "," + maxResults);
+                    + " limit " + first_result.toString("0") + ","
+                    + max_results.toString("100"));
         } else {
             body = jdbcTemplate.queryForList("select * from " + table
-                    + " order by " + sortField + " limit " + firstResult + ","
-                    + maxResults);
+                    + " order by " + sort_field.toOptionalString() + " limit "
+                    + first_result.toString("0") + ","
+                    + max_results.toString("100"));
         }
         Gson gson = application.getBean(Gson.class);
         ExportResultsResponse json = new ExportResultsResponse(200, null, body);

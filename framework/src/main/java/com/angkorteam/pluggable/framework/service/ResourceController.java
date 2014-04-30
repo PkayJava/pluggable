@@ -11,6 +11,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.wicket.request.http.WebRequest;
 import org.apache.wicket.request.http.WebResponse;
+import org.apache.wicket.util.string.StringValue;
 
 import com.angkorteam.pluggable.framework.FrameworkConstants;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
@@ -28,15 +29,18 @@ public class ResourceController {
 
     public static final String IMAGE = "/image";
 
-    @ApiMethod(description = "file download", requestParameters = { @ApiParam(name = "filename", required = true, type = String.class) })
+    @ApiMethod(description = "file download")
     @RequestMapping(value = FILE, method = RequestMethod.GET)
-    public Result<byte[]> file(AbstractWebApplication application,
-            WebRequest request, WebResponse response) throws IOException {
+    public Result<byte[]> file(
+            AbstractWebApplication application,
+            WebRequest request,
+            WebResponse response,
+            @ApiParam(name = "filename", required = true, type = String.class) StringValue filename)
+            throws IOException {
 
-        String filename = null;
-        if (request.getRequestParameters().getParameterValue("filename") != null) {
-            filename = request.getRequestParameters()
-                    .getParameterValue("filename").toOptionalString();
+        if (filename.toOptionalString() == null
+                || "".equals(filename.toOptionalString())) {
+            return Result.badRequest(response, byte[].class);
         }
         System.out
                 .println("===============================================================");
@@ -48,45 +52,48 @@ public class ResourceController {
             System.out.println(header + " : " + request.getHeader(header));
         }
 
-        File cache = new File(FileUtils.getTempDirectory(), filename);
+        File cache = new File(FileUtils.getTempDirectory(),
+                filename.toOptionalString());
         File file = null;
         if (cache.exists()) {
             file = cache;
         } else {
             String repository = application.select(
                     FrameworkConstants.REPOSITORY, String.class);
-            File local = new File(repository, filename);
+            File local = new File(repository, filename.toOptionalString());
             FileUtils.copyFile(local, cache);
             file = cache;
         }
         return Result.ok(file, response);
     }
 
-    @ApiMethod(description = "image download", requestParameters = {
-            @ApiParam(name = "ratio", description = "keep ratio", type = Boolean.class),
-            @ApiParam(name = "filename", required = true, type = String.class) })
+    @ApiMethod(description = "image download")
     @RequestMapping(value = IMAGE, method = RequestMethod.GET)
-    public Result<byte[]> image(AbstractWebApplication application,
-            WebRequest request, WebResponse response) throws IOException {
-        String filename = null;
-        if (request.getRequestParameters().getParameterValue("filename") != null) {
-            filename = request.getRequestParameters()
-                    .getParameterValue("filename").toOptionalString();
+    public Result<byte[]> image(
+            AbstractWebApplication application,
+            WebRequest request,
+            WebResponse response,
+            @ApiParam(name = "filename", required = true, type = String.class) StringValue filename,
+            @ApiParam(name = "ratio", required = false, type = Boolean.class) StringValue ratio)
+            throws IOException {
+        if (filename.toOptionalString() == null
+                || "".equals(filename.toOptionalString())) {
+            return Result.badRequest(response, byte[].class);
         }
 
-        boolean ratio = request.getRequestParameters()
-                .getParameterValue("ratio").toBoolean(false);
-
-        File cache = new File(FileUtils.getTempDirectory(), filename);
+        File cache = new File(FileUtils.getTempDirectory(),
+                filename.toOptionalString());
         File file = null;
         if (cache.exists()) {
             file = cache;
         } else {
-            String extension = FilenameUtils.getExtension(filename);
-            String basename = FilenameUtils.getBaseName(filename);
+            String extension = FilenameUtils.getExtension(filename
+                    .toOptionalString());
+            String basename = FilenameUtils.getBaseName(filename
+                    .toOptionalString());
             String repository = application.select(
                     FrameworkConstants.REPOSITORY, String.class);
-            File local = new File(repository, filename);
+            File local = new File(repository, filename.toOptionalString());
             if (local.exists()) {
                 FileUtils.copyFile(local, cache);
                 file = cache;
@@ -100,7 +107,7 @@ public class ResourceController {
                 local = new File(repository, original);
                 if (local.exists()) {
                     Image image = new Image(local);
-                    image.resize(width, height, ratio);
+                    image.resize(width, height, ratio.toBoolean(false));
                     image.saveAs(cache);
                     file = cache;
                 }

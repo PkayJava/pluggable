@@ -34,8 +34,6 @@ public class RestAPIForm implements Serializable {
 
     private List<Map<String, String>> errors;
 
-    private String requestObject;
-
     private String responseObject;
 
     private String responseDescription;
@@ -94,14 +92,6 @@ public class RestAPIForm implements Serializable {
 
     public void setHeaders(List<Map<String, String>> headers) {
         this.headers = headers;
-    }
-
-    public String getRequestObject() {
-        return requestObject;
-    }
-
-    public void setRequestObject(String requestObject) {
-        this.requestObject = requestObject;
     }
 
     public String getResponseObject() {

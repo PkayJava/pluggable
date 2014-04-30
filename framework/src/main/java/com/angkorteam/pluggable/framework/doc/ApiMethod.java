@@ -6,8 +6,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.apache.commons.lang3.ObjectUtils.Null;
-
 /**
  * This annotation is to be used on your exposed methods.
  * 
@@ -26,13 +24,9 @@ public @interface ApiMethod {
      */
     String description() default "";
 
-    Class<?> requestObject() default Null.class;
-
-    ApiParam[] requestParameters() default {};
+    ApiError[] errors() default {};
 
     ApiHeader[] headers() default {};
-
-    ApiError[] errors() default {};
 
     String responseDescription() default "";
 

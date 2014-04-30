@@ -1,6 +1,7 @@
 package com.angkorteam.pluggable.framework.utilities;
 
 import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.Method;
@@ -148,9 +149,15 @@ public class RestDocUtilities {
                 restAPIForm.setMethod(requestMapping.method());
 
                 List<List<Map<String, String>>> formParameters = new ArrayList<List<Map<String, String>>>();
-                if (apiMethod.requestParameters() != null
-                        && apiMethod.requestParameters().length > 0) {
-                    for (ApiParam apiParam : apiMethod.requestParameters()) {
+                for (Annotation[] annons : method.getParameterAnnotations()) {
+                    ApiParam apiParam = null;
+                    for (Annotation annon : annons) {
+                        if (annon.annotationType() == ApiParam.class) {
+                            apiParam = (ApiParam) annon;
+                            break;
+                        }
+                    }
+                    if (apiParam != null) {
                         List<Map<String, String>> formParameter = new ArrayList<Map<String, String>>();
                         if (apiParam.description() != null
                                 && !"".equals(apiParam.description())) {
@@ -231,21 +238,6 @@ public class RestDocUtilities {
                     }
                 }
                 restAPIForm.setErrors(errors);
-
-                if (apiMethod.requestObject() != Null.class
-                        && apiMethod.requestObject() != Void.class) {
-                    if (apiMethod.requestObject().isAnnotationPresent(
-                            ApiObject.class)) {
-                        queueForm.push(apiMethod.requestObject());
-                        restAPIForm.setRequestObject(apiMethod.requestObject()
-                                .getName());
-                    } else {
-                        restAPIForm.setRequestObject(apiMethod.requestObject()
-                                .getSimpleName());
-                    }
-                } else {
-                    restAPIForm.setRequestObject("");
-                }
 
                 Class<?> returnObject = method.getReturnType();
                 if (returnObject == null
