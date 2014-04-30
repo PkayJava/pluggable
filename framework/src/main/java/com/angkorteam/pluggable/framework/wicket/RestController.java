@@ -387,7 +387,7 @@ public class RestController implements IResource {
                 Object[] args = new Object[info.getMethod().getParameterTypes().length];
                 for (int i = 0; i < args.length; i++) {
                     Class<?> clazz = info.getMethod().getParameterTypes()[i];
-                    if (clazz == HttpServletRequest.class) {
+                    if (clazz == javax.servlet.http.HttpServletRequest.class) {
                         args[i] = new HttpServletRequest(jdbcTemplate,
                                 new UserPrincipal(username),
                                 (HttpServletRequest) request
