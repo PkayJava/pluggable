@@ -2,13 +2,15 @@ package com.angkorteam.pluggable.framework.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javaxt.io.Image;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
 
 import com.angkorteam.pluggable.framework.FrameworkConstants;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
@@ -29,22 +31,35 @@ public class ResourceController {
     @ApiMethod(description = "file download", requestParameters = { @ApiParam(name = "filename", required = true, type = String.class) })
     @RequestMapping(value = FILE, method = RequestMethod.GET)
     public Result<byte[]> file(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        String filename = request.getParameter("filename");
+            WebRequest request, WebResponse response) throws IOException {
+
+        String filename = null;
+        if (request.getRequestParameters().getParameterValue("filename") != null) {
+            filename = request.getRequestParameters()
+                    .getParameterValue("filename").toOptionalString();
+        }
+        System.out
+                .println("===============================================================");
+        System.out.println("filename " + filename);
+        Enumeration<String> headers = ((HttpServletRequest) request
+                .getContainerRequest()).getHeaderNames();
+        while (headers.hasMoreElements()) {
+            String header = headers.nextElement();
+            System.out.println(header + " : " + request.getHeader(header));
+        }
 
         File cache = new File(FileUtils.getTempDirectory(), filename);
         File file = null;
         if (cache.exists()) {
             file = cache;
         } else {
-            String repository = application.select(FrameworkConstants.LOCAL,
-                    String.class);
+            String repository = application.select(
+                    FrameworkConstants.REPOSITORY, String.class);
             File local = new File(repository, filename);
             FileUtils.copyFile(local, cache);
             file = cache;
         }
-        return Result.ok(file, request, response);
+        return Result.ok(file, response);
     }
 
     @ApiMethod(description = "image download", requestParameters = {
@@ -52,15 +67,15 @@ public class ResourceController {
             @ApiParam(name = "filename", required = true, type = String.class) })
     @RequestMapping(value = IMAGE, method = RequestMethod.GET)
     public Result<byte[]> image(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
-        String filename = request.getParameter("filename");
-
-        boolean ratio = true;
-        if (request.getParameter("ratio") != null
-                && request.getParameter("ratio") != null) {
-            ratio = Boolean.valueOf(request.getParameter("ratio"));
+            WebRequest request, WebResponse response) throws IOException {
+        String filename = null;
+        if (request.getRequestParameters().getParameterValue("filename") != null) {
+            filename = request.getRequestParameters()
+                    .getParameterValue("filename").toOptionalString();
         }
+
+        boolean ratio = request.getRequestParameters()
+                .getParameterValue("ratio").toBoolean(false);
 
         File cache = new File(FileUtils.getTempDirectory(), filename);
         File file = null;
@@ -69,8 +84,8 @@ public class ResourceController {
         } else {
             String extension = FilenameUtils.getExtension(filename);
             String basename = FilenameUtils.getBaseName(filename);
-            String repository = application.select(FrameworkConstants.LOCAL,
-                    String.class);
+            String repository = application.select(
+                    FrameworkConstants.REPOSITORY, String.class);
             File local = new File(repository, filename);
             if (local.exists()) {
                 FileUtils.copyFile(local, cache);
@@ -91,7 +106,7 @@ public class ResourceController {
                 }
             }
         }
-        return Result.ok(file, request, response);
+        return Result.ok(file, response);
     }
 
 }

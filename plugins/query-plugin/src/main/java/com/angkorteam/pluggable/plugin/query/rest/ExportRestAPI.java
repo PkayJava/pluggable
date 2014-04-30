@@ -5,9 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
@@ -33,8 +32,8 @@ public class ExportRestAPI {
     @RequestMapping(value = "/queryplugin/api/export/tables", method = RequestMethod.GET)
     @ApiMethod(description = "list all table name", responseDescription = "table name")
     public Result<ExportTablesResponse> tables(
-            AbstractWebApplication application, HttpServletRequest request,
-            HttpServletResponse response) throws JsonIOException, IOException {
+            AbstractWebApplication application, WebRequest request,
+            WebResponse response) throws JsonIOException, IOException {
 
         List<String> tables = new ArrayList<String>();
 
@@ -45,7 +44,6 @@ public class ExportRestAPI {
         ExportTablesResponse json = new ExportTablesResponse(200, null, tables);
 
         Gson gson = application.getBean(Gson.class);
-        gson.toJson(tables, response.getWriter());
         return Result.ok(response, gson, json);
     }
 
@@ -53,11 +51,12 @@ public class ExportRestAPI {
     @RequestMapping(value = "/queryplugin/api/export/query", method = RequestMethod.POST)
     @ApiMethod(description = "export data for report", requestParameters = { @ApiParam(name = "query", description = "sql query") }, responseDescription = "result set")
     public Result<ExportQueryResponse> query(
-            AbstractWebApplication application, HttpServletRequest request,
-            HttpServletResponse response) throws JsonIOException, IOException {
+            AbstractWebApplication application, WebRequest request,
+            WebResponse response) throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
-        String query = request.getParameter("query");
+        String query = request.getRequestParameters()
+                .getParameterValue("query").toOptionalString();
 
         List<Map<String, Object>> body = null;
 
@@ -81,23 +80,20 @@ public class ExportRestAPI {
             @ApiParam(name = "maxResults", type = Long.class),
             @ApiParam(name = "table", type = String.class, description = "table name") }, responseDescription = "result set")
     public Result<ExportResultsResponse> results(
-            AbstractWebApplication application, HttpServletRequest request,
-            HttpServletResponse response) throws JsonIOException, IOException {
+            AbstractWebApplication application, WebRequest request,
+            WebResponse response) throws JsonIOException, IOException {
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
-        Long firstResult = 0l;
-        try {
-            firstResult = Long.valueOf(request.getParameter("firstResult"));
-        } catch (NumberFormatException e) {
-        }
+        Long firstResult = request.getRequestParameters()
+                .getParameterValue("firstResult").toLong(0l);
 
-        Long maxResults = 100l;
-        try {
-            maxResults = Long.valueOf(request.getParameter("maxResults"));
-        } catch (NumberFormatException e) {
-        }
-        String table = request.getParameter("table");
-        String sortField = request.getParameter("sortField");
+        Long maxResults = request.getRequestParameters()
+                .getParameterValue("maxResults").toLong(100l);
+
+        String table = request.getRequestParameters()
+                .getParameterValue("table").toOptionalString();
+        String sortField = request.getRequestParameters()
+                .getParameterValue("sortField").toOptionalString();
         if (table == null || "".equals(table)) {
             return Result.badRequest(response, "application/json",
                     ExportResultsResponse.class);
@@ -113,7 +109,6 @@ public class ExportRestAPI {
                     + maxResults);
         }
         Gson gson = application.getBean(Gson.class);
-        gson.toJson(body, response.getWriter());
         ExportResultsResponse json = new ExportResultsResponse(200, null, body);
         return Result.ok(response, gson, json);
     }

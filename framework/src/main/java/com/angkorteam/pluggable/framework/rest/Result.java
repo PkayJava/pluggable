@@ -2,23 +2,23 @@ package com.angkorteam.pluggable.framework.rest;
 
 import java.io.EOFException;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.Date;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.joda.time.DateTime;
+import org.apache.wicket.protocol.http.servlet.ResponseIOException;
+import org.apache.wicket.request.http.WebResponse;
+import org.apache.wicket.request.http.WebResponse.CacheScope;
+import org.apache.wicket.util.time.Duration;
+import org.apache.wicket.util.time.Time;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.angkorteam.pluggable.framework.json.HttpMessage;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
@@ -27,14 +27,12 @@ import com.google.gson.JsonIOException;
  */
 public class Result<T> implements Serializable {
 
-    private static final int DEFAULT_BUFFER_SIZE = 10240;
-
-    private static final String MULTIPART_BOUNDARY = "MULTIPART_BYTERANGES";
-
     /**
      * 
      */
     private static final long serialVersionUID = -1733741221268184786L;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Result.class);
 
     private int status;
 
@@ -43,9 +41,21 @@ public class Result<T> implements Serializable {
     private Result() {
     }
 
+    private Result(WebResponse response, int status) {
+        this.status = status;
+        response.setStatus(status);
+    }
+
     private Result(HttpServletResponse response, int status) {
         this.status = status;
         response.setStatus(status);
+    }
+
+    private Result(WebResponse response, int status, String contentType) {
+        this.status = status;
+        this.contentType = contentType;
+        response.setStatus(status);
+        response.setContentType(contentType);
     }
 
     private Result(HttpServletResponse response, int status, String contentType) {
@@ -53,6 +63,11 @@ public class Result<T> implements Serializable {
         this.contentType = contentType;
         response.setStatus(status);
         response.setContentType(contentType);
+    }
+
+    public static final <T> Result<T> ok(WebResponse response) {
+        Result<T> result = new Result<T>(response, 200);
+        return result;
     }
 
     public static final <T> Result<T> ok(HttpServletResponse response) {
@@ -68,266 +83,87 @@ public class Result<T> implements Serializable {
         return new Result<T>();
     }
 
-    private static boolean matches(String matchHeader, String toMatch) {
-        String[] matchValues = matchHeader.split("\\s*,\\s*");
-        Arrays.sort(matchValues);
-        return Arrays.binarySearch(matchValues, toMatch) > -1
-                || Arrays.binarySearch(matchValues, "*") > -1;
-    }
-
-    private static long sublong(String value, int beginIndex, int endIndex) {
-        String substring = value.substring(beginIndex, endIndex);
-        return (substring.length() > 0) ? Long.parseLong(substring) : -1;
-    }
-
-    private static void copy(RandomAccessFile input, OutputStream output,
-            long start, long length) throws IOException {
-        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
-        int read;
-
-        if (input.length() == length) {
-            // Write full range.
-            while ((read = input.read(buffer)) > 0) {
-                output.write(buffer, 0, read);
-            }
-        } else {
-            // Write partial range.
-            input.seek(start);
-            long toRead = length;
-
-            while ((read = input.read(buffer)) > 0) {
-                if ((toRead -= read) > 0) {
-                    output.write(buffer, 0, read);
-                } else {
-                    output.write(buffer, 0, (int) toRead + read);
-                    break;
-                }
-            }
-        }
-    }
-
-    private static class Range {
-        long start;
-        long end;
-        long length;
-        long total;
-
-        /**
-         * Construct a byte range.
-         * 
-         * @param start
-         *            Start of the byte range.
-         * @param end
-         *            End of the byte range.
-         * @param total
-         *            Total length of the byte source.
-         */
-        public Range(long start, long end, long total) {
-            this.start = start;
-            this.end = end;
-            this.length = end - start + 1;
-            this.total = total;
-        }
-
-    }
-
-    public static final <T> Result<T> ok(File file, HttpServletRequest request,
-            HttpServletResponse response) throws IOException {
-        DateTime now = new DateTime();
-
-        // Prepare some variables. The ETag is an unique identifier of
-        // the file.
-        String fileName = file.getName();
-        long length = file.length();
-        long lastModified = file.lastModified();
-        String eTag = fileName + "_" + length + "_" + lastModified;
-
-        // Validate request headers for caching
-        // ---------------------------------------------------
-
-        // If-None-Match header should contain "*" or ETag. If so, then
-        // return 304.
-        String ifNoneMatch = request.getHeader("If-None-Match");
-        if (ifNoneMatch != null && matches(ifNoneMatch, eTag)) {
-            response.setHeader("ETag", eTag); // Required in 304.
-            response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-            return Result.<T> fake();
-        }
-
-        // If-Modified-Since header should be greater than LastModified.
-        // If so, then return 304.
-        // This header is ignored if any If-None-Match header is
-        // specified.
-        long ifModifiedSince = request.getDateHeader("If-Modified-Since");
-        if (ifNoneMatch == null && ifModifiedSince != -1
-                && ifModifiedSince + 1000 > lastModified) {
-            response.setHeader("ETag", eTag); // Required in 304.
-            response.sendError(HttpServletResponse.SC_NOT_MODIFIED);
-            return Result.<T> fake();
-        }
-
-        // Validate request headers for resume
-        // ----------------------------------------------------
-
-        // If-Match header should contain "*" or ETag. If not, then
-        // return 412.
-        String ifMatch = request.getHeader("If-Match");
-        if (ifMatch != null && !matches(ifMatch, eTag)) {
-            response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
-            return Result.<T> fake();
-        }
-
-        // If-Unmodified-Since header should be greater than
-        // LastModified. If not, then return 412.
-        long ifUnmodifiedSince = request.getDateHeader("If-Unmodified-Since");
-        if (ifUnmodifiedSince != -1 && ifUnmodifiedSince + 1000 <= lastModified) {
-            response.sendError(HttpServletResponse.SC_PRECONDITION_FAILED);
-            return Result.<T> fake();
-        }
-
-        Range full = new Range(0, length - 1, length);
-        List<Range> ranges = new ArrayList<Range>();
-
-        String range = request.getHeader("Range");
-        if (range != null) {
-
-            // Range header should match format "bytes=n-n,n-n,n-n...".
-            // If not, then return 416.
-            if (!range.matches("^bytes=\\d*-\\d*(,\\d*-\\d*)*$")) {
-                response.setHeader("Content-Range", "bytes */" + length);
-                response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                return Result.<T> fake();
-            }
-
-            String ifRange = request.getHeader("If-Range");
-            if (ifRange != null && !ifRange.equals(eTag)) {
-                try {
-                    long ifRangeTime = request.getDateHeader("If-Range");
-                    if (ifRangeTime != -1 && ifRangeTime + 1000 < lastModified) {
-                        ranges.add(full);
-                    }
-                } catch (IllegalArgumentException ignore) {
-                    ranges.add(full);
-                }
-            }
-
-            if (ranges.isEmpty()) {
-                for (String part : range.substring(6).split(",")) {
-                    long start = sublong(part, 0, part.indexOf("-"));
-                    long end = sublong(part, part.indexOf("-") + 1,
-                            part.length());
-
-                    if (start == -1) {
-                        start = length - end;
-                        end = length - 1;
-                    } else if (end == -1 || end > length - 1) {
-                        end = length - 1;
-                    }
-
-                    if (start > end) {
-                        response.setHeader("Content-Range", "bytes */" + length);
-                        response.sendError(HttpServletResponse.SC_REQUESTED_RANGE_NOT_SATISFIABLE);
-                        return Result.<T> fake();
-                    }
-
-                    // Add range.
-                    ranges.add(new Range(start, end, length));
-                }
-            }
-        }
-
-        response.reset();
-        response.setBufferSize(DEFAULT_BUFFER_SIZE);
-
-        response.setHeader("Accept-Ranges", "bytes");
-        response.setHeader("ETag", eTag);
-        response.setDateHeader("Last-Modified", lastModified);
-        response.setDateHeader("Expires", now.plusMonths(1).getMillis());
-
-        String extension = FilenameUtils.getExtension(file.getName())
-                .toLowerCase();
-        if (extension.equals("jpg") || extension.equals("jpeg")) {
-            response.setContentType("image/jpg");
-            response.setHeader("Content-Type", "image/jpg");
-        } else if (extension.equals("png")) {
-            response.setContentType("image/png");
-            response.setHeader("Content-Type", "image/png");
-        } else if (extension.equals("gif")) {
+    public static final <T> Result<T> ok(File file, WebResponse response)
+            throws IOException {
+        response.enableCaching(Duration.ONE_WEEK, CacheScope.PUBLIC);
+        response.setLastModifiedTime(Time.valueOf(new Date(file.lastModified())));
+        String extension = FilenameUtils.getExtension(file.getAbsolutePath());
+        if ("mp3".equalsIgnoreCase(extension)) {
+            response.setContentType("audio/mp3");
+        } else if ("gif".equals(extension)) {
             response.setContentType("image/gif");
-            response.setHeader("Content-Type", "image/gif");
+        } else if ("jpg".equals(extension)) {
+            response.setContentType("image/jpg");
+        } else if ("jpeg".equals(extension)) {
+            response.setContentType("image/jpeg");
+        } else if ("png".equals(extension)) {
+            response.setContentType("image/png");
+        } else {
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=\n"
+                    + file.getName() + "\"");
         }
-
-        // response.setHeader("Content-Disposition", "attachment; filename=\"" +
-        // file.getName() + "\"");
-
-        RandomAccessFile input = null;
-        OutputStream output = null;
-
+        response.setContentLength(file.length());
+        FileInputStream inputStream = new FileInputStream(file);
         try {
-            // Open streams.
-            input = new RandomAccessFile(file, "r");
-            output = response.getOutputStream();
-
-            if (ranges.isEmpty() || ranges.get(0) == full) {
-
-                // Return full file.
-                Range r = full;
-                response.setHeader("Content-Range", "bytes " + r.start + "-"
-                        + r.end + "/" + r.total);
-                response.setHeader("Content-Length", String.valueOf(r.length));
-
-                // Copy full range.
-                copy(input, output, r.start, r.length);
-
-            } else if (ranges.size() == 1) {
-
-                // Return single part of file.
-                Range r = ranges.get(0);
-                response.setHeader("Content-Range", "bytes " + r.start + "-"
-                        + r.end + "/" + r.total);
-                response.setHeader("Content-Length", String.valueOf(r.length));
-                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT); // 206.
-
-                copy(input, output, r.start, r.length);
-            } else {
-
-                // Return multiple parts of file.
-                response.setContentType("multipart/byteranges; boundary="
-                        + MULTIPART_BOUNDARY);
-                response.setStatus(HttpServletResponse.SC_PARTIAL_CONTENT); // 206.
-
-                // Cast back to ServletOutputStream to get the easy
-                // println methods.
-                ServletOutputStream sos = (ServletOutputStream) output;
-
-                // Copy multi part range.
-                for (Range r : ranges) {
-                    // Add multipart boundary and header fields for
-                    // every range.
-                    sos.println();
-                    sos.println("--" + MULTIPART_BOUNDARY);
-                    sos.println("Content-Range: bytes " + r.start + "-" + r.end
-                            + "/" + r.total);
-
-                    // Copy single part range of multi part range.
-                    copy(input, output, r.start, r.length);
-                }
-
-                // End with multipart boundary.
-                sos.println();
-                sos.println("--" + MULTIPART_BOUNDARY + "--");
-            }
+            IOUtils.copy(inputStream, response.getOutputStream());
         } catch (EOFException e) {
-        } finally {
-            IOUtils.closeQuietly(output);
-            IOUtils.closeQuietly(input);
+            LOGGER.info("error {}", e.getMessage());
+        } catch (ResponseIOException e) {
+            LOGGER.info("error {}", e.getMessage());
         }
+        IOUtils.closeQuietly(inputStream);
         return Result.<T> fake();
+    }
+
+    public static final <T> Result<T> ok(File file, HttpServletResponse response)
+            throws IOException {
+        String extension = FilenameUtils.getExtension(file.getAbsolutePath());
+        if ("mp3".equalsIgnoreCase(extension)) {
+            response.setContentType("audio/mp3");
+        } else if ("gif".equals(extension)) {
+            response.setContentType("image/gif");
+        } else if ("jpg".equals(extension)) {
+            response.setContentType("image/jpg");
+        } else if ("jpeg".equals(extension)) {
+            response.setContentType("image/jpeg");
+        } else if ("png".equals(extension)) {
+            response.setContentType("image/png");
+        } else {
+            response.setContentType("application/octet-stream");
+            response.addHeader("Content-Disposition", "attachment; filename=\n"
+                    + file.getName() + "\"");
+        }
+        response.setContentLength(Long.valueOf(file.length()).intValue());
+        FileInputStream inputStream = new FileInputStream(file);
+        try {
+            IOUtils.copy(inputStream, response.getOutputStream());
+        } catch (EOFException e) {
+            System.out.println(e.getMessage());
+        } catch (Throwable e) {
+            System.out.println(e.getClass().getName());
+        }
+        IOUtils.closeQuietly(inputStream);
+        return Result.<T> fake();
+    }
+
+    public static final <T> Result<T> ok(WebResponse response,
+            String contentType, Class<T> clazz) {
+        Result<T> result = new Result<T>(response, 200, contentType);
+        return result;
     }
 
     public static final <T> Result<T> ok(HttpServletResponse response,
             String contentType, Class<T> clazz) {
         Result<T> result = new Result<T>(response, 200, contentType);
+        return result;
+    }
+
+    public static final <T> Result<T> ok(WebResponse response, Gson gson,
+            T content) throws JsonIOException, IOException {
+        Result<T> result = new Result<T>(response, 200, "application/json");
+        response.disableCaching();
+        response.write(gson.toJson(content));
         return result;
     }
 
@@ -338,9 +174,19 @@ public class Result<T> implements Serializable {
         return result;
     }
 
+    public static final <T> Result<T> created(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 201);
+    }
+
     public static final <T> Result<T> created(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 201);
+    }
+
+    public static final <T> Result<T> created(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 201, contentType);
     }
 
     public static final <T> Result<T> created(HttpServletResponse response,
@@ -348,9 +194,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 201, contentType);
     }
 
+    public static final <T> Result<T> accepted(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 202);
+    }
+
     public static final <T> Result<T> accepted(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 202);
+    }
+
+    public static final <T> Result<T> accepted(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 202, contentType);
     }
 
     public static final <T> Result<T> accepted(HttpServletResponse response,
@@ -358,9 +214,18 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 202, contentType);
     }
 
+    public static final <T> Result<T> found(WebResponse response, Class<T> clazz) {
+        return new Result<T>(response, 302);
+    }
+
     public static final <T> Result<T> found(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 302);
+    }
+
+    public static final <T> Result<T> found(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 302, contentType);
     }
 
     public static final <T> Result<T> found(HttpServletResponse response,
@@ -368,9 +233,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 302, contentType);
     }
 
+    public static final <T> Result<T> badRequest(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 400);
+    }
+
     public static final <T> Result<T> badRequest(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 400);
+    }
+
+    public static final <T> Result<T> badRequest(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 400, contentType);
     }
 
     public static final <T> Result<T> badRequest(HttpServletResponse response,
@@ -378,9 +253,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 400, contentType);
     }
 
+    public static final <T> Result<T> unauthorized(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 401);
+    }
+
     public static final <T> Result<T> unauthorized(
             HttpServletResponse response, Class<T> clazz) {
         return new Result<T>(response, 401);
+    }
+
+    public static final <T> Result<T> unauthorized(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 401, contentType);
     }
 
     public static final <T> Result<T> unauthorized(
@@ -388,9 +273,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 401, contentType);
     }
 
+    public static final <T> Result<T> forbidden(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 403);
+    }
+
     public static final <T> Result<T> forbidden(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 403);
+    }
+
+    public static final <T> Result<T> forbidden(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 403, contentType);
     }
 
     public static final <T> Result<T> forbidden(HttpServletResponse response,
@@ -398,9 +293,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 403, contentType);
     }
 
+    public static final <T> Result<T> notFound(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 404);
+    }
+
     public static final <T> Result<T> notFound(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 404);
+    }
+
+    public static final <T> Result<T> notFound(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 404, contentType);
     }
 
     public static final <T> Result<T> notFound(HttpServletResponse response,
@@ -408,9 +313,18 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 404, contentType);
     }
 
+    public static final <T> Result<T> gone(WebResponse response, Class<T> clazz) {
+        return new Result<T>(response, 410);
+    }
+
     public static final <T> Result<T> gone(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 410);
+    }
+
+    public static final <T> Result<T> gone(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 410, contentType);
     }
 
     public static final <T> Result<T> gone(HttpServletResponse response,
@@ -418,9 +332,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 410, contentType);
     }
 
+    public static final <T> Result<T> locked(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 423);
+    }
+
     public static final <T> Result<T> locked(HttpServletResponse response,
             Class<T> clazz) {
         return new Result<T>(response, 423);
+    }
+
+    public static final <T> Result<T> locked(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 423, contentType);
     }
 
     public static final <T> Result<T> locked(HttpServletResponse response,
@@ -428,9 +352,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 423, contentType);
     }
 
+    public static final <T> Result<T> internalServerError(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 500);
+    }
+
     public static final <T> Result<T> internalServerError(
             HttpServletResponse response, Class<T> clazz) {
         return new Result<T>(response, 500);
+    }
+
+    public static final <T> Result<T> internalServerError(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 500, contentType);
     }
 
     public static final <T> Result<T> internalServerError(
@@ -438,9 +372,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 500, contentType);
     }
 
+    public static final <T> Result<T> notImplemented(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 501);
+    }
+
     public static final <T> Result<T> notImplemented(
             HttpServletResponse response, Class<T> clazz) {
         return new Result<T>(response, 501);
+    }
+
+    public static final <T> Result<T> notImplemented(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 501, contentType);
     }
 
     public static final <T> Result<T> notImplemented(
@@ -448,9 +392,19 @@ public class Result<T> implements Serializable {
         return new Result<T>(response, 501, contentType);
     }
 
+    public static final <T> Result<T> serviceUnavailable(WebResponse response,
+            Class<T> clazz) {
+        return new Result<T>(response, 503);
+    }
+
     public static final <T> Result<T> serviceUnavailable(
             HttpServletResponse response, Class<T> clazz) {
         return new Result<T>(response, 503);
+    }
+
+    public static final <T> Result<T> serviceUnavailable(WebResponse response,
+            String contentType, Class<T> clazz) {
+        return new Result<T>(response, 503, contentType);
     }
 
     public static final <T> Result<T> serviceUnavailable(

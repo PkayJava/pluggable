@@ -6,8 +6,6 @@ public interface FrameworkConstants {
 
     String REPOSITORY_LOCAL_URI = "file://";
 
-    String LOCAL = "local";
-
     String X_FORWARDED_FOR = "x-forwarded-for";
 
     String SERVER_ADDRESS = "server_address";

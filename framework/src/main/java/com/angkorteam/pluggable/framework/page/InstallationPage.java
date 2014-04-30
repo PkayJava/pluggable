@@ -53,12 +53,12 @@ public final class InstallationPage extends KnownPage {
     @NotNull
     private String serverAddress;
 
-    @com.angkorteam.pluggable.framework.widget.TextField(label = "Local", placeholder = "Local", order = 3)
-    private String local;
+    @com.angkorteam.pluggable.framework.widget.TextField(label = "Repository", placeholder = "Repository", order = 3)
+    private String repository;
 
     public InstallationPage() {
         initializeInterceptor();
-        this.local = FileUtils.getTempDirectoryPath();
+        this.repository = FileUtils.getTempDirectoryPath();
         this.serverAddress = FrameworkUtilities
                 .getServerAddress((HttpServletRequest) getRequest()
                         .getContainerRequest());
@@ -83,8 +83,8 @@ public final class InstallationPage extends KnownPage {
             }
         }
 
-        org.apache.wicket.markup.html.form.TextField<String> local = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("local");
-        getForm().add(new LocalRepositoryValidator(local));
+        org.apache.wicket.markup.html.form.TextField<String> repository = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("repository");
+        getForm().add(new LocalRepositoryValidator(repository));
 
     }
 
@@ -121,7 +121,7 @@ public final class InstallationPage extends KnownPage {
                 AbstractWebApplication.SUPER_ADMIN_GROUP, false);
         SecurityUtilities.grantAccess(jdbcTemplate, group, userId);
 
-        application.update(FrameworkConstants.LOCAL, this.local);
+        application.update(FrameworkConstants.REPOSITORY, this.repository);
 
         application.update(FrameworkConstants.SERVER_ADDRESS,
                 this.serverAddress);

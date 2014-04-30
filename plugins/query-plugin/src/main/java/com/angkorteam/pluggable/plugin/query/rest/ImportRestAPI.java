@@ -6,8 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
@@ -34,12 +35,14 @@ public class ImportRestAPI {
     @RequestMapping(value = "/queryplugin/api/import", method = RequestMethod.POST)
     @ApiMethod(description = "import data", requestObject = Table.class)
     public Result<Void> importResult(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws JsonIOException, IOException {
+            WebRequest request, WebResponse response) throws JsonIOException,
+            IOException {
         Gson gson = application.getGson();
 
         InputStreamReader streamReader = new InputStreamReader(
-                request.getInputStream(), "UTF-8");
+                ((HttpServletRequest) request.getContainerRequest())
+                        .getInputStream(),
+                "UTF-8");
 
         Table table = gson.fromJson(streamReader, Table.class);
         if (table == null || table.getName() == null
@@ -66,12 +69,14 @@ public class ImportRestAPI {
     @RequestMapping(value = "/queryplugin/api/import/batch", method = RequestMethod.POST)
     @ApiMethod(description = "import data", requestObject = Table[].class)
     public Result<Void> importBatch(AbstractWebApplication application,
-            HttpServletRequest request, HttpServletResponse response)
-            throws JsonIOException, IOException {
+            WebRequest request, WebResponse response) throws JsonIOException,
+            IOException {
         Gson gson = application.getGson();
 
         InputStreamReader streamReader = new InputStreamReader(
-                request.getInputStream(), "UTF-8");
+                ((HttpServletRequest) request.getContainerRequest())
+                        .getInputStream(),
+                "UTF-8");
 
         Table[] tables = gson.fromJson(streamReader, Table[].class);
         if (tables == null || tables.length == 0) {

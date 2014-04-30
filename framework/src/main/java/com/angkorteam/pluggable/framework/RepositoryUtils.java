@@ -26,7 +26,7 @@ public final class RepositoryUtils {
         String filename = org.apache.commons.codec.digest.DigestUtils
                 .md5Hex(system) + "_" + fileUpload.getClientFileName();
 
-        String local = application.select(FrameworkConstants.LOCAL,
+        String local = application.select(FrameworkConstants.REPOSITORY,
                 String.class);
         File copyTo = new File(local, filename);
         FileOutputStream out = null;
@@ -54,7 +54,7 @@ public final class RepositoryUtils {
 
     private static void localDelete(AbstractWebApplication application,
             String filename) {
-        String local = application.select(FrameworkConstants.LOCAL,
+        String local = application.select(FrameworkConstants.REPOSITORY,
                 String.class);
         File fileToDelete = new File(local, filename);
         FileUtils.deleteQuietly(fileToDelete);
@@ -74,11 +74,20 @@ public final class RepositoryUtils {
         return serverAddress
                 + "/"
                 + RestController.PATH
-                + "/"
                 + ResourceController.FILE
                 + "?filename="
                 + file.substring(FrameworkConstants.REPOSITORY_LOCAL_URI
                         .length());
+    }
+
+    public static String getAbsolutePath(AbstractWebApplication application,
+            String file) {
+        String local = application.select(FrameworkConstants.REPOSITORY,
+                String.class);
+        File fn = new File(
+                local,
+                file.substring(FrameworkConstants.REPOSITORY_LOCAL_URI.length()));
+        return fn.getAbsolutePath();
     }
 
     public static String getImageAccessLink(AbstractWebApplication application,

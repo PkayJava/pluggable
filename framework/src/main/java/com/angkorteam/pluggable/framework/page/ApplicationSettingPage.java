@@ -45,9 +45,9 @@ public abstract class ApplicationSettingPage extends KnownPage {
     @NotNull
     private String serverAddress;
 
-    @Setting(name = FrameworkConstants.LOCAL)
-    @TextField(label = "Local", placeholder = "Local", order = 3)
-    private String local;
+    @Setting(name = FrameworkConstants.REPOSITORY)
+    @TextField(label = "Repository", placeholder = "Repository", order = 3)
+    private String repository;
 
     @Setting(name = FrameworkConstants.DEBUG)
     @CheckBox(label = "Debug Mode", placeholder = "Run in Debug Mode ?", order = 8)
@@ -93,7 +93,7 @@ public abstract class ApplicationSettingPage extends KnownPage {
             }
         }
 
-        org.apache.wicket.markup.html.form.TextField<String> local = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("local");
+        org.apache.wicket.markup.html.form.TextField<String> local = (org.apache.wicket.markup.html.form.TextField<String>) getFormComponent("repository");
         getForm().add(new LocalRepositoryValidator(local));
 
     }

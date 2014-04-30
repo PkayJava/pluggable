@@ -16,7 +16,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.request.cycle.RequestCycle;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.resource.IResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
@@ -39,6 +42,7 @@ import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 import com.angkorteam.pluggable.framework.wicket.authroles.Role;
 import com.angkorteam.pluggable.framework.wicket.authroles.Secured;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
+import com.google.gson.Gson;
 
 /**
  * @author Socheat KHAUV
@@ -67,12 +71,11 @@ public class RestController implements IResource {
         AbstractWebApplication application = (AbstractWebApplication) AbstractWebApplication
                 .get();
 
-        javax.servlet.http.HttpServletRequest request = (javax.servlet.http.HttpServletRequest) attributes
-                .getRequest().getContainerRequest();
-        HttpServletResponse response = (HttpServletResponse) attributes
-                .getResponse().getContainerResponse();
-        response.setCharacterEncoding(application.getRequestCycleSettings()
-                .getResponseRequestEncoding());
+        String method = ((javax.servlet.http.HttpServletRequest) attributes
+                .getRequest().getContainerRequest()).getMethod();
+        WebRequest request = (WebRequest) attributes.getRequest();
+        WebResponse response = (WebResponse) attributes.getResponse();
+
         WebSession session = (WebSession) WebSession.get();
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
 
@@ -88,8 +91,8 @@ public class RestController implements IResource {
         RequestMapping requestMapping = info.getMethod().getAnnotation(
                 RequestMapping.class);
         if (requestMapping == null
-                || requestMapping.method() != RequestMethod.valueOf(request
-                        .getMethod().toUpperCase())) {
+                || requestMapping.method() != RequestMethod.valueOf(method
+                        .toUpperCase())) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             RequestCycle.get().setResponsePage(Error404Page.class);
             return;
@@ -204,7 +207,7 @@ public class RestController implements IResource {
                                         String.class, digest.getUsername());
 
                         String serverDigestMd5 = digest.calculateServerDigest(
-                                password, request.getMethod());
+                                password, method);
                         if (!serverDigestMd5.equals(digest.getResponse())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -257,8 +260,8 @@ public class RestController implements IResource {
                         }
                         username = credential[0];
                         String password = credential[1];
-                        valid = SecurityUtilities.authenticateJdbc(jdbcTemplate,
-                                username, password);
+                        valid = SecurityUtilities.authenticateJdbc(
+                                jdbcTemplate, username, password);
                     } else if (DIGEST.equals(authentication)) {
                         if (authorization == null) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
@@ -293,7 +296,7 @@ public class RestController implements IResource {
                                         String.class, digest.getUsername());
 
                         String serverDigestMd5 = digest.calculateServerDigest(
-                                password, request.getMethod());
+                                password, method);
                         if (!serverDigestMd5.equals(digest.getResponse())) {
                             response.setHeader(WWW_AUTHENTICATE, digestRealm);
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -302,8 +305,8 @@ public class RestController implements IResource {
 
                         username = digest.getUsername();
 
-                        valid = SecurityUtilities.authenticateJdbc(jdbcTemplate,
-                                username, password);
+                        valid = SecurityUtilities.authenticateJdbc(
+                                jdbcTemplate, username, password);
                     }
                 } else {
                     username = session.getUsername();
@@ -366,19 +369,50 @@ public class RestController implements IResource {
             }
         }
 
-        UserPrincipal principal = null;
-        if (secured != null) {
-            principal = new UserPrincipal(username);
-        }
+        // UserPrincipal principal = null;
+        // if (secured != null) {
+        // principal = new UserPrincipal(username);
+        // }
 
         try {
-            // Object result = (Object)
-            // MethodUtils.invokeMethod(info.getClazz().newInstance(),
-            // info.getMethod().getName(), application, request, response);
-            Object result = (Object) MethodUtils.invokeMethod(info.getClazz()
-                    .newInstance(), info.getMethod().getName(), application,
-                    new HttpServletRequest(jdbcTemplate, principal, request),
-                    response);
+            Class<?>[] params = info.getMethod().getParameterTypes();
+            Object result = null;
+            if (params == null || params.length == 0) {
+                result = (Object) MethodUtils.invokeMethod(info.getClazz()
+                        .newInstance(), info.getMethod().getName());
+            } else {
+                Object[] args = new Object[info.getMethod().getParameterTypes().length];
+                for (int i = 0; i < args.length; i++) {
+                    Class<?> clazz = info.getMethod().getParameterTypes()[i];
+                    if (clazz == HttpServletRequest.class) {
+                        args[i] = new HttpServletRequest(jdbcTemplate,
+                                new UserPrincipal(username),
+                                (HttpServletRequest) request
+                                        .getContainerRequest());
+                    } else if (clazz == Principal.class) {
+                        args[i] = new UserPrincipal(username);
+                    } else if (clazz == HttpServletResponse.class) {
+                        args[i] = (HttpServletResponse) response
+                                .getContainerResponse();
+                    } else if (clazz == WebRequest.class) {
+                        args[i] = request;
+                    } else if (clazz == WebResponse.class) {
+                        args[i] = response;
+                    } else if (clazz == AbstractWebApplication.class) {
+                        args[i] = application;
+                    } else if (clazz == JdbcTemplate.class) {
+                        args[i] = application.getJdbcTemplate();
+                    } else if (clazz == Gson.class) {
+                        args[i] = application.getGson();
+                    } else {
+                        throw new WicketRuntimeException(clazz.getName()
+                                + " is not supported");
+                    }
+                }
+                result = (Object) MethodUtils.invokeMethod(info.getClazz()
+                        .newInstance(), info.getMethod().getName(), args);
+            }
+
             if (result == null) {
                 throw new NullPointerException(info.getMethod().getName()
                         + " must return a Result object");
@@ -387,7 +421,7 @@ public class RestController implements IResource {
                     throw new ClassCastException(info.getMethod().getName()
                             + " must return type is not a Result object");
                 } else {
-                    Result object = (Result) result;
+                    Result<?> object = (Result<?>) result;
                     response.setContentType(object.getContentType());
                     response.setStatus(object.getStatus());
                 }
@@ -424,40 +458,6 @@ public class RestController implements IResource {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             RequestCycle.get().setResponsePage(InternalErrorPage.class);
             return;
-        }
-
-    }
-
-    private class HttpServletRequest extends HttpServletRequestWrapper {
-
-        private UserPrincipal principal;
-
-        private List<String> roles;
-
-        private JdbcTemplate jdbcTemplate;
-
-        public HttpServletRequest(JdbcTemplate jdbcTemplate,
-                UserPrincipal principal,
-                javax.servlet.http.HttpServletRequest request) {
-            super(request);
-            this.principal = principal;
-            this.jdbcTemplate = jdbcTemplate;
-            if (principal != null) {
-                roles = RoleUtilities.lookupJdbcRoles(jdbcTemplate,
-                        principal.getName());
-            } else {
-                roles = Collections.emptyList();
-            }
-        }
-
-        @Override
-        public Principal getUserPrincipal() {
-            return this.principal;
-        }
-
-        @Override
-        public boolean isUserInRole(String role) {
-            return roles.contains(role);
         }
 
     }
@@ -571,11 +571,6 @@ public class RestController implements IResource {
             // Don't catch IllegalArgumentException (already checked validity)
             return DigestAuthUtils.generateDigest(false, username, realm,
                     password, httpMethod, uri, qop, nonce, nc, cnonce);
-        }
-
-        boolean isNonceExpired() {
-            long now = System.currentTimeMillis();
-            return nonceExpiryTime < now;
         }
 
         String getUsername() {
@@ -812,6 +807,40 @@ public class RestController implements IResource {
         }
     }
 
+    private class HttpServletRequest extends HttpServletRequestWrapper {
+
+        private UserPrincipal principal;
+
+        private List<String> roles;
+
+        private JdbcTemplate jdbcTemplate;
+
+        public HttpServletRequest(JdbcTemplate jdbcTemplate,
+                UserPrincipal principal,
+                javax.servlet.http.HttpServletRequest request) {
+            super(request);
+            this.principal = principal;
+            this.jdbcTemplate = jdbcTemplate;
+            if (principal != null) {
+                roles = RoleUtilities.lookupJdbcRoles(jdbcTemplate,
+                        principal.getName());
+            } else {
+                roles = Collections.emptyList();
+            }
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            return this.principal;
+        }
+
+        @Override
+        public boolean isUserInRole(String role) {
+            return roles.contains(role);
+        }
+
+    }
+
     private static class Hex {
 
         private static final char[] HEX = { '0', '1', '2', '3', '4', '5', '6',
@@ -831,30 +860,6 @@ public class RestController implements IResource {
 
             return result;
         }
-
-        public static byte[] decode(CharSequence s) {
-            int nChars = s.length();
-
-            if (nChars % 2 != 0) {
-                throw new IllegalArgumentException(
-                        "Hex-encoded string must have an even number of characters");
-            }
-
-            byte[] result = new byte[nChars / 2];
-
-            for (int i = 0; i < nChars; i += 2) {
-                int msb = Character.digit(s.charAt(i), 16);
-                int lsb = Character.digit(s.charAt(i + 1), 16);
-
-                if (msb < 0 || lsb < 0) {
-                    throw new IllegalArgumentException(
-                            "Non-hex character in input: " + s);
-                }
-                result[i / 2] = (byte) ((msb << 4) | lsb);
-            }
-            return result;
-        }
-
     }
 
 }
