@@ -163,13 +163,17 @@ public class Result<T> implements Serializable {
             T content) throws JsonIOException, IOException {
         Result<T> result = new Result<T>(response, 200, "application/json");
         response.disableCaching();
-        response.write(gson.toJson(content));
+        HttpServletResponse httpServletResponse = (HttpServletResponse) response
+                .getContainerResponse();
+        httpServletResponse.setCharacterEncoding("UTF-8");
+        gson.toJson(content, httpServletResponse.getWriter());
         return result;
     }
 
     public static final <T> Result<T> ok(HttpServletResponse response,
             Gson gson, T content) throws JsonIOException, IOException {
         Result<T> result = new Result<T>(response, 200, "application/json");
+        response.setCharacterEncoding("UTF-8");
         gson.toJson(content, response.getWriter());
         return result;
     }
