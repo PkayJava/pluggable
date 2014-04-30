@@ -390,7 +390,7 @@ public class RestController implements IResource {
                     if (clazz == javax.servlet.http.HttpServletRequest.class) {
                         args[i] = new HttpServletRequest(jdbcTemplate,
                                 new UserPrincipal(username),
-                                (HttpServletRequest) request
+                                (javax.servlet.http.HttpServletRequest) request
                                         .getContainerRequest());
                     } else if (clazz == Principal.class) {
                         args[i] = new UserPrincipal(username);
