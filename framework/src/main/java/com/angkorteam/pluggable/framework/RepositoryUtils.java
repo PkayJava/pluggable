@@ -23,8 +23,16 @@ public final class RepositoryUtils {
     private static String localStore(AbstractWebApplication application,
             FileUpload fileUpload) {
         String system = String.valueOf(System.nanoTime());
-        String filename = org.apache.commons.codec.digest.DigestUtils
-                .md5Hex(system) + "_" + fileUpload.getClientFileName();
+        String clientName = fileUpload.getClientFileName();
+        String exentsion = FilenameUtils.getExtension(clientName);
+        String filename = null;
+        if (exentsion == null || "".equals(exentsion)) {
+            filename = org.apache.commons.codec.digest.DigestUtils
+                    .md5Hex(system);
+        } else {
+            filename = org.apache.commons.codec.digest.DigestUtils
+                    .md5Hex(system) + "." + exentsion;
+        }
 
         String local = application.select(FrameworkConstants.REPOSITORY,
                 String.class);
