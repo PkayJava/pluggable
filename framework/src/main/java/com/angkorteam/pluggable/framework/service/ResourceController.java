@@ -1,11 +1,14 @@
 package com.angkorteam.pluggable.framework.service;
 
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
 
+import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
-import javaxt.io.Image;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -106,14 +109,33 @@ public class ResourceController {
                 original = original.substring(0, i) + "." + extension;
                 local = new File(repository, original);
                 if (local.exists()) {
-                    Image image = new Image(local);
-                    image.resize(width, height, ratio.toBoolean(false));
-                    image.saveAs(cache);
+                    BufferedImage bufferedImage = ImageIO.read(local);
+                    bufferedImage = getScaledImage(bufferedImage, width, height);
+                    ImageIO.write(
+                            bufferedImage,
+                            FilenameUtils.getExtension(local.getAbsolutePath()),
+                            cache);
                     file = cache;
                 }
             }
         }
         return Result.ok(file, response);
+    }
+
+    public static BufferedImage getScaledImage(BufferedImage image, int width,
+            int height) throws IOException {
+        int imageWidth = image.getWidth();
+        int imageHeight = image.getHeight();
+
+        double scaleX = (double) width / imageWidth;
+        double scaleY = (double) height / imageHeight;
+        AffineTransform scaleTransform = AffineTransform.getScaleInstance(
+                scaleX, scaleY);
+        AffineTransformOp bilinearScaleOp = new AffineTransformOp(
+                scaleTransform, AffineTransformOp.TYPE_BILINEAR);
+
+        return bilinearScaleOp.filter(image, new BufferedImage(width, height,
+                image.getType()));
     }
 
 }
