@@ -19,12 +19,15 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.protocol.http.IMultipartWebRequest;
+import org.apache.wicket.protocol.http.servlet.ServletWebRequest;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.http.WebRequest;
 import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.resource.IResource;
+import org.apache.wicket.util.lang.Bytes;
 import org.apache.wicket.util.string.StringValue;
 import org.apache.wicket.util.upload.FileItem;
+import org.apache.wicket.util.upload.FileUploadException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -79,6 +82,15 @@ public class RestController implements IResource {
         String method = ((javax.servlet.http.HttpServletRequest) attributes
                 .getRequest().getContainerRequest()).getMethod();
         WebRequest request = (WebRequest) attributes.getRequest();
+        if (request.getHeader("Content-Type") != null
+                && request.getHeader("Content-Type").startsWith(
+                        "multipart/form-data")) {
+            try {
+                request = ((ServletWebRequest) request).newMultipartWebRequest(
+                        Bytes.megabytes(10), "mp3");
+            } catch (FileUploadException e) {
+            }
+        }
         WebResponse response = (WebResponse) attributes.getResponse();
 
         WebSession session = (WebSession) WebSession.get();
@@ -461,7 +473,7 @@ public class RestController implements IResource {
                                 IMultipartWebRequest partRequest = (IMultipartWebRequest) request;
                                 List<FileItem> fileItems = partRequest
                                         .getFile(param.name());
-                                if (fileItems != null && fileItems.isEmpty()) {
+                                if (fileItems != null && !fileItems.isEmpty()) {
                                     if (param.type().isArray()) {
                                         args[i] = fileItems
                                                 .toArray(new FileItem[fileItems
