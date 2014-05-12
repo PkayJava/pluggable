@@ -49,6 +49,11 @@ public abstract class ApplicationSettingPage extends KnownPage {
     @TextField(label = "Repository", placeholder = "Repository", order = 3)
     private String repository;
 
+    @Setting(name = FrameworkConstants.MAX_UPLOAD_SIZE)
+    @TextField(label = "Max Upload Size", placeholder = "MB", order = 4)
+    @NotNull
+    private Double maxUploadSize;
+
     @Setting(name = FrameworkConstants.DEBUG)
     @CheckBox(label = "Debug Mode", placeholder = "Run in Debug Mode ?", order = 8)
     @NotNull

@@ -56,6 +56,10 @@ public final class InstallationPage extends KnownPage {
     @com.angkorteam.pluggable.framework.widget.TextField(label = "Repository", placeholder = "Repository", order = 3)
     private String repository;
 
+    @NotNull
+    @com.angkorteam.pluggable.framework.widget.TextField(label = "Max Upload Size", placeholder = "MB", order = 4)
+    private Double maxUploadSize;
+
     public InstallationPage() {
         initializeInterceptor();
         this.repository = FileUtils.getTempDirectoryPath();
@@ -127,6 +131,7 @@ public final class InstallationPage extends KnownPage {
                 this.serverAddress);
         application.update(FrameworkConstants.DEBUG, false);
         application.update(FrameworkConstants.DEPRECATED, false);
+        application.update(FrameworkConstants.MAX_UPLOAD_SIZE, maxUploadSize);
 
         setResponsePage(MigrationPage.class);
     }

@@ -86,8 +86,14 @@ public class RestController implements IResource {
                 && request.getHeader("Content-Type").startsWith(
                         "multipart/form-data")) {
             try {
+                Double maxUploadSize = application.select(
+                        FrameworkConstants.MAX_UPLOAD_SIZE, Double.class);
+                if (maxUploadSize == null || maxUploadSize <= 0) {
+                    maxUploadSize = 10d;
+                }
                 request = ((ServletWebRequest) request).newMultipartWebRequest(
-                        Bytes.megabytes(10), "mp3");
+                        Bytes.megabytes(maxUploadSize),
+                        String.valueOf(System.nanoTime()));
             } catch (FileUploadException e) {
             }
         }
