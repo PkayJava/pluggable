@@ -13,8 +13,6 @@ import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.service.ResourceController;
 import com.angkorteam.pluggable.framework.wicket.RestController;
 
-//import com.angkorteam.pluggable.framework.framework.service.ResourceController;
-
 public final class RepositoryUtils {
 
     private RepositoryUtils() {
@@ -55,9 +53,41 @@ public final class RepositoryUtils {
         return FrameworkConstants.REPOSITORY_LOCAL_URI + filename;
     }
 
+    private static String localStore(AbstractWebApplication application,
+            File file) {
+        String system = String.valueOf(System.nanoTime());
+        String clientName = file.getName();
+        String exentsion = FilenameUtils.getExtension(clientName);
+        String filename = null;
+        if (exentsion == null || "".equals(exentsion)) {
+            filename = org.apache.commons.codec.digest.DigestUtils
+                    .md5Hex(system);
+        } else {
+            filename = org.apache.commons.codec.digest.DigestUtils
+                    .md5Hex(system) + "." + exentsion;
+        }
+
+        String local = application.select(FrameworkConstants.REPOSITORY,
+                String.class);
+        File copyTo = new File(local, filename);
+
+        try {
+            FileUtils.copyFile(file, copyTo);
+            FileUtils.deleteQuietly(file);
+        } catch (IOException e) {
+            FileUtils.deleteQuietly(copyTo);
+            return null;
+        }
+        return FrameworkConstants.REPOSITORY_LOCAL_URI + filename;
+    }
+
     public static String store(AbstractWebApplication application,
             FileUpload fileUpload) {
         return localStore(application, fileUpload);
+    }
+
+    public static String store(AbstractWebApplication application, File file) {
+        return localStore(application, file);
     }
 
     private static void localDelete(AbstractWebApplication application,
