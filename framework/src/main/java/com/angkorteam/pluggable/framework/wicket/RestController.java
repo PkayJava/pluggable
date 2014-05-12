@@ -18,11 +18,13 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.protocol.http.IMultipartWebRequest;
 import org.apache.wicket.request.cycle.RequestCycle;
 import org.apache.wicket.request.http.WebRequest;
 import org.apache.wicket.request.http.WebResponse;
 import org.apache.wicket.request.resource.IResource;
 import org.apache.wicket.util.string.StringValue;
+import org.apache.wicket.util.upload.FileItem;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
@@ -433,6 +435,41 @@ public class RestController implements IResource {
                             } else {
                                 args[i] = request.getRequestParameters()
                                         .getParameterValue(param.name());
+                            }
+                        }
+                    } else if (clazz == FileItem.class
+                            || clazz == FileItem[].class) {
+                        Annotation[] annons = info.getMethod()
+                                .getParameterAnnotations()[i];
+                        if (annons == null || annons.length == 0) {
+                            throw new WicketRuntimeException(clazz.getName()
+                                    + " is ambiguous");
+                        } else {
+                            ApiParam param = null;
+                            for (Annotation annon : annons) {
+                                if (annon.annotationType() == ApiParam.class) {
+                                    param = (ApiParam) annon;
+                                    break;
+                                }
+                            }
+                            if (param == null || param.name() == null
+                                    || "".equals(param.name())) {
+                                throw new WicketRuntimeException(
+                                        clazz.getName() + " is ambiguous");
+                            }
+                            if (request instanceof IMultipartWebRequest) {
+                                IMultipartWebRequest partRequest = (IMultipartWebRequest) request;
+                                List<FileItem> fileItems = partRequest
+                                        .getFile(param.name());
+                                if (fileItems != null && fileItems.isEmpty()) {
+                                    if (param.type().isArray()) {
+                                        args[i] = fileItems
+                                                .toArray(new FileItem[fileItems
+                                                        .size()]);
+                                    } else {
+                                        args[i] = fileItems.get(0);
+                                    }
+                                }
                             }
                         }
                     } else {
