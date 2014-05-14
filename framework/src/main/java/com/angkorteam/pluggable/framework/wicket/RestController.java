@@ -448,8 +448,14 @@ public class RestController implements IResource {
                                         clazz.getName() + " is ambiguous");
                             }
                             if (param.type().isArray()) {
-                                args[i] = request.getRequestParameters()
+                                List<StringValue> values = request
+                                        .getRequestParameters()
                                         .getParameterValues(param.name());
+                                if (values != null) {
+                                    args[i] = values
+                                            .toArray(new StringValue[values
+                                                    .size()]);
+                                }
                             } else {
                                 args[i] = request.getRequestParameters()
                                         .getParameterValue(param.name());
