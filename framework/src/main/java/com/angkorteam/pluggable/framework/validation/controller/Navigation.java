@@ -26,13 +26,13 @@ public class Navigation implements Serializable {
         this.clazz = clazz;
     }
 
-    public Navigation(WebPage instance) {
-        this.instance = instance;
+    public Navigation(Class<? extends WebPage> clazz, PageParameters parameters) {
+        this.clazz = clazz;
+        this.parameters = parameters;
     }
 
-    public Navigation(WebPage instance, PageParameters parameters) {
+    public Navigation(WebPage instance) {
         this.instance = instance;
-        this.parameters = parameters;
     }
 
     public Class<? extends WebPage> getClazz() {

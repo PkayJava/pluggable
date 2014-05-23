@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<spring.version>4.0.3.RELEASE</spring.version>
 		<slf4j.version>1.7.5</slf4j.version>
-		<wicket.version>6.14.0</wicket.version>
+		<wicket.version>6.15.0</wicket.version>
 		<jodatime.version>2.3</jodatime.version>
 
 		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
