@@ -255,18 +255,46 @@ public class RestDocUtilities {
                             + " is not rest api compatible");
                 }
                 ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> responseObject = (Class<?>) parameterizedType
-                        .getActualTypeArguments()[0];
+                Class<?> responseObject = null;
+                Class<?> actualType = null;
+                try {
+                    if (parameterizedType.getActualTypeArguments()[0] instanceof Class<?>) {
+                        responseObject = (Class<?>) parameterizedType
+                                .getActualTypeArguments()[0];
+                    } else if (parameterizedType.getActualTypeArguments()[0] instanceof ParameterizedType) {
+                        responseObject = (Class<?>) ((ParameterizedType) parameterizedType
+                                .getActualTypeArguments()[0]).getRawType();
+                        actualType = (Class<?>) ((ParameterizedType) parameterizedType
+                                .getActualTypeArguments()[0])
+                                .getActualTypeArguments()[0];
+                    }
+                } catch (java.lang.ClassCastException e) {
+                    throw new WicketRuntimeException(e.getMessage() + " "
+                            + info.getValue().getClazz().getName() + "."
+                            + method.getName());
+                }
 
                 if (responseObject != Null.class) {
                     if (responseObject != Void.class) {
-                        if (responseObject.isAnnotationPresent(ApiObject.class)) {
-                            queueForm.push(responseObject);
-                            restAPIForm.setResponseObject(responseObject
-                                    .getName());
+                        if (responseObject == List.class) {
+                            if (actualType.isAnnotationPresent(ApiObject.class)) {
+                                queueForm.push(actualType);
+                                restAPIForm.setResponseObject(actualType
+                                        .getName() + "[]");
+                            } else {
+                                restAPIForm.setResponseObject(actualType
+                                        .getSimpleName() + "[]");
+                            }
                         } else {
-                            restAPIForm.setResponseObject(responseObject
-                                    .getSimpleName());
+                            if (responseObject
+                                    .isAnnotationPresent(ApiObject.class)) {
+                                queueForm.push(responseObject);
+                                restAPIForm.setResponseObject(responseObject
+                                        .getName());
+                            } else {
+                                restAPIForm.setResponseObject(responseObject
+                                        .getSimpleName());
+                            }
                         }
                     } else {
                         restAPIForm.setResponseObject("null");
@@ -385,13 +413,15 @@ public class RestDocUtilities {
                             if (type1 instanceof ParameterizedType) {
                                 ParameterizedType pp = (ParameterizedType) type1;
                                 fieldType = "Type : "
-                                        + ((Class) pp.getRawType())
+                                        + ((Class<?>) pp.getRawType())
                                                 .getSimpleName()
                                         + "<"
-                                        + ((Class) pp.getActualTypeArguments()[0])
+                                        + ((Class<?>) pp
+                                                .getActualTypeArguments()[0])
                                                 .getSimpleName()
                                         + ","
-                                        + ((Class) pp.getActualTypeArguments()[1])
+                                        + ((Class<?>) pp
+                                                .getActualTypeArguments()[1])
                                                 .getSimpleName() + ">" + "[]";
                             } else {
                                 Class<?> cla = (Class<?>) type
