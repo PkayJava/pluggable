@@ -95,9 +95,19 @@ public class Result<T> implements Serializable {
         } else if ("jpg".equals(extension)) {
             response.setContentType("image/jpg");
         } else if ("jpeg".equals(extension)) {
-            response.setContentType("image/jpeg");
+            response.setContentType("image/jpg");
         } else if ("png".equals(extension)) {
             response.setContentType("image/png");
+        } else if ("xml".equals(extension)) {
+            response.setContentType("application/xml");
+        } else if ("json".equals(extension)) {
+            response.setContentType("application/json");
+        } else if ("txt".equals(extension)) {
+            response.setContentType("text/txt");
+        } else if ("html".equals(extension)) {
+            response.setContentType("text/html");
+        } else if ("csv".equals(extension)) {
+            response.setContentType("text/csv");
         } else {
             response.setContentType("application/octet-stream");
             response.addHeader("Content-Disposition", "attachment; filename=\n"

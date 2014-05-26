@@ -11,7 +11,7 @@
 	<properties>
 		<java.version>1.6</java.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<spring.web.version>4.0.3.RELEASE</spring.web.version>
+		<spring.web.version>4.0.5.RELEASE</spring.web.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<jasypt.version>1.9.2</jasypt.version>
 
