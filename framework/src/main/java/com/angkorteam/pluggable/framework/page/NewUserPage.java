@@ -58,8 +58,8 @@ public final class NewUserPage extends KnownPage {
 
     @com.angkorteam.pluggable.framework.widget.Button(label = "Cancel", validate = false, order = 1)
     public Navigation cancelClick() {
-        return new Navigation(UserManagementPage.class);
-
+        AbstractWebApplication application = (AbstractWebApplication) getApplication();
+        return new Navigation(application.getUserManagementPage());
     }
 
     @com.angkorteam.pluggable.framework.widget.Button(label = "Okay", validate = true, order = 2)
@@ -99,7 +99,7 @@ public final class NewUserPage extends KnownPage {
                 mapping.execute(pp);
             }
         }
-        return new Navigation(UserManagementPage.class);
+        return new Navigation(application.getUserManagementPage());
     }
 
     @Override
