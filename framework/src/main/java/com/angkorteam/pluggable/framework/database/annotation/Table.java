@@ -36,6 +36,10 @@ public @interface Table {
      */
     String schema() default "";
 
-    String engine() default "InnoDB";
+    String engine() default MyISAM;
+
+    public static final String InnoDB = "InnoDB";
+
+    public static final String MyISAM = "MyISAM";
 
 }

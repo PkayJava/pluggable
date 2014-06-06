@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Mount;
+import com.angkorteam.pluggable.framework.page.ApplicationSettingPage;
 import com.angkorteam.pluggable.framework.page.DashboardPage;
 import com.angkorteam.pluggable.framework.page.EditGroupPage;
 import com.angkorteam.pluggable.framework.page.EditUserPage;
@@ -104,7 +105,7 @@ public class Initializer implements IInitializer {
                                         || page == EditGroupPage.class
                                         || page == DashboardPage.class
                                         || page == LoginPage.class
-                                        || page == SettingPage.class) {
+                                        || page == ApplicationSettingPage.class) {
                                     if (javaPackage.equals(Initializer.class
                                             .getPackage().getName())) {
                                         mount = page.getAnnotation(Mount.class);
@@ -205,7 +206,7 @@ public class Initializer implements IInitializer {
                                         mount = LoginPage.class
                                                 .getAnnotation(Mount.class);
                                     }
-                                } else if (page == SettingPage.class) {
+                                } else if (page == ApplicationSettingPage.class) {
                                     if (((AbstractWebApplication) application)
                                             .getSettingPage()
                                             .isAnnotationPresent(Mount.class)) {

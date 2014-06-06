@@ -17,6 +17,7 @@ import com.angkorteam.pluggable.framework.database.DbSupport;
 import com.angkorteam.pluggable.framework.database.Schema;
 import com.angkorteam.pluggable.framework.database.Table;
 import com.angkorteam.pluggable.framework.database.annotation.Column;
+import com.angkorteam.pluggable.framework.database.annotation.FullText;
 import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
 import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
 import com.angkorteam.pluggable.framework.database.annotation.Id;
@@ -184,6 +185,7 @@ public class MySQLSchema extends Schema {
         List<String> columns = new ArrayList<String>();
         List<String> idColumns = new ArrayList<String>();
         List<String> spatials = new ArrayList<String>();
+        List<String> fulltexts = new ArrayList<String>();
         Map<String, List<String>> uniqueGroups = new HashMap<String, List<String>>();
         for (String field : fields) {
             if (field.contains(" ")) {
@@ -229,6 +231,11 @@ public class MySQLSchema extends Schema {
                         spatials.add(column.name());
                     }
 
+                    FullText fulltext = field.getAnnotation(FullText.class);
+                    if (fulltext != null) {
+                        fulltexts.add(column.name());
+                    }
+
                     if (generatedValue != null
                             && generatedValue.strategy() == GenerationType.IDENTITY) {
                         ddl = ddl + " AUTO_INCREMENT";
@@ -262,6 +269,11 @@ public class MySQLSchema extends Schema {
         }
         if (spatials != null && !spatials.isEmpty()) {
             field.add("SPATIAL INDEX (" + StringUtils.join(spatials, ",") + ")");
+        }
+        if (fulltexts != null && !fulltexts.isEmpty()) {
+            for (String column : fulltexts) {
+                field.add("FULLTEXT (" + column + ")");
+            }
         }
         com.angkorteam.pluggable.framework.database.annotation.Table table = org.springframework.core.annotation.AnnotationUtils
                 .findAnnotation(
