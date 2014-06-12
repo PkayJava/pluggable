@@ -4,7 +4,7 @@
 
 	<groupId>com.angkorteam.pluggable.plugin</groupId>
 	<artifactId>query-plugin</artifactId>
-	<version>0.6.7.4</version>
+	<version>0.6.7.5</version>
 	<name>query-plugin</name>
 	<packaging>jar</packaging>
 
@@ -14,7 +14,7 @@
 		<spring.web.version>4.0.5.RELEASE</spring.web.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<jasypt.version>1.9.2</jasypt.version>
-        <frmk.version>0.6.7.4</frmk.version>
+        <frmk.version>0.6.7.5</frmk.version>
 
 		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
 		<maven.eclipse.plugin.version>2.9</maven.eclipse.plugin.version>
