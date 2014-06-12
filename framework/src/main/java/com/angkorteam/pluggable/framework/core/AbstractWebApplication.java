@@ -401,12 +401,20 @@ public abstract class AbstractWebApplication extends
         persistence.append("\t").append("</persistence-unit>").append("\n");
         persistence.append("").append("</persistence>").append("\n");
 
+        File root = new File(servletContext.getRealPath("/"));
+
         {
-            File classesPath = new File(servletContext.getRealPath("WEB-INF/classes"));
-            if (!classesPath.exists()) {
-                classesPath.mkdir();
+            File webinfo = new File(root, "WEB-INF");
+            if (!webinfo.exists()) {
+                webinfo.mkdir();
             }
-            File metainf = new File(classesPath, "META-INF");
+
+            File classes = new File(webinfo, "classes");
+            if (!classes.exists()) {
+                classes.mkdir();
+            }
+
+            File metainf = new File(classes, "META-INF");
             if (!metainf.exists()) {
                 metainf.mkdir();
             }
@@ -419,7 +427,7 @@ public abstract class AbstractWebApplication extends
         }
 
         {
-            File metainf = new File(servletContext.getRealPath("META-INF"));
+            File metainf = new File(root, "META-INF");
             if (!metainf.exists()) {
                 metainf.mkdir();
             }
