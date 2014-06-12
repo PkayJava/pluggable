@@ -1,6 +1,6 @@
 package com.angkorteam.pluggable.framework.entity;
 
-public final class User extends AbstractUser {
+public class User extends AbstractUser {
 
     /**
      * 

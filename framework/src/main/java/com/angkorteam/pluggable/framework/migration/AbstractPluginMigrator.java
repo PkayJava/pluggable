@@ -5,12 +5,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.angkorteam.pluggable.framework.database.EntityMapper;
+import com.angkorteam.pluggable.framework.mapper.PluginRegistryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Version;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.entity.PluginRegistry;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 
@@ -29,7 +30,7 @@ public abstract class AbstractPluginMigrator extends AbstractMigrator {
     @Override
     public boolean upgrade() {
         AbstractWebApplication application = getApplication();
-        PluginRegistry pluginRegistry = application.getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(PluginRegistry.class) + " where " + PluginRegistry.IDENTITY + " = ? " + " order by " + PluginRegistry.VERSION + " desc limit 1", new EntityRowMapper<PluginRegistry>(PluginRegistry.class), getIdentity());
+        PluginRegistry pluginRegistry = application.getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(PluginRegistry.class) + " where " + PluginRegistry.IDENTITY + " = ? " + " order by " + PluginRegistry.VERSION + " desc limit 1", new PluginRegistryMapper(), getIdentity());
         Map<Double, Method> versions = new TreeMap<Double, Method>();
         for (Method method : getClass().getMethods()) {
             Version version = method.getAnnotation(Version.class);

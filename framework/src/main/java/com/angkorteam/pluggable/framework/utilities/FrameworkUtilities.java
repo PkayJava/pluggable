@@ -11,6 +11,8 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
+import com.angkorteam.pluggable.framework.mapper.PluginRegistryMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.Page;
 import org.apache.wicket.core.request.handler.IPageRequestHandler;
@@ -33,9 +35,9 @@ import com.angkorteam.pluggable.framework.FrameworkConstants;
 import com.angkorteam.pluggable.framework.core.AbstractPlugin;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.database.Schema;
-import com.angkorteam.pluggable.framework.database.Table;
+import com.angkorteam.pluggable.framework.database.JdbcTable;
 import com.angkorteam.pluggable.framework.entity.AbstractUser;
 import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
 import com.angkorteam.pluggable.framework.entity.ApplicationSetting;
@@ -339,7 +341,7 @@ public class FrameworkUtilities {
                     "select * from "
                             + TableUtilities.getTableName(PluginRegistry.class)
                             + " where " + PluginRegistry.IDENTITY + " = ?",
-                    new EntityRowMapper<PluginRegistry>(PluginRegistry.class),
+                    new PluginRegistryMapper(),
                     identity);
             return pluginRegistry.isActivated();
         } catch (EmptyResultDataAccessException e) {
@@ -370,41 +372,41 @@ public class FrameworkUtilities {
     public static final void initSecurityTable(
             AbstractWebApplication application, Schema schema,
             JdbcTemplate jdbcTemplate, Map<String, AbstractPlugin> plugins) {
-        Table table = null;
+        JdbcTable jdbcTable = null;
 
-        table = schema.getTable(Role.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(Role.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(Role.class, Role.ID, Role.NAME,
                     Role.DESCRIPTION, Role.DISABLE);
         }
 
-        table = schema.getTable(application.getUserEntity());
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(application.getUserEntity());
+        if (!jdbcTable.exists()) {
             schema.createTable(application.getUserEntity(), AbstractUser.ID,
                     AbstractUser.LOGIN, AbstractUser.PASSWORD,
                     AbstractUser.DISABLE);
         }
 
-        table = schema.getTable(Group.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(Group.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(Group.class, Group.ID, Group.NAME,
                     Group.DESCRIPTION, Group.DISABLE);
         }
 
-        table = schema.getTable(UserGroup.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(UserGroup.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(UserGroup.class, UserGroup.GROUP_ID,
                     UserGroup.USER_ID);
         }
 
-        table = schema.getTable(RoleUser.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(RoleUser.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(RoleUser.class, RoleUser.USER_ID,
                     RoleUser.ROLE_ID);
         }
 
-        table = schema.getTable(RoleGroup.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(RoleGroup.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(RoleGroup.class, RoleGroup.ROLE_ID,
                     RoleGroup.GROUP_ID);
         }
@@ -413,38 +415,38 @@ public class FrameworkUtilities {
     public static final void initRegistryTable(
             AbstractWebApplication application, Schema schema,
             JdbcTemplate jdbcTemplate, Map<String, AbstractPlugin> plugins) {
-        Table table = null;
+        JdbcTable jdbcTable = null;
 
-        table = schema.getTable(ApplicationRegistry.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(ApplicationRegistry.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(ApplicationRegistry.class,
                     ApplicationRegistry.ID, ApplicationRegistry.VERSION,
                     ApplicationRegistry.UPGRADE_DATE);
         }
 
-        table = schema.getTable(PluginRegistry.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(PluginRegistry.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(PluginRegistry.class, PluginRegistry.ID,
                     PluginRegistry.NAME, PluginRegistry.VERSION,
                     PluginRegistry.IDENTITY, PluginRegistry.ACTIVATED,
                     PluginRegistry.PRESENTED, PluginRegistry.UPGRADE_DATE);
         }
 
-        table = schema.getTable(PluginSetting.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(PluginSetting.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(PluginSetting.class, PluginSetting.ID,
                     PluginSetting.IDENTITY, PluginSetting.NAME,
                     PluginSetting.VALUE);
         }
 
-        table = schema.getTable(ApplicationSetting.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(ApplicationSetting.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(ApplicationSetting.class, ApplicationSetting.ID,
                     ApplicationSetting.NAME, ApplicationSetting.VALUE);
         }
 
-        table = schema.getTable(Job.class);
-        if (!table.exists()) {
+        jdbcTable = schema.getTable(Job.class);
+        if (!jdbcTable.exists()) {
             schema.createTable(Job.class, Job.ID, Job.CRON, Job.NEW_CRON,
                     Job.DESCRIPTION, Job.DISABLE, Job.LAST_ERROR,
                     Job.LAST_PROCESS, Job.PAUSE, Job.STATUS);
@@ -466,8 +468,7 @@ public class FrameworkUtilities {
                                                     .getTableName(PluginRegistry.class)
                                             + " where "
                                             + PluginRegistry.IDENTITY + " = ?",
-                                    new EntityRowMapper<PluginRegistry>(
-                                            PluginRegistry.class), plugin
+                                    new PluginRegistryMapper(), plugin
                                             .getIdentity());
                 } catch (EmptyResultDataAccessException e) {
                 }
@@ -509,8 +510,7 @@ public class FrameworkUtilities {
                     + TableUtilities.getTableName(ApplicationRegistry.class)
                     + " order by " + ApplicationRegistry.VERSION
                     + " desc limit 1",
-                    new EntityRowMapper<ApplicationRegistry>(
-                            ApplicationRegistry.class));
+                    new ApplicationRegistryMapper());
         } catch (EmptyResultDataAccessException e) {
         }
         if (applicationRegistry == null) {
@@ -535,8 +535,7 @@ public class FrameworkUtilities {
                                 + TableUtilities
                                         .getTableName(PluginRegistry.class)
                                 + " where " + PluginRegistry.IDENTITY + " = ?",
-                        new EntityRowMapper<PluginRegistry>(
-                                PluginRegistry.class), entry.getKey());
+                        new PluginRegistryMapper(), entry.getKey());
                 if (pluginRegistry.isActivated()) {
                     Menu menu = Menu.linkMenu(plugin.getName(),
                             plugin.getDashboardPage());

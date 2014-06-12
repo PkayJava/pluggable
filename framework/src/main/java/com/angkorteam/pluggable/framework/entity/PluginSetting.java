@@ -1,13 +1,8 @@
 package com.angkorteam.pluggable.framework.entity;
 
+import javax.persistence.*;
 import java.io.Serializable;
 
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
-import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Table;
 
 /**
  * @author Socheat KHAUV
@@ -67,4 +62,7 @@ public class PluginSetting implements Serializable {
         return id;
     }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

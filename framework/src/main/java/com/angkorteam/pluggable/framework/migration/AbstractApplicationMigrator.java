@@ -7,13 +7,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Version;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 
@@ -27,7 +28,7 @@ public abstract class AbstractApplicationMigrator extends AbstractMigrator {
     @Override
     public boolean upgrade() {
         AbstractWebApplication application = getApplication();
-        ApplicationRegistry applicationRegistry = application.getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(ApplicationRegistry.class) + " order by " + ApplicationRegistry.VERSION + " desc limit 1", new EntityRowMapper<ApplicationRegistry>(ApplicationRegistry.class));
+        ApplicationRegistry applicationRegistry = application.getJdbcTemplate().queryForObject("select * from " + TableUtilities.getTableName(ApplicationRegistry.class) + " order by " + ApplicationRegistry.VERSION + " desc limit 1", new ApplicationRegistryMapper());
         Map<Double, Method> versions = new TreeMap<Double, Method>();
         for (Method method : getClass().getMethods()) {
             Version version = method.getAnnotation(Version.class);

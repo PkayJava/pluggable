@@ -1,17 +1,7 @@
 package com.angkorteam.pluggable.plugin.query.rest;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.wicket.request.http.WebRequest;
-import org.apache.wicket.request.http.WebResponse;
-import org.apache.wicket.util.string.StringValue;
-import org.springframework.jdbc.core.JdbcTemplate;
-
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.Table;
+import com.angkorteam.pluggable.framework.database.JdbcTable;
 import com.angkorteam.pluggable.framework.doc.ApiMethod;
 import com.angkorteam.pluggable.framework.doc.ApiParam;
 import com.angkorteam.pluggable.framework.rest.Controller;
@@ -25,11 +15,20 @@ import com.angkorteam.pluggable.plugin.query.json.ExportResultsResponse;
 import com.angkorteam.pluggable.plugin.query.json.ExportTablesResponse;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
+import org.apache.wicket.util.string.StringValue;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 public class ExportRestAPI {
 
-    @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_TABLE", description = "Access Query Plugin Rest Export Table Name") })
+    @Secured(roles = {@Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_TABLE", description = "Access Query Plugin Rest Export Table Name")})
     @RequestMapping(value = "/queryplugin/api/export/tables", method = RequestMethod.GET)
     @ApiMethod(description = "list all table name", responseDescription = "table name")
     public Result<ExportTablesResponse> tables(
@@ -38,8 +37,8 @@ public class ExportRestAPI {
 
         List<String> tables = new ArrayList<String>();
 
-        for (Table table : application.getSchema().allTables()) {
-            tables.add(table.getName());
+        for (JdbcTable jdbcTable : application.getSchema().allTables()) {
+            tables.add(jdbcTable.getName());
         }
 
         ExportTablesResponse json = new ExportTablesResponse(200, null, tables);
@@ -48,7 +47,7 @@ public class ExportRestAPI {
         return Result.ok(response, gson, json);
     }
 
-    @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_QUERY", description = "Access Query Plugin Rest Export Query Data") })
+    @Secured(roles = {@Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_QUERY", description = "Access Query Plugin Rest Export Query Data")})
     @RequestMapping(value = "/queryplugin/api/export/query", method = RequestMethod.POST)
     @ApiMethod(description = "export data for report", responseDescription = "result set")
     public Result<ExportQueryResponse> query(
@@ -73,7 +72,7 @@ public class ExportRestAPI {
         return Result.ok(response, gson, json);
     }
 
-    @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_RESULT", description = "Access Query Plugin Rest Export Data Result") })
+    @Secured(roles = {@Role(name = "ROLE_REST_QUERY_PLUGIN_EXPORT_RESULT", description = "Access Query Plugin Rest Export Data Result")})
     @RequestMapping(value = "/queryplugin/api/export/result", method = RequestMethod.POST)
     @ApiMethod(description = "export data backup", responseDescription = "result set")
     public Result<ExportResultsResponse> results(

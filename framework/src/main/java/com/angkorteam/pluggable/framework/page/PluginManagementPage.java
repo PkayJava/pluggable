@@ -2,6 +2,7 @@ package com.angkorteam.pluggable.framework.page;
 
 import java.util.List;
 
+import com.angkorteam.pluggable.framework.mapper.PluginRegistryMapper;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.border.Border;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
@@ -14,7 +15,7 @@ import com.angkorteam.pluggable.framework.core.AbstractPlugin;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.PluginRegistry;
 import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
@@ -47,7 +48,7 @@ public final class PluginManagementPage extends WebPage {
 
         List<PluginRegistry> plugins = jdbcTemplate.query("select * from "
                 + TableUtilities.getTableName(PluginRegistry.class),
-                new EntityRowMapper<PluginRegistry>(PluginRegistry.class));
+                new PluginRegistryMapper());
 
         ListView<PluginRegistry> table = new ListView<PluginRegistry>("table",
                 plugins) {

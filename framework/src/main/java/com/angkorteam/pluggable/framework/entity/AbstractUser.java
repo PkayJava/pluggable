@@ -2,16 +2,13 @@ package com.angkorteam.pluggable.framework.entity;
 
 import java.io.Serializable;
 
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
-import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Table;
+
+import javax.persistence.*;
 
 /**
  * @author Socheat KHAUV
  */
+
 @Entity
 @Table(name = "tbl_user")
 public class AbstractUser implements Serializable {
@@ -65,5 +62,9 @@ public class AbstractUser implements Serializable {
 
     public final Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

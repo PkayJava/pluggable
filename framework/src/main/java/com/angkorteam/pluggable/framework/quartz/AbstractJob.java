@@ -2,17 +2,18 @@ package com.angkorteam.pluggable.framework.quartz;
 
 import java.util.Date;
 
+import com.angkorteam.pluggable.framework.database.EntityMapper;
+import com.angkorteam.pluggable.framework.mapper.JobMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractPlugin;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 
 /**
  * @author Socheat KHAUV
  */
-public abstract class Job {
+public abstract class AbstractJob {
 
     // private static final Logger LOGGER = LoggerFactory.getLogger(Job.class);
 
@@ -38,8 +39,7 @@ public abstract class Job {
                                 + " where "
                                 + com.angkorteam.pluggable.framework.entity.Job.ID
                                 + " = ?",
-                        new EntityRowMapper<com.angkorteam.pluggable.framework.entity.Job>(
-                                com.angkorteam.pluggable.framework.entity.Job.class),
+                        new JobMapper(),
                         this.getClass().getName());
         if (job.isDisable()
                 || job.isPause()
@@ -83,8 +83,7 @@ public abstract class Job {
                                     + " where "
                                     + com.angkorteam.pluggable.framework.entity.Job.ID
                                     + " = ?",
-                            new EntityRowMapper<com.angkorteam.pluggable.framework.entity.Job>(
-                                    com.angkorteam.pluggable.framework.entity.Job.class),
+                           new JobMapper(),
                             this.getClass().getName());
         } catch (Throwable e) {
             try {

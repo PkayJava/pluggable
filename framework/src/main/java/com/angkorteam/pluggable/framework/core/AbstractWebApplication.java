@@ -1,24 +1,31 @@
 package com.angkorteam.pluggable.framework.core;
 
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.net.UnknownHostException;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.sql.DataSource;
-
+import com.angkorteam.pluggable.framework.database.DbSupport;
+import com.angkorteam.pluggable.framework.database.DbSupportFactory;
+import com.angkorteam.pluggable.framework.database.Schema;
+import com.angkorteam.pluggable.framework.entity.AbstractUser;
+import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
+import com.angkorteam.pluggable.framework.entity.Group;
+import com.angkorteam.pluggable.framework.entity.Role;
+import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
+import com.angkorteam.pluggable.framework.migration.AbstractApplicationMigrator;
+import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
+import com.angkorteam.pluggable.framework.migration.ApplicationMigrator;
+import com.angkorteam.pluggable.framework.page.*;
+import com.angkorteam.pluggable.framework.quartz.AbstractJob;
+import com.angkorteam.pluggable.framework.quartz.Scheduled;
+import com.angkorteam.pluggable.framework.utilities.*;
+import com.angkorteam.pluggable.framework.wicket.RequestMappingInfo;
+import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebApplication;
+import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.io.FileUtils;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
+import org.apache.wicket.protocol.http.WebApplication;
 import org.apache.wicket.settings.IExceptionSettings;
 import org.jongo.Jongo;
 import org.quartz.SchedulerFactory;
@@ -29,49 +36,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import com.angkorteam.pluggable.framework.database.DbSupport;
-import com.angkorteam.pluggable.framework.database.DbSupportFactory;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
-import com.angkorteam.pluggable.framework.database.Schema;
-import com.angkorteam.pluggable.framework.entity.AbstractUser;
-import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
-import com.angkorteam.pluggable.framework.entity.Group;
-import com.angkorteam.pluggable.framework.entity.Role;
-import com.angkorteam.pluggable.framework.migration.AbstractApplicationMigrator;
-import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
-import com.angkorteam.pluggable.framework.migration.ApplicationMigrator;
-import com.angkorteam.pluggable.framework.page.ApplicationSettingPage;
-import com.angkorteam.pluggable.framework.page.DashboardPage;
-import com.angkorteam.pluggable.framework.page.EditGroupPage;
-import com.angkorteam.pluggable.framework.page.EditUserPage;
-import com.angkorteam.pluggable.framework.page.GroupManagementPage;
-import com.angkorteam.pluggable.framework.page.HomePage;
-import com.angkorteam.pluggable.framework.page.LoginPage;
-import com.angkorteam.pluggable.framework.page.NewGroupPage;
-import com.angkorteam.pluggable.framework.page.NewUserPage;
-import com.angkorteam.pluggable.framework.page.SettingPage;
-import com.angkorteam.pluggable.framework.page.UserManagementPage;
-import com.angkorteam.pluggable.framework.page.WebPage;
-import com.angkorteam.pluggable.framework.quartz.Job;
-import com.angkorteam.pluggable.framework.quartz.Scheduled;
-import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
-import com.angkorteam.pluggable.framework.utilities.GroupUtilities;
-import com.angkorteam.pluggable.framework.utilities.JobUtilities;
-import com.angkorteam.pluggable.framework.utilities.RegistryUtilities;
-import com.angkorteam.pluggable.framework.utilities.RoleUtilities;
-import com.angkorteam.pluggable.framework.utilities.SecurityUtilities;
-import com.angkorteam.pluggable.framework.utilities.TableUtilities;
-import com.angkorteam.pluggable.framework.wicket.RequestMappingInfo;
-import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebApplication;
-import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
-import com.mongodb.MongoClient;
+import javax.persistence.*;
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Socheat KHAUV
@@ -80,7 +56,7 @@ public abstract class AbstractWebApplication extends
         AuthenticatedWebApplication implements Serializable {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = -6922345480297586360L;
 
@@ -192,14 +168,24 @@ public abstract class AbstractWebApplication extends
         return groups;
     }
 
-    private List<Class<? extends Job>> getJobs() {
-        List<Class<? extends Job>> jobs = (List<Class<? extends Job>>) getServletContext()
+    private List<Class<? extends AbstractJob>> getJobs() {
+        List<Class<? extends AbstractJob>> jobs = (List<Class<? extends AbstractJob>>) getServletContext()
                 .getAttribute("Jobs");
         if (jobs == null) {
-            jobs = new ArrayList<Class<? extends Job>>();
+            jobs = new ArrayList<Class<? extends AbstractJob>>();
             getServletContext().setAttribute("Jobs", jobs);
         }
         return jobs;
+    }
+
+    private List<Class<? extends Serializable>> getEntities() {
+        List<Class<? extends Serializable>> entities = (List<Class<? extends Serializable>>) getServletContext()
+                .getAttribute("Entities");
+        if (entities == null) {
+            entities = new ArrayList<Class<? extends Serializable>>();
+            getServletContext().setAttribute("Entities", entities);
+        }
+        return entities;
     }
 
     private int nullType;
@@ -218,17 +204,9 @@ public abstract class AbstractWebApplication extends
 
     protected abstract String getJdbcUrl();
 
-    protected abstract String getMongoServer();
+    protected abstract String getJdbcUsername();
 
-    protected abstract String getMongoPort();
-
-    protected abstract String getMongoDb();
-
-    protected abstract String getUsername();
-
-    protected abstract String getPassword();
-
-    public abstract String getDatabaseType();
+    protected abstract String getJdbcPassword();
 
     protected abstract void initDatabaseSetting();
 
@@ -237,42 +215,22 @@ public abstract class AbstractWebApplication extends
         super.init();
         LOGGER.info("starting application framework");
         initDatabaseSetting();
-        if (DATABASE_TYPE_MYSQL.equalsIgnoreCase(getDatabaseType())) {
-            BasicDataSource dataSource = new BasicDataSource();
-            dataSource.setDriverClassName(getDriverClass());
-            dataSource.setUrl(getJdbcUrl());
-            dataSource.setUsername(getUsername());
-            dataSource.setPassword(getPassword());
-            dataSource.setInitialSize(5);
-            dataSource.setTestOnBorrow(false);
-            dataSource.setTestWhileIdle(true);
-            addBean(DataSource.class, dataSource);
-            JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-            addBean(JdbcTemplate.class, jdbcTemplate);
-            DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
-            addBean(DbSupport.class, support);
-            Schema schema = support.getSchema();
-            addBean(Schema.class, schema);
-        } else if (DATABASE_TYPE_MONGODB.equalsIgnoreCase(getDatabaseType())) {
-            try {
-                MongoClient mongoClient = null;
-                if (getMongoPort() != null && !"".equals(getMongoPort())) {
-                    mongoClient = new MongoClient(getMongoServer(),
-                            Integer.valueOf(getMongoPort()));
 
-                } else {
-                    mongoClient = new MongoClient(getMongoServer());
-                }
-                addBean(MongoClient.class, mongoClient);
-                DB db = mongoClient.getDB(getMongoDb());
-                addBean(DB.class, db);
-
-                Jongo jongo = new Jongo(db);
-                addBean(Jongo.class, jongo);
-            } catch (NumberFormatException e) {
-            } catch (UnknownHostException e) {
-            }
-        }
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(getDriverClass());
+        dataSource.setUrl(getJdbcUrl());
+        dataSource.setUsername(getJdbcUsername());
+        dataSource.setPassword(getJdbcPassword());
+        dataSource.setInitialSize(5);
+        dataSource.setTestOnBorrow(false);
+        dataSource.setTestWhileIdle(true);
+        addBean(DataSource.class, dataSource);
+        JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+        addBean(JdbcTemplate.class, jdbcTemplate);
+        DbSupport support = DbSupportFactory.createDbSupport(jdbcTemplate);
+        addBean(DbSupport.class, support);
+        Schema schema = support.getSchema();
+        addBean(Schema.class, schema);
 
         Gson gson = new GsonBuilder().disableHtmlEscaping().setPrettyPrinting()
                 .create();
@@ -298,242 +256,189 @@ public abstract class AbstractWebApplication extends
             }
         }
 
-        if (DATABASE_TYPE_MYSQL.equalsIgnoreCase(getDatabaseType())) {
-            JdbcTemplate jdbcTemplate = getBean(JdbcTemplate.class);
-            Schema schema = getBean(Schema.class);
-            FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
-                    plugins);
-            FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
-                    plugins);
+        FrameworkUtilities.initSecurityTable(this, schema, jdbcTemplate,
+                plugins);
+        FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
+                plugins);
 
-            List<String> pooledRoles = jdbcTemplate.queryForList(
-                    "select " + Role.NAME + " from "
-                            + TableUtilities.getTableName(Role.class),
-                    String.class);
+        List<String> pooledRoles = jdbcTemplate.queryForList(
+                "select " + Role.NAME + " from "
+                        + TableUtilities.getTableName(Role.class),
+                String.class);
 
-            Map<String, Role> mapping = new HashMap<String, Role>();
+        Map<String, Role> mapping = new HashMap<String, Role>();
 
-            Group adminGroup = GroupUtilities.createJdbcGroup(jdbcTemplate,
-                    AbstractWebApplication.SUPER_ADMIN_GROUP,
-                    AbstractWebApplication.SUPER_ADMIN_GROUP, false);
-            if (getRoles() != null && !getRoles().isEmpty()) {
-                for (Entry<String, String> role : getRoles().entrySet()) {
-                    pooledRoles.remove(role.getKey());
-                    mapping.put(role.getKey(), RoleUtilities.createJdbcRole(
-                            getBean(DataSource.class), role.getKey(),
-                            role.getValue(), false));
-                    SecurityUtilities.grantJdbcAccess(jdbcTemplate, adminGroup,
-                            mapping.get(role.getKey()));
-                }
+        Group adminGroup = GroupUtilities.createJdbcGroup(jdbcTemplate,
+                AbstractWebApplication.SUPER_ADMIN_GROUP,
+                AbstractWebApplication.SUPER_ADMIN_GROUP, false);
+        if (getRoles() != null && !getRoles().isEmpty()) {
+            for (Entry<String, String> role : getRoles().entrySet()) {
+                pooledRoles.remove(role.getKey());
+                mapping.put(role.getKey(), RoleUtilities.createJdbcRole(
+                        getBean(DataSource.class), role.getKey(),
+                        role.getValue(), false));
+                SecurityUtilities.grantJdbcAccess(jdbcTemplate, adminGroup,
+                        mapping.get(role.getKey()));
             }
+        }
 
-            FrameworkUtilities.initExceptionPages(this);
+        FrameworkUtilities.initExceptionPages(this);
 
-            if (!pooledRoles.isEmpty()) {
-                for (String pooledRole : pooledRoles) {
-                    RoleUtilities.removeJdbcRole(jdbcTemplate, pooledRole);
-                }
-                pooledRoles.clear();
+        if (!pooledRoles.isEmpty()) {
+            for (String pooledRole : pooledRoles) {
+                RoleUtilities.removeJdbcRole(jdbcTemplate, pooledRole);
             }
+            pooledRoles.clear();
+        }
 
-            for (Entry<String, List<String>> roles : getGroups().entrySet()) {
-                Group group = GroupUtilities.createJdbcGroup(jdbcTemplate,
-                        roles.getKey(), getPlugin(roles.getKey()).getName(),
-                        false);
-                for (String role : roles.getValue()) {
-                    SecurityUtilities.grantJdbcAccess(jdbcTemplate, group,
-                            mapping.get(role));
-                }
+        for (Entry<String, List<String>> roles : getGroups().entrySet()) {
+            Group group = GroupUtilities.createJdbcGroup(jdbcTemplate,
+                    roles.getKey(), getPlugin(roles.getKey()).getName(),
+                    false);
+            for (String role : roles.getValue()) {
+                SecurityUtilities.grantJdbcAccess(jdbcTemplate, group,
+                        mapping.get(role));
             }
+        }
 
-            for (Entry<String, Class<? extends WebPage>> page : getMounts()
-                    .entrySet()) {
-                LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
-                        .getName());
-                mountPage(page.getKey(), page.getValue());
+        for (Entry<String, Class<? extends WebPage>> page : getMounts()
+                .entrySet()) {
+            LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
+                    .getName());
+            mountPage(page.getKey(), page.getValue());
+        }
+
+        getMarkupSettings().setCompressWhitespace(true);
+        getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
+        getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
+
+        getExceptionSettings().setUnexpectedExceptionDisplay(
+                IExceptionSettings.SHOW_EXCEPTION_PAGE);
+
+        if (plugins != null) {
+            for (AbstractPlugin plugin : plugins.values()) {
+                plugin.initialize(this);
             }
+        }
 
-            getMarkupSettings().setCompressWhitespace(true);
-            getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
-            getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
+        ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
 
-            getExceptionSettings().setUnexpectedExceptionDisplay(
-                    IExceptionSettings.SHOW_EXCEPTION_PAGE);
+        List<String> jobs = jdbcTemplate
+                .queryForList(
+                        "select "
+                                + com.angkorteam.pluggable.framework.entity.Job.ID
+                                + " from "
+                                + TableUtilities
+                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
+                        String.class);
 
-            if (plugins != null) {
-                for (AbstractPlugin plugin : plugins.values()) {
-                    plugin.initialize(this);
-                }
-            }
-
-            ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
-
-            List<String> jobs = jdbcTemplate
-                    .queryForList(
-                            "select "
-                                    + com.angkorteam.pluggable.framework.entity.Job.ID
-                                    + " from "
-                                    + TableUtilities
-                                            .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
-                            String.class);
-
-            for (Class<? extends Job> job : getJobs()) {
-                com.angkorteam.pluggable.framework.entity.Job meta = JobUtilities
-                        .createJdbcJob(jdbcTemplate, job);
-                jobs.remove(meta.getId());
-                if (!meta.isDisable()) {
-                    Scheduled scheduled = job.getAnnotation(Scheduled.class);
-                    Job bean = null;
-                    try {
-                        bean = job.newInstance();
-                    } catch (InstantiationException e) {
-                    } catch (IllegalAccessException e) {
-                    }
-                    if (bean != null && scheduled != null) {
-                        bean.setApplication(this);
-                        JobUtilities.register(registrar, scheduled, bean);
-                    }
-                }
-            }
-            if (jobs != null && !jobs.isEmpty()) {
-                for (String job : jobs) {
-                    jdbcTemplate
-                            .update("delete from "
-                                    + TableUtilities
-                                            .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
-                                    + " where "
-                                    + com.angkorteam.pluggable.framework.entity.Job.ID
-                                    + " = ?", job);
-                }
-            }
-            registrar.afterPropertiesSet();
-        } else if (DATABASE_TYPE_MONGODB.equalsIgnoreCase(getDatabaseType())) {
-            DB db = getMongoDB();
-            List<String> pooledRoles = new ArrayList<String>();
-            {
-                DBCollection roles = db.getCollection(TableUtilities
-                        .getTableName(Role.class));
-                DBCursor cursor = roles.find();
+        for (Class<? extends AbstractJob> job : getJobs()) {
+            com.angkorteam.pluggable.framework.entity.Job meta = JobUtilities
+                    .createJdbcJob(jdbcTemplate, job);
+            jobs.remove(meta.getId());
+            if (!meta.isDisable()) {
+                Scheduled scheduled = job.getAnnotation(Scheduled.class);
+                AbstractJob bean = null;
                 try {
-                    while (cursor.hasNext()) {
-                        DBObject role = cursor.next();
-                        pooledRoles.add((String) role.get(Role.NAME));
-                    }
-                } finally {
-                    cursor.close();
+                    bean = job.newInstance();
+                } catch (InstantiationException e) {
+                } catch (IllegalAccessException e) {
+                }
+                if (bean != null && scheduled != null) {
+                    bean.setApplication(this);
+                    JobUtilities.register(registrar, scheduled, bean);
                 }
             }
-
-            Map<String, DBObject> mapping = new HashMap<String, DBObject>();
-
-            DBObject adminGroup = GroupUtilities.createMongoGroup(db,
-                    AbstractWebApplication.SUPER_ADMIN_GROUP,
-                    AbstractWebApplication.SUPER_ADMIN_GROUP, false);
-            if (getRoles() != null && !getRoles().isEmpty()) {
-                for (Entry<String, String> role : getRoles().entrySet()) {
-                    pooledRoles.remove(role.getKey());
-                    mapping.put(role.getKey(), RoleUtilities.createMongoRole(
-                            db, role.getKey(), role.getValue(), false));
-
-                    SecurityUtilities.grantMongoAccessGroup(db, adminGroup,
-                            mapping.get(role.getKey()));
-                }
+        }
+        if (jobs != null && !jobs.isEmpty()) {
+            for (String job : jobs) {
+                jdbcTemplate
+                        .update("delete from "
+                                + TableUtilities
+                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
+                                + " where "
+                                + com.angkorteam.pluggable.framework.entity.Job.ID
+                                + " = ?", job);
             }
+        }
+        registrar.afterPropertiesSet();
 
-            FrameworkUtilities.initExceptionPages(this);
-
-            if (!pooledRoles.isEmpty()) {
-                for (String pooledRole : pooledRoles) {
-                    RoleUtilities.removeMongoRole(db, pooledRole);
-                }
-                pooledRoles.clear();
-            }
-
-            for (Entry<String, List<String>> roles : getGroups().entrySet()) {
-                DBObject group = GroupUtilities.createMongoGroup(db,
-                        roles.getKey(), getPlugin(roles.getKey()).getName(),
-                        false);
-                for (String role : roles.getValue()) {
-                    SecurityUtilities.grantMongoAccessGroup(db, group,
-                            mapping.get(role));
-                }
-            }
-
-            for (Entry<String, Class<? extends WebPage>> page : getMounts()
-                    .entrySet()) {
-                LOGGER.info("mounted {} to {}", page.getKey(), page.getValue()
-                        .getName());
-                mountPage(page.getKey(), page.getValue());
-            }
-
-            getMarkupSettings().setCompressWhitespace(true);
-            getMarkupSettings().setDefaultMarkupEncoding("UTF-8");
-            getRequestCycleSettings().setResponseRequestEncoding("UTF-8");
-
-            getExceptionSettings().setUnexpectedExceptionDisplay(
-                    IExceptionSettings.SHOW_EXCEPTION_PAGE);
-
-            if (plugins != null) {
-                for (AbstractPlugin plugin : plugins.values()) {
-                    plugin.initialize(this);
-                }
-            }
-
-            ScheduledTaskRegistrar registrar = getScheduledTaskRegistrar();
-
-            List<String> jobs = new ArrayList<String>();
-
-            {
-                DBCursor cursor = db
-                        .getCollection(
-                                TableUtilities
-                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class))
-                        .find();
-                try {
-                    while (cursor.hasNext()) {
-                        DBObject job = cursor.next();
-                        jobs.add((String) job
-                                .get(com.angkorteam.pluggable.framework.entity.Job.ID));
-                    }
-                } finally {
-                    cursor.close();
-                }
-            }
-
-            for (Class<? extends Job> job : getJobs()) {
-                DBObject meta = JobUtilities.createMongoJob(db, job);
-                jobs.remove((String) meta
-                        .get(com.angkorteam.pluggable.framework.entity.Job.ID));
-                if (!((Boolean) meta
-                        .get(com.angkorteam.pluggable.framework.entity.Job.DISABLE))) {
-                    Scheduled scheduled = job.getAnnotation(Scheduled.class);
-                    Job bean = null;
-                    try {
-                        bean = job.newInstance();
-                    } catch (InstantiationException e) {
-                    } catch (IllegalAccessException e) {
-                    }
-                    if (bean != null && scheduled != null) {
-                        bean.setApplication(this);
-                        JobUtilities.register(registrar, scheduled, bean);
-                    }
-                }
-            }
-            if (jobs != null && !jobs.isEmpty()) {
-                DBCollection job_collection = db
-                        .getCollection(TableUtilities
-                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class));
-                for (String job : jobs) {
-                    BasicDBObject query = new BasicDBObject();
-                    query.put(com.angkorteam.pluggable.framework.entity.Job.ID,
-                            job);
-                    job_collection.remove(query);
-                }
-            }
-            registrar.afterPropertiesSet();
+        EntityManagerFactory entityManagerFactory = initEntityManagerFactory();
+        if (entityManagerFactory != null) {
+            addBean(EntityManagerFactory.class, entityManagerFactory);
         }
 
         doInit();
+    }
+
+    protected EntityManagerFactory initEntityManagerFactory() {
+
+        ServletContext servletContext = ((WebApplication) this).getServletContext();
+
+        StringBuffer persistence = new StringBuffer();
+        persistence.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\n");
+        persistence.append("<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\" version=\"2.0\">").append("\n");
+        persistence.append("\t").append("<persistence-unit name=\"jpa\" transaction-type=\"RESOURCE_LOCAL\">").append("\n");
+        persistence.append("\t\t").append("<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>").append("\n");
+
+        for (Class<?> clazz : getEntities()) {
+            if (!clazz.isAnnotationPresent(Exclude.class)) {
+                persistence.append("\t\t").append("<class>" + clazz.getName() + "</class>").append("\n");
+            }
+        }
+
+        persistence.append("\t\t").append("<exclude-unlisted-classes>true</exclude-unlisted-classes>").append("\n");
+
+        persistence.append("\t\t").append("<properties>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.MySQLMyISAMDialect\"/>").append("\n");
+        // persistence.append("\t\t\t").append("<property name=\"hibernate.hbm2ddl.auto\" value=\"none\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.driver\" value=\"" + getDriverClass() + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.url\" value=\"" + getJdbcUrl() + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.user\" value=\"" + getJdbcUsername() + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.password\" value=\"" + getJdbcPassword() + "\"/>").append("\n");
+
+        persistence.append("\t\t").append("</properties>").append("\n");
+        persistence.append("\t").append("</persistence-unit>").append("\n");
+        persistence.append("").append("</persistence>").append("\n");
+
+        {
+            File classesPath = new File(servletContext.getRealPath("WEB-INF/classes"));
+            if (!classesPath.exists()) {
+                classesPath.mkdir();
+            }
+            File metainf = new File(classesPath, "META-INF");
+            if (!metainf.exists()) {
+                metainf.mkdir();
+            }
+
+            File file = new File(metainf, "persistence.xml");
+            try {
+                FileUtils.write(file, persistence.toString(), false);
+            } catch (IOException e) {
+            }
+        }
+
+        {
+            File metainf = new File(servletContext.getRealPath("META-INF"));
+            if (!metainf.exists()) {
+                metainf.mkdir();
+            }
+
+            File file = new File(metainf, "persistence.xml");
+            try {
+                FileUtils.write(file, persistence.toString(), false);
+            } catch (IOException e) {
+            }
+        }
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa");
+            return emf;
+        } catch (PersistenceException e) {
+            LOGGER.info("persistence error due to {}", e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -551,8 +456,12 @@ public abstract class AbstractWebApplication extends
         return getBean(SchedulerFactory.class);
     }
 
-    public void addJob(Class<? extends Job> job) {
+    public void addJob(Class<? extends AbstractJob> job) {
         getJobs().add(job);
+    }
+
+    public void addEntity(Class<? extends Serializable> job) {
+        getEntities().add(job);
     }
 
     public AbstractPlugin getPlugin(String identity) {
@@ -583,6 +492,14 @@ public abstract class AbstractWebApplication extends
         getGroups().put(name, roles);
     }
 
+    public EntityManager getEntityManager() {
+        EntityManagerFactory entityManagerFactory = getBean(EntityManagerFactory.class);
+        if (entityManagerFactory != null) {
+            return entityManagerFactory.createEntityManager();
+        }
+        return null;
+    }
+
     public <T> void addBean(Class<T> clazz, T bean) {
         addBean(clazz.getName(), bean);
     }
@@ -603,7 +520,7 @@ public abstract class AbstractWebApplication extends
                             + clazz.getSimpleName()
                             + " with "
                             + getControllers().get(path).getClazz()
-                                    .getSimpleName());
+                            .getSimpleName());
         }
         RequestMappingInfo info = new RequestMappingInfo();
         info.setClazz(clazz);
@@ -705,8 +622,7 @@ public abstract class AbstractWebApplication extends
                                     + " order by "
                                     + ApplicationRegistry.VERSION
                                     + " desc limit 1",
-                            new EntityRowMapper<ApplicationRegistry>(
-                                    ApplicationRegistry.class));
+                            new ApplicationRegistryMapper());
             return applicationRegistry.getVersion() == getVersion();
         } catch (BadSqlGrammarException e) {
             return false;
@@ -718,7 +634,7 @@ public abstract class AbstractWebApplication extends
     }
 
     public String[] getPackages() {
-        return new String[] { this.getClass().getPackage().getName() };
+        return new String[]{this.getClass().getPackage().getName()};
     }
 
     public Class<? extends WebPage> getHomePage() {
@@ -769,14 +685,6 @@ public abstract class AbstractWebApplication extends
         return getBean(JdbcTemplate.class);
     }
 
-    public MongoClient getMongoClient() {
-        return getBean(MongoClient.class);
-    }
-
-    public DB getMongoDB() {
-        return getBean(DB.class);
-    }
-
     public Jongo getJongo() {
         return getBean(Jongo.class);
     }
@@ -825,6 +733,11 @@ public abstract class AbstractWebApplication extends
                 getScheduledTaskRegistrar().destroy();
             }
             ((BasicDataSource) getBean(DataSource.class)).close();
+
+            EntityManagerFactory entityManagerFactory = getBean(EntityManagerFactory.class);
+            if (entityManagerFactory != null) {
+                entityManagerFactory.close();
+            }
 
             Enumeration<Driver> drivers = DriverManager.getDrivers();
             Driver d = null;

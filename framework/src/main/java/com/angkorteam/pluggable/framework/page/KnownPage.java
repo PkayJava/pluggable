@@ -16,6 +16,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.database.EntityMapper;
+import com.angkorteam.pluggable.framework.mapper.GenericEntityMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.wicket.AttributeModifier;
@@ -38,7 +40,6 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.layout.AbstractLayout;
 import com.angkorteam.pluggable.framework.panel.widget.WidgetCheckBox;
 import com.angkorteam.pluggable.framework.panel.widget.WidgetCheckBoxMultipleChoice;
@@ -1291,7 +1292,7 @@ public abstract class KnownPage extends WebPage {
                             value[i] = application.getJdbcTemplate()
                                     .queryForObject(
                                             query,
-                                            new EntityRowMapper(field.getType()
+                                            new GenericEntityMapper(field.getType()
                                                     .getComponentType()),
                                             list.get(i).get("value"));
                         } catch (EmptyResultDataAccessException e) {
@@ -1381,7 +1382,7 @@ public abstract class KnownPage extends WebPage {
                     try {
                         Object entity = application.getJdbcTemplate()
                                 .queryForObject(query,
-                                        new EntityRowMapper(field.getType()),
+                                        new GenericEntityMapper(field.getType()),
                                         value.get("value"));
                         try {
                             FieldUtils.writeField(field, this, entity, true);

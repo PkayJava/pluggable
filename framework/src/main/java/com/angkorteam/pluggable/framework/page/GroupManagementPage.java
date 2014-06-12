@@ -2,6 +2,7 @@ package com.angkorteam.pluggable.framework.page;
 
 import java.util.List;
 
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -12,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Group;
 import com.angkorteam.pluggable.framework.layout.AbstractLayout;
 import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
@@ -51,7 +52,7 @@ public final class GroupManagementPage extends WebPage {
 
         List<Group> groups = jdbcTemplate.query("select * from "
                 + TableUtilities.getTableName(Group.class),
-                new EntityRowMapper<Group>(Group.class));
+                new GroupMapper());
         ListView<Group> table = new ListView<Group>("table", groups) {
 
             private static final long serialVersionUID = -8045778852435218474L;

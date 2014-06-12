@@ -2,10 +2,8 @@ package com.angkorteam.pluggable.framework.entity;
 
 import java.io.Serializable;
 
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Table;
+
+import javax.persistence.*;
 
 /**
  * @author Socheat KHAUV
@@ -28,6 +26,26 @@ public class RoleGroup implements Serializable {
     @Column(name = GROUP_ID, columnDefinition = "INT")
     private Long groupId;
     public static final String GROUP_ID = Group.ID;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RoleGroup)) return false;
+
+        RoleGroup roleGroup = (RoleGroup) o;
+
+        if (!groupId.equals(roleGroup.groupId)) return false;
+        if (!roleId.equals(roleGroup.roleId)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = roleId.hashCode();
+        result = 31 * result + groupId.hashCode();
+        return result;
+    }
 
     public Long getRoleId() {
         return roleId;

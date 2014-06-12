@@ -1,11 +1,8 @@
 package com.angkorteam.pluggable.framework.entity;
 
+import javax.persistence.*;
 import java.io.Serializable;
 
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Table;
 
 /**
  * @author Socheat KHAUV
@@ -28,6 +25,26 @@ public class UserGroup implements Serializable {
     @Column(name = USER_ID, columnDefinition = "INT")
     private Long userId;
     public static final String USER_ID = AbstractUser.ID;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof UserGroup)) return false;
+
+        UserGroup userGroup = (UserGroup) o;
+
+        if (!groupId.equals(userGroup.groupId)) return false;
+        if (!userId.equals(userGroup.userId)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = groupId.hashCode();
+        result = 31 * result + userId.hashCode();
+        return result;
+    }
 
     public Long getUserId() {
         return userId;

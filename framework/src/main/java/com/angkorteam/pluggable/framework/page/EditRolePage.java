@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.mapper.AbstractUserMapper;
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
+import com.angkorteam.pluggable.framework.mapper.RoleMapper;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -11,7 +14,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.AbstractUser;
 import com.angkorteam.pluggable.framework.entity.Group;
 import com.angkorteam.pluggable.framework.entity.Role;
@@ -64,7 +67,7 @@ public final class EditRolePage extends KnownPage {
 
         Role role = jdbcTemplate.queryForObject("select * from "
                 + TableUtilities.getTableName(Role.class) + " where " + Role.ID
-                + " = ?", new EntityRowMapper<Role>(Role.class), roleId);
+                + " = ?", new RoleMapper(), roleId);
 
         this.name = role.getName();
         this.description = role.getDescription();
@@ -79,7 +82,7 @@ public final class EditRolePage extends KnownPage {
                 + RoleGroup.GROUP_ID + " ");
         ddl.append("where role_group." + RoleGroup.ROLE_ID + " = ?");
         List<Group> groups = jdbcTemplate.query(ddl.toString(),
-                new EntityRowMapper<Group>(Group.class), roleId);
+                new GroupMapper(), roleId);
         this.groups = groups.toArray(new Group[groups.size()]);
 
         ddl = new StringBuffer();
@@ -90,7 +93,7 @@ public final class EditRolePage extends KnownPage {
                 + RoleUser.USER_ID + " ");
         ddl.append("where role_user." + RoleUser.ROLE_ID + " = ?");
         List<AbstractUser> users = jdbcTemplate.query(ddl.toString(),
-                new EntityRowMapper<AbstractUser>(AbstractUser.class), roleId);
+               new AbstractUserMapper(), roleId);
         this.users = users.toArray(new AbstractUser[users.size()]);
     }
 

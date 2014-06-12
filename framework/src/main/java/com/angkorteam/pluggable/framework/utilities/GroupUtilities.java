@@ -3,16 +3,13 @@ package com.angkorteam.pluggable.framework.utilities;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Group;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 
 /**
  * @author Socheat KHAUV
@@ -33,8 +30,7 @@ public class GroupUtilities {
         try {
             group = jdbcTemplate.queryForObject("select * from "
                     + TableUtilities.getTableName(Group.class) + " where "
-                    + Group.NAME + " = ?", new EntityRowMapper<Group>(
-                    Group.class), name);
+                    + Group.NAME + " = ?", new GroupMapper(), name);
         } catch (EmptyResultDataAccessException e) {
         }
         if (group == null) {
@@ -47,24 +43,6 @@ public class GroupUtilities {
             group.setDescription(description);
             group.setId(groupId);
             group.setDisable(disable);
-        }
-        return group;
-    }
-
-    public static final DBObject createMongoGroup(DB db, String name,
-            String description, boolean disable) {
-        DBCollection groups = db.getCollection(TableUtilities
-                .getTableName(Group.class));
-        BasicDBObject query = new BasicDBObject();
-        query.put(Group.NAME, name);
-        DBObject group = groups.findOne(query);
-
-        if (group == null) {
-            group = new BasicDBObject();
-            group.put(Group.NAME, name);
-            group.put(Group.DESCRIPTION, description);
-            group.put(Group.DISABLE, disable);
-            groups.insert(group);
         }
         return group;
     }

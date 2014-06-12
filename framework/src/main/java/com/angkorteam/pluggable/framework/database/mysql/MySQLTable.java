@@ -6,12 +6,12 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.database.DbSupport;
 import com.angkorteam.pluggable.framework.database.Schema;
-import com.angkorteam.pluggable.framework.database.Table;
+import com.angkorteam.pluggable.framework.database.JdbcTable;
 
 /**
  * MySQL-specific table.
  */
-public class MySQLTable extends Table {
+public class MySQLTable extends JdbcTable {
     /**
      * Creates a new MySQL table.
      * 

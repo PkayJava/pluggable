@@ -5,12 +5,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.database.StringStringMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.markup.html.form.FormComponent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
-import com.angkorteam.pluggable.framework.database.MapRowMapper;
 import com.angkorteam.pluggable.framework.validation.type.Choice;
 
 /**
@@ -147,7 +147,7 @@ public class SelectionUtilities {
             whereQuery = " where " + query;
         }
 
-        return template.query("select " + valueField + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + whereQuery, params, new MapRowMapper());
+        return template.query("select " + valueField + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + whereQuery, params, new StringStringMapper());
     }
 
     public static final List<Map<String, String>> getSystemJavaChoices(Choice[] choices) {
@@ -165,7 +165,7 @@ public class SelectionUtilities {
         Class<?> clazz = object.getClass();
         String id = TableUtilities.getIdentityField(clazz);
         String value = TableUtilities.getIdentityValue(object);
-        return jdbcTemplate.queryForObject("select " + id + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + " where " + id + " = ?", new MapRowMapper(), value);
+        return jdbcTemplate.queryForObject("select " + id + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + " where " + id + " = ?", new StringStringMapper(), value);
     }
 
     public static final List<Map<String, String>> getUserQueryChoices(JdbcTemplate jdbcTemplate, Object[] objects, String display) {
@@ -174,7 +174,7 @@ public class SelectionUtilities {
         List<Map<String, String>> results = new ArrayList<Map<String, String>>();
         for (Object object : objects) {
             String value = TableUtilities.getIdentityValue(object);
-            Map<String, String> result = jdbcTemplate.queryForObject("select " + id + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + " where " + id + " = ?", new MapRowMapper(), value);
+            Map<String, String> result = jdbcTemplate.queryForObject("select " + id + " value, " + display + " display from " + TableUtilities.getTableName(clazz) + " where " + id + " = ?", new StringStringMapper(), value);
             results.add(result);
         }
         return results;

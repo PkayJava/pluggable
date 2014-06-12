@@ -2,6 +2,7 @@ package com.angkorteam.pluggable.framework.page;
 
 import java.util.List;
 
+import com.angkorteam.pluggable.framework.mapper.RoleMapper;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.link.BookmarkablePageLink;
 import org.apache.wicket.markup.html.list.ListItem;
@@ -11,7 +12,7 @@ import org.apache.wicket.request.mapper.parameter.PageParameters;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Role;
 import com.angkorteam.pluggable.framework.layout.AbstractLayout;
 import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
@@ -46,7 +47,7 @@ public final class RoleManagementPage extends WebPage {
 
         List<Role> roles = application.getJdbcTemplate().query(
                 "select * from " + TableUtilities.getTableName(Role.class),
-                new EntityRowMapper<Role>(Role.class));
+               new RoleMapper());
 
         ListView<Role> table = new ListView<Role>("table", roles) {
 

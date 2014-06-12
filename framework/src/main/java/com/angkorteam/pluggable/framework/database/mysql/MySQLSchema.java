@@ -15,15 +15,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.database.DbSupport;
 import com.angkorteam.pluggable.framework.database.Schema;
-import com.angkorteam.pluggable.framework.database.Table;
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.FullText;
-import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
-import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Spatial;
-import com.angkorteam.pluggable.framework.database.annotation.Unique;
+import com.angkorteam.pluggable.framework.database.JdbcTable;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
+
+import javax.persistence.*;
 
 /**
  * MySQL implementation of Schema.
@@ -86,8 +81,8 @@ public class MySQLSchema extends Schema {
         }
 
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 0");
-        for (Table table : allTables()) {
-            table.drop();
+        for (JdbcTable jdbcTable : allTables()) {
+            jdbcTable.drop();
         }
         jdbcTemplate.execute("SET FOREIGN_KEY_CHECKS = 1");
     }
@@ -136,22 +131,22 @@ public class MySQLSchema extends Schema {
     }
 
     @Override
-    protected Table[] doAllTables() throws SQLException {
+    protected JdbcTable[] doAllTables() throws SQLException {
         List<String> tableNames = jdbcTemplate
                 .queryForList(
                         "SELECT table_name FROM information_schema.tables WHERE table_schema=? AND table_type='BASE TABLE'",
                         String.class, name);
 
-        Table[] tables = new Table[tableNames.size()];
+        JdbcTable[] jdbcTables = new JdbcTable[tableNames.size()];
         for (int i = 0; i < tableNames.size(); i++) {
-            tables[i] = new MySQLTable(jdbcTemplate, dbSupport, this,
+            jdbcTables[i] = new MySQLTable(jdbcTemplate, dbSupport, this,
                     tableNames.get(i));
         }
-        return tables;
+        return jdbcTables;
     }
 
     @Override
-    public Table getTable(String tableName) {
+    public JdbcTable getTable(String tableName) {
         return new MySQLTable(jdbcTemplate, dbSupport, this, tableName);
     }
 
@@ -183,9 +178,10 @@ public class MySQLSchema extends Schema {
 
         List<String> ids = new ArrayList<String>();
         List<String> columns = new ArrayList<String>();
-        List<String> idColumns = new ArrayList<String>();
+        List<String> primaryKeyColumns = new ArrayList<String>();
         List<String> spatials = new ArrayList<String>();
-        List<String> fulltexts = new ArrayList<String>();
+        List<String> fullTexts = new ArrayList<String>();
+        List<String> indexs = new ArrayList<String>();
         Map<String, List<String>> uniqueGroups = new HashMap<String, List<String>>();
         for (String field : fields) {
             if (field.contains(" ")) {
@@ -233,7 +229,12 @@ public class MySQLSchema extends Schema {
 
                     FullText fulltext = field.getAnnotation(FullText.class);
                     if (fulltext != null) {
-                        fulltexts.add(column.name());
+                        fullTexts.add(column.name());
+                    }
+
+                    Indexed index = field.getAnnotation(Indexed.class);
+                    if (index != null){
+                        indexs.add(column.name());
                     }
 
                     if (generatedValue != null
@@ -241,7 +242,7 @@ public class MySQLSchema extends Schema {
                         ddl = ddl + " AUTO_INCREMENT";
                     }
                     if (id != null) {
-                        idColumns.add(column.name());
+                        primaryKeyColumns.add(column.name());
                         ids.add(ddl);
                     } else {
                         columns.add(ddl);
@@ -259,38 +260,33 @@ public class MySQLSchema extends Schema {
         if (uniqueGroups != null && !uniqueGroups.isEmpty()) {
             for (Entry<String, List<String>> item : uniqueGroups.entrySet()) {
                 if (item.getValue() != null && !item.getValue().isEmpty()) {
-                    field.add("UNIQUE ("
+                    field.add("UNIQUE INDEX ("
                             + StringUtils.join(item.getValue(), ",") + ")");
+                }
+                if (item.getValue().size() == 1){
+                    indexs.remove(item.getValue().get(0));
                 }
             }
         }
-        if (idColumns != null && !idColumns.isEmpty()) {
-            field.add("PRIMARY KEY (" + StringUtils.join(idColumns, ",") + ")");
+        if (primaryKeyColumns != null && !primaryKeyColumns.isEmpty()) {
+            field.add("PRIMARY KEY (" + StringUtils.join(primaryKeyColumns, ",") + ")");
         }
         if (spatials != null && !spatials.isEmpty()) {
-            field.add("SPATIAL INDEX (" + StringUtils.join(spatials, ",") + ")");
-        }
-        if (fulltexts != null && !fulltexts.isEmpty()) {
-            for (String column : fulltexts) {
-                field.add("FULLTEXT (" + column + ")");
+            for (String column : spatials) {
+                field.add("SPATIAL INDEX (" + column + ")");
+                indexs.remove(column);
             }
         }
-        com.angkorteam.pluggable.framework.database.annotation.Table table = org.springframework.core.annotation.AnnotationUtils
-                .findAnnotation(
-                        entity,
-                        com.angkorteam.pluggable.framework.database.annotation.Table.class);
-        if (table.engine() != null && !"".equals(table.engine())) {
-            jdbcTemplate.execute("CREATE TABLE " + name + "("
-                    + StringUtils.join(field, ",") + ")" + "ENGINE="
-                    + table.engine());
-        } else {
-            jdbcTemplate.execute("CREATE TABLE " + name + "("
-                    + StringUtils.join(field, ",") + ")");
+        if (fullTexts != null && !fullTexts.isEmpty()) {
+            for (String column : fullTexts) {
+                field.add("FULLTEXT INDEX (" + column + ")");
+                indexs.remove(column);
+            }
         }
     }
 
     @Override
-    public Table getTable(Class<?> clazz) {
+    public JdbcTable getTable(Class<?> clazz) {
         return getTable(TableUtilities.getTableName(clazz));
     }
 

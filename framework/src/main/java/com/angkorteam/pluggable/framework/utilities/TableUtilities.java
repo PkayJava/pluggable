@@ -5,9 +5,8 @@ import java.lang.reflect.Field;
 import org.apache.commons.lang3.reflect.FieldUtils;
 
 import com.angkorteam.pluggable.framework.database.DatabaseException;
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
+
+import javax.persistence.*;
 
 /**
  * @author Socheat KHAUV
@@ -70,7 +69,7 @@ public class TableUtilities {
             throw new DatabaseException(clazz.getSimpleName() + " is not an entity");
         }
         String name = clazz.getSimpleName();
-        com.angkorteam.pluggable.framework.database.annotation.Table table = org.springframework.core.annotation.AnnotationUtils.findAnnotation(clazz, com.angkorteam.pluggable.framework.database.annotation.Table.class);
+        Table table = org.springframework.core.annotation.AnnotationUtils.findAnnotation(clazz, Table.class);
         if (table != null && table.name() != null && !"".equals(table.name())) {
             name = table.name();
         }

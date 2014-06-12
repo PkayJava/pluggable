@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
+import com.angkorteam.pluggable.framework.database.EntityMapper;
+import com.angkorteam.pluggable.framework.mapper.JobMapper;
+import com.angkorteam.pluggable.framework.quartz.AbstractJob;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.scheduling.config.CronTask;
@@ -14,13 +17,8 @@ import org.springframework.scheduling.support.ScheduledMethodRunnable;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.entity.Job;
 import com.angkorteam.pluggable.framework.quartz.Scheduled;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
 
 public class JobUtilities {
     private JobUtilities() {
@@ -28,7 +26,7 @@ public class JobUtilities {
 
     public static final void register(ScheduledTaskRegistrar registrar,
             Scheduled scheduled,
-            com.angkorteam.pluggable.framework.quartz.Job bean) {
+            AbstractJob bean) {
 
         try {
             Runnable runnable = new ScheduledMethodRunnable(bean, "execute");
@@ -136,7 +134,7 @@ public class JobUtilities {
     }
 
     public static final Job createJdbcJob(JdbcTemplate jdbcTemplate,
-            Class<? extends com.angkorteam.pluggable.framework.quartz.Job> clazz) {
+            Class<? extends AbstractJob> clazz) {
         Scheduled scheduled = clazz.getAnnotation(Scheduled.class);
         String tableName = TableUtilities.getTableName(Job.class);
         String id = clazz.getName();
@@ -144,8 +142,7 @@ public class JobUtilities {
         if (jdbcTemplate.queryForObject("select count(*) from " + tableName
                 + " where " + Job.ID + " = ?", Long.class, id) > 0) {
             job = jdbcTemplate.queryForObject("select * from " + tableName
-                    + " where " + Job.ID + " = ?", new EntityRowMapper<Job>(
-                    Job.class), id);
+                    + " where " + Job.ID + " = ?", new JobMapper(), id);
             job.setPause(false);
             job.setStatus(Job.Status.IDLE);
             jdbcTemplate.update("UPDATE " + tableName + " set " + Job.CRON
@@ -170,35 +167,6 @@ public class JobUtilities {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate);
             insert.withTableName(tableName);
             insert.execute(fields);
-        }
-        return job;
-    }
-
-    public static final DBObject createMongoJob(DB db,
-            Class<? extends com.angkorteam.pluggable.framework.quartz.Job> clazz) {
-        String tableName = TableUtilities.getTableName(Job.class);
-        DBCollection jobs = db.getCollection(tableName);
-        Scheduled scheduled = clazz.getAnnotation(Scheduled.class);
-        String id = clazz.getName();
-        BasicDBObject query = new BasicDBObject();
-        query.put(Job.ID, id);
-
-        DBObject job = jobs.findOne(query);
-        if (job != null) {
-            job.put(Job.PAUSE, false);
-            job.put(Job.STATUS, Job.Status.IDLE);
-            job.put(Job.CRON, scheduled.cron());
-            jobs.save(job);
-        } else {
-            job = new BasicDBObject();
-            job.put(Job.ID, id);
-            job.put(Job.CRON, scheduled.cron());
-            job.put(Job.DESCRIPTION, scheduled.description());
-            job.put(Job.DISABLE, scheduled.disable());
-            job.put(Job.PAUSE, false);
-            job.put(Job.STATUS, Job.Status.IDLE);
-            Object objectId = jobs.insert(job).getUpsertedId();
-            job.put("_id", objectId);
         }
         return job;
     }

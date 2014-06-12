@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public abstract class Table extends SchemaObject {
+public abstract class JdbcTable extends SchemaObject {
 
     /**
      * Creates a new table.
@@ -21,7 +21,7 @@ public abstract class Table extends SchemaObject {
      * @param name
      *            The name of the table.
      */
-    public Table(JdbcTemplate jdbcTemplate, DbSupport dbSupport, Schema schema, String name) {
+    public JdbcTable(JdbcTemplate jdbcTemplate, DbSupport dbSupport, Schema schema, String name) {
         super(jdbcTemplate, dbSupport, schema, name);
     }
 

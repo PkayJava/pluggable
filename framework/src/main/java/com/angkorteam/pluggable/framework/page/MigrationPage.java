@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.Button;
 import org.apache.wicket.markup.html.form.Form;
@@ -19,7 +20,7 @@ import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
 import com.angkorteam.pluggable.framework.core.Version;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
 import com.angkorteam.pluggable.framework.json.VersionForm;
 import com.angkorteam.pluggable.framework.layout.AbstractLayout;
@@ -77,8 +78,7 @@ public final class MigrationPage extends WebPage {
                                 + TableUtilities.getTableName(ApplicationRegistry.class)
                                 + " order by " + ApplicationRegistry.VERSION
                                 + " desc limit 1",
-                        new EntityRowMapper<ApplicationRegistry>(
-                                ApplicationRegistry.class));
+                        new ApplicationRegistryMapper());
         Label oldVersion = new Label("oldVersion",
                 DECIMAL_FORMAT.format(applicationRegistry.getVersion()));
         layout.add(oldVersion);

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.angkorteam.pluggable.framework.database.StringStringMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.extensions.markup.html.repeater.data.table.filter.IFilterStateLocator;
 import org.apache.wicket.extensions.markup.html.repeater.util.SortableDataProvider;
@@ -17,9 +18,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.ColumnMapRowMapper;
 
-public class MapSortableDataProvider extends SortableDataProvider<Map<String, Object>, String> implements IFilterStateLocator<Map<String, Object>> {
+public class MapSortableDataProvider extends SortableDataProvider<Map<String, String>, String> implements IFilterStateLocator<Map<String, String>> {
 
     /**
      * 
@@ -28,7 +28,7 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
 
     private String query;
 
-    private Map<String, Object> filter = new HashMap<String, Object>();
+    private Map<String, String> filter = new HashMap<String, String>();
 
     private Map<String, Object> where = new HashMap<String, Object>();
 
@@ -78,10 +78,10 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
     }
 
     @Override
-    public Iterator<? extends Map<String, Object>> iterator(long first, long count) {
+    public Iterator<? extends Map<String, String>> iterator(long first, long count) {
         Map<String, Object> paramMap = new HashMap<String, Object>();
         List<String> where = new ArrayList<String>();
-        for (Entry<String, Object> entry : filter.entrySet()) {
+        for (Entry<String, String> entry : filter.entrySet()) {
             if (entry.getValue() != null) {
                 if (entry.getValue() instanceof String) {
                     if (!"".equals(entry.getValue())) {
@@ -116,16 +116,16 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
         }
         if (where.isEmpty()) {
             if (getSort() == null) {
-                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " limit " + first + "," + count, new StringStringMapper()).listIterator();
             } else {
-                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, new ColumnMapRowMapper()).listIterator();
+                return jdbcTemplate.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, new StringStringMapper()).listIterator();
             }
         } else {
             NamedParameterJdbcTemplate named = new NamedParameterJdbcTemplate(jdbcTemplate);
             if (getSort() == null) {
-                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " limit " + first + "," + count, paramMap, new StringStringMapper()).listIterator();
             } else {
-                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, paramMap, new ColumnMapRowMapper()).listIterator();
+                return named.query("select " + StringUtils.join(this.select, ",") + " from " + this.query + " where " + StringUtils.join(where, " and ") + groupBy + " order by " + getSort().getProperty() + " " + (getSort().isAscending() ? "asc" : "desc") + " limit " + first + "," + count, paramMap, new StringStringMapper()).listIterator();
             }
         }
     }
@@ -134,7 +134,7 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
     public long size() {
         Map<String, Object> paramMap = new HashMap<String, Object>();
         List<String> where = new ArrayList<String>();
-        for (Entry<String, Object> entry : filter.entrySet()) {
+        for (Entry<String, String> entry : filter.entrySet()) {
             if (entry.getValue() != null) {
                 if (entry.getValue() instanceof String) {
                     if (!"".equals(entry.getValue())) {
@@ -183,18 +183,18 @@ public class MapSortableDataProvider extends SortableDataProvider<Map<String, Ob
     }
 
     @Override
-    public IModel<Map<String, Object>> model(Map<String, Object> object) {
-        MapModel<String, Object> model = new MapModel<String, Object>(object);
+    public IModel<Map<String, String>> model(Map<String, String> object) {
+        MapModel<String, String> model = new MapModel<String, String>(object);
         return model;
     }
 
     @Override
-    public Map<String, Object> getFilterState() {
+    public Map<String, String> getFilterState() {
         return this.filter;
     }
 
     @Override
-    public void setFilterState(Map<String, Object> state) {
+    public void setFilterState(Map<String, String> state) {
         this.filter = state;
     }
 

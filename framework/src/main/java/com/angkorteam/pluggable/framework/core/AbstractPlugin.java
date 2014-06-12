@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.angkorteam.pluggable.framework.mapper.PluginRegistryMapper;
+import com.angkorteam.pluggable.framework.quartz.AbstractJob;
 import org.apache.wicket.Application;
 import org.apache.wicket.IInitializer;
 import org.apache.wicket.WicketRuntimeException;
@@ -15,14 +17,13 @@ import org.reflections.ReflectionUtils;
 import org.reflections.Reflections;
 import org.springframework.dao.EmptyResultDataAccessException;
 
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.PluginRegistry;
 import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
 import com.angkorteam.pluggable.framework.migration.PluginMigrator;
 import com.angkorteam.pluggable.framework.page.KnownPage;
 import com.angkorteam.pluggable.framework.page.PluginSettingPage;
 import com.angkorteam.pluggable.framework.page.WebPage;
-import com.angkorteam.pluggable.framework.quartz.Job;
 import com.angkorteam.pluggable.framework.rest.Controller;
 import com.angkorteam.pluggable.framework.rest.RequestMapping;
 import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
@@ -70,7 +71,7 @@ public abstract class AbstractPlugin implements IInitializer {
                     "select * from "
                             + TableUtilities.getTableName(PluginRegistry.class)
                             + " where " + PluginRegistry.IDENTITY + " = ?",
-                    new EntityRowMapper<PluginRegistry>(PluginRegistry.class),
+                   new PluginRegistryMapper(),
                     identity);
             return migrator.getVersion() == pluginRegistry.getVersion();
         } catch (EmptyResultDataAccessException e) {
@@ -85,7 +86,7 @@ public abstract class AbstractPlugin implements IInitializer {
                     "select * from "
                             + TableUtilities.getTableName(PluginRegistry.class)
                             + " where " + PluginRegistry.IDENTITY + " = ?",
-                    new EntityRowMapper<PluginRegistry>(PluginRegistry.class),
+                    new PluginRegistryMapper(),
                     getIdentity());
             return pluginRegistry.isActivated();
         } catch (EmptyResultDataAccessException e) {
@@ -195,9 +196,9 @@ public abstract class AbstractPlugin implements IInitializer {
                         }
                     }
 
-                    Set<Class<? extends Job>> jobs = reflections
-                            .getSubTypesOf(Job.class);
-                    for (Class<? extends Job> job : jobs) {
+                    Set<Class<? extends AbstractJob>> jobs = reflections
+                            .getSubTypesOf(AbstractJob.class);
+                    for (Class<? extends AbstractJob> job : jobs) {
                         if (!Modifier.isAbstract(job.getModifiers())
                                 && job.isAnnotationPresent(com.angkorteam.pluggable.framework.quartz.Scheduled.class)) {
                             ((AbstractWebApplication) application).addJob(job);

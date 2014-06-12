@@ -23,7 +23,6 @@ import com.angkorteam.pluggable.framework.layout.MenuLayout;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AbstractAuthenticatedWebSession;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
-import com.mongodb.DB;
 
 /**
  * @author Socheat KHAUV
@@ -119,8 +118,6 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
         } else {
             if (this instanceof ILoginPage) {
                 long count = 0;
-                if (AbstractWebApplication.DATABASE_TYPE_MYSQL
-                        .equalsIgnoreCase(application.getDatabaseType())) {
                     count = jdbcTemplate.queryForObject(
                             "select count(*) from "
                                     + TableUtilities.getTableName(application
@@ -129,24 +126,6 @@ public abstract class WebPage extends org.apache.wicket.markup.html.WebPage {
                         throw new RestartResponseException(
                                 InstallationPage.class);
                     }
-                } else if (AbstractWebApplication.DATABASE_TYPE_MONGODB
-                        .equalsIgnoreCase(application.getDatabaseType())) {
-                    DB db = application.getMongoDB();
-                    Set<String> tables = db.getCollectionNames();
-                    count = tables.size();
-                    if (count <= 0) {
-                        throw new RestartResponseException(
-                                InstallationPage.class);
-                    } else {
-                        String user = TableUtilities.getTableName(application
-                                .getUserEntity());
-                        if (!tables.contains(user)) {
-                            throw new RestartResponseException(
-                                    InstallationPage.class);
-                        }
-                    }
-                }
-
             } else if (this instanceof InstallationPage) {
                 Long count = jdbcTemplate.queryForObject(
                         "select count(*) from "

@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.database.EntityMapper;
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
+import com.angkorteam.pluggable.framework.mapper.RoleMapper;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -11,7 +14,6 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
 import com.angkorteam.pluggable.framework.entity.AbstractUser;
 import com.angkorteam.pluggable.framework.entity.Group;
 import com.angkorteam.pluggable.framework.entity.Role;
@@ -77,14 +79,14 @@ public final class EditUserPage extends KnownPage {
         ddl.append("select role.* from " + TableUtilities.getTableName(Role.class) + " role ");
         ddl.append("inner join " + TableUtilities.getTableName(RoleUser.class) + " role_user on role." + Role.ID + " = role_user." + RoleUser.ROLE_ID + " ");
         ddl.append("where role_user." + RoleUser.USER_ID + " = ?");
-        List<Role> roles = jdbcTemplate.query(ddl.toString(), new EntityRowMapper<Role>(Role.class), userId);
+        List<Role> roles = jdbcTemplate.query(ddl.toString(), new RoleMapper(), userId);
         this.roles = roles.toArray(new Role[roles.size()]);
 
         ddl = new StringBuffer();
         ddl.append("select `group`.* from " + TableUtilities.getTableName(Group.class) + " `group` ");
         ddl.append("inner join " + TableUtilities.getTableName(UserGroup.class) + " user_group on `group`." + Group.ID + " = user_group." + UserGroup.GROUP_ID + " ");
         ddl.append("where user_group." + UserGroup.USER_ID + " = ?");
-        List<Group> groups = jdbcTemplate.query(ddl.toString(), new EntityRowMapper<Group>(Group.class), userId);
+        List<Group> groups = jdbcTemplate.query(ddl.toString(), new GroupMapper(), userId);
         this.groups = groups.toArray(new Group[groups.size()]);
     }
 

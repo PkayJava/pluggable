@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
 import org.apache.wicket.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Group;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 import com.vaynberg.wicket.select2.Response;
@@ -46,7 +47,7 @@ public class GroupProvider extends TextChoiceProvider<Group> {
     @Override
     public void query(String term, int page, Response<Group> response) {
         JdbcTemplate jdbcTemplate = ((AbstractWebApplication) Application.get()).getJdbcTemplate();
-        List<Group> groups = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class) + " where " + Group.NAME + " like ? and " + Group.DISABLE + " = ?", new EntityRowMapper<Group>(Group.class), term + "%", false);
+        List<Group> groups = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class) + " where " + Group.NAME + " like ? and " + Group.DISABLE + " = ?", new GroupMapper(), term + "%", false);
 
         response.addAll(groups);
     }
@@ -59,7 +60,7 @@ public class GroupProvider extends TextChoiceProvider<Group> {
         params.put(Group.ID, ids);
 
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
-        List<Group> groups = namedParameterJdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class) + " where " + Group.ID + " in (:" + Group.ID + ")", params, new EntityRowMapper<Group>(Group.class));
+        List<Group> groups = namedParameterJdbcTemplate.query("select * from " + TableUtilities.getTableName(Group.class) + " where " + Group.ID + " in (:" + Group.ID + ")", params,new GroupMapper());
 
         return groups;
     }

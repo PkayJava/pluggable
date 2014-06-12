@@ -2,13 +2,14 @@ package com.angkorteam.pluggable.framework.page;
 
 import java.util.List;
 
+import com.angkorteam.pluggable.framework.mapper.JobMapper;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Job;
 import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
@@ -58,7 +59,7 @@ public final class EditJobPage extends KnownPage {
         Job job = jdbcTemplate.queryForObject(
                 "select * from " + TableUtilities.getTableName(Job.class)
                         + " where " + Job.ID + " = ?",
-                new EntityRowMapper<Job>(Job.class), this.jobId);
+               new JobMapper(), this.jobId);
         this.description = job.getDescription();
         this.cron = (job.getNewCron() == null || "".equals(job.getNewCron())) ? job
                 .getCron() : job.getNewCron();

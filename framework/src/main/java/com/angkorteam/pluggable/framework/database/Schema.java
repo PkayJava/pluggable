@@ -179,7 +179,7 @@ public abstract class Schema {
      * 
      * @return All tables in the schema.
      */
-    public Table[] allTables() {
+    public JdbcTable[] allTables() {
         try {
             return doAllTables();
         } catch (SQLException e) {
@@ -194,7 +194,7 @@ public abstract class Schema {
      * @throws SQLException
      *             when the retrieval failed.
      */
-    protected abstract Table[] doAllTables() throws SQLException;
+    protected abstract JdbcTable[] doAllTables() throws SQLException;
 
     /**
      * Retrieves all the types in this schema.
@@ -237,9 +237,9 @@ public abstract class Schema {
      *            The name of the table.
      * @return The table.
      */
-    public abstract Table getTable(String tableName);
+    public abstract JdbcTable getTable(String tableName);
 
-    public abstract Table getTable(Class<?> clazz);
+    public abstract JdbcTable getTable(Class<?> clazz);
 
     /**
      * Retrieves the function with this name in this schema.

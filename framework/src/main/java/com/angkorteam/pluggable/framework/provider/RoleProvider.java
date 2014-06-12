@@ -5,12 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.mapper.RoleMapper;
 import org.apache.wicket.Application;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.Role;
 import com.angkorteam.pluggable.framework.utilities.TableUtilities;
 import com.vaynberg.wicket.select2.Response;
@@ -42,7 +43,7 @@ public class RoleProvider extends TextChoiceProvider<Role> {
     @Override
     public void query(String term, int page, Response<Role> response) {
         JdbcTemplate jdbcTemplate = ((AbstractWebApplication) Application.get()).getJdbcTemplate();
-        List<Role> roles = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Role.class) + " where " + Role.NAME + " like ? and " + Role.DISABLE + " = ?", new EntityRowMapper<Role>(Role.class), term + "%", false);
+        List<Role> roles = jdbcTemplate.query("select * from " + TableUtilities.getTableName(Role.class) + " where " + Role.NAME + " like ? and " + Role.DISABLE + " = ?", new RoleMapper(), term + "%", false);
         response.addAll(roles);
     }
 
@@ -54,7 +55,7 @@ public class RoleProvider extends TextChoiceProvider<Role> {
         params.put(Role.ID, ids);
 
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
-        List<Role> roles = namedParameterJdbcTemplate.query("select * from " + TableUtilities.getTableName(Role.class) + " where " + Role.ID + " in (:" + Role.ID + ")", params, new EntityRowMapper<Role>(Role.class));
+        List<Role> roles = namedParameterJdbcTemplate.query("select * from " + TableUtilities.getTableName(Role.class) + " where " + Role.ID + " in (:" + Role.ID + ")", params, new RoleMapper());
 
         return roles;
     }

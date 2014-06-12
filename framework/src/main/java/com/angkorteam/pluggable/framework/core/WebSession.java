@@ -7,7 +7,6 @@ import com.angkorteam.pluggable.framework.utilities.RoleUtilities;
 import com.angkorteam.pluggable.framework.utilities.SecurityUtilities;
 import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebSession;
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
-import com.mongodb.DB;
 
 /**
  * @author Socheat KHAUV
@@ -36,8 +35,6 @@ public class WebSession extends AuthenticatedWebSession {
     public boolean authenticate(String username, String password) {
         AbstractWebApplication application = (AbstractWebApplication) getApplication();
         boolean valid = false;
-        if (AbstractWebApplication.DATABASE_TYPE_MYSQL
-                .equalsIgnoreCase(application.getDatabaseType())) {
             JdbcTemplate jdbcTemplate = application.getJdbcTemplate();
             valid = SecurityUtilities.authenticateJdbc(jdbcTemplate, username,
                     password);
@@ -48,17 +45,7 @@ public class WebSession extends AuthenticatedWebSession {
                     roles.add(role);
                 }
             }
-        } else if (AbstractWebApplication.DATABASE_TYPE_MONGODB
-                .equalsIgnoreCase(application.getDatabaseType())) {
-            DB db = application.getMongoDB();
-            valid = SecurityUtilities.authenticateMongo(db, username, password);
-            if (valid) {
-                this.username = username;
-                for (String role : RoleUtilities.lookupMongoRoles(db, username)) {
-                    roles.add(role);
-                }
-            }
-        }
+
         return valid;
     }
 

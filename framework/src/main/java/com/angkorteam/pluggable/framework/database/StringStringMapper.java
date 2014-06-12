@@ -9,7 +9,7 @@ import java.util.Map;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.JdbcUtils;
 
-public class MapRowMapper implements RowMapper<Map<String, String>> {
+public class StringStringMapper implements RowMapper<Map<String, String>> {
 
     @Override
     public Map<String, String> mapRow(ResultSet rs, int rowNum) throws SQLException {

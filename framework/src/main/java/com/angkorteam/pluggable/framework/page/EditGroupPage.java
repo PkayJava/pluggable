@@ -4,6 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.angkorteam.pluggable.framework.mapper.AbstractUserMapper;
+import com.angkorteam.pluggable.framework.mapper.GroupMapper;
+import com.angkorteam.pluggable.framework.mapper.RoleMapper;
 import org.apache.wicket.request.mapper.parameter.PageParameters;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -11,7 +14,7 @@ import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.core.Menu;
 import com.angkorteam.pluggable.framework.core.Mount;
-import com.angkorteam.pluggable.framework.database.EntityRowMapper;
+import com.angkorteam.pluggable.framework.database.EntityMapper;
 import com.angkorteam.pluggable.framework.entity.AbstractUser;
 import com.angkorteam.pluggable.framework.entity.Group;
 import com.angkorteam.pluggable.framework.entity.RoleGroup;
@@ -62,7 +65,7 @@ public final class EditGroupPage extends KnownPage {
 
         Group group = jdbcTemplate.queryForObject("select * from "
                 + TableUtilities.getTableName(Group.class) + " where "
-                + Group.ID + " = ?", new EntityRowMapper<Group>(Group.class),
+                + Group.ID + " = ?", new GroupMapper(),
                 groupId);
 
         this.name = group.getName();
@@ -83,8 +86,7 @@ public final class EditGroupPage extends KnownPage {
         ddl.append("where role_group." + RoleGroup.GROUP_ID + " = ?");
         List<com.angkorteam.pluggable.framework.entity.Role> roles = jdbcTemplate
                 .query(ddl.toString(),
-                        new EntityRowMapper<com.angkorteam.pluggable.framework.entity.Role>(
-                                com.angkorteam.pluggable.framework.entity.Role.class),
+                        new RoleMapper(),
                         groupId);
         this.roles = roles
                 .toArray(new com.angkorteam.pluggable.framework.entity.Role[roles
@@ -99,7 +101,7 @@ public final class EditGroupPage extends KnownPage {
                 + UserGroup.USER_ID + " ");
         ddl.append("where user_group." + UserGroup.GROUP_ID + " = ?");
         List<AbstractUser> users = jdbcTemplate.query(ddl.toString(),
-                new EntityRowMapper<AbstractUser>(AbstractUser.class), groupId);
+             new AbstractUserMapper(), groupId);
         this.users = users.toArray(new AbstractUser[users.size()]);
     }
 

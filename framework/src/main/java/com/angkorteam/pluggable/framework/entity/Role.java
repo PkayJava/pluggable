@@ -2,13 +2,7 @@ package com.angkorteam.pluggable.framework.entity;
 
 import java.io.Serializable;
 
-import com.angkorteam.pluggable.framework.database.annotation.Column;
-import com.angkorteam.pluggable.framework.database.annotation.Entity;
-import com.angkorteam.pluggable.framework.database.annotation.GeneratedValue;
-import com.angkorteam.pluggable.framework.database.annotation.GenerationType;
-import com.angkorteam.pluggable.framework.database.annotation.Id;
-import com.angkorteam.pluggable.framework.database.annotation.Table;
-import com.angkorteam.pluggable.framework.database.annotation.Unique;
+import javax.persistence.*;
 
 /**
  * @author Socheat KHAUV

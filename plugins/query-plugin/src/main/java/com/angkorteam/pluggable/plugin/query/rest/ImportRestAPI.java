@@ -1,15 +1,5 @@
 package com.angkorteam.pluggable.plugin.query.rest;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.apache.wicket.request.http.WebRequest;
-import org.apache.wicket.request.http.WebResponse;
-import org.apache.wicket.util.string.StringValue;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
-
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.angkorteam.pluggable.framework.doc.ApiMethod;
 import com.angkorteam.pluggable.framework.doc.ApiParam;
@@ -22,11 +12,20 @@ import com.angkorteam.pluggable.framework.wicket.authroles.Secured;
 import com.angkorteam.pluggable.plugin.query.model.Field;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
+import org.apache.wicket.request.http.WebRequest;
+import org.apache.wicket.request.http.WebResponse;
+import org.apache.wicket.util.string.StringValue;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Controller
 public class ImportRestAPI {
 
-    @Secured(roles = { @Role(name = "ROLE_REST_QUERY_PLUGIN_IMPORT", description = "Access Query Plugin Rest Import") })
+    @Secured(roles = {@Role(name = "ROLE_REST_QUERY_PLUGIN_IMPORT", description = "Access Query Plugin Rest Import")})
     @RequestMapping(value = "/queryplugin/api/import", method = RequestMethod.POST)
     @ApiMethod(description = "import data")
     public Result<Void> importResult(
