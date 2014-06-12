@@ -20,9 +20,11 @@ import com.angkorteam.pluggable.framework.wicket.authroles.authentication.Authen
 import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.wicket.RuntimeConfigurationType;
 import org.apache.wicket.WicketRuntimeException;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -39,6 +41,7 @@ import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 import javax.persistence.*;
 import javax.servlet.ServletContext;
 import javax.sql.DataSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -393,9 +396,9 @@ public abstract class AbstractWebApplication extends
         persistence.append("\t\t\t").append("<property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.MySQLMyISAMDialect\"/>").append("\n");
         // persistence.append("\t\t\t").append("<property name=\"hibernate.hbm2ddl.auto\" value=\"none\"/>").append("\n");
         persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.driver\" value=\"" + getDriverClass() + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.url\" value=\"" + getJdbcUrl() + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.user\" value=\"" + getJdbcUsername() + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.password\" value=\"" + getJdbcPassword() + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.url\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcUrl()) + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.user\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcUsername()) + "\"/>").append("\n");
+        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.password\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcPassword()) + "\"/>").append("\n");
 
         persistence.append("\t\t").append("</properties>").append("\n");
         persistence.append("\t").append("</persistence-unit>").append("\n");
