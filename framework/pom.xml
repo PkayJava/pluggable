@@ -4,7 +4,7 @@
 
 	<groupId>com.angkorteam.pluggable.framework</groupId>
 	<artifactId>framework</artifactId>
-	<version>0.6.7.1</version>
+	<version>0.6.7.2</version>
 	<name>framework</name>
 	<packaging>jar</packaging>
 
