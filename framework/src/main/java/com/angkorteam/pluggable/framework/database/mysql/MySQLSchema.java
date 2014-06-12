@@ -283,6 +283,9 @@ public class MySQLSchema extends Schema {
                 indexs.remove(column);
             }
         }
+        
+        jdbcTemplate.execute("CREATE TABLE " + name + "("
+                + StringUtils.join(field, ",") + ")");
     }
 
     @Override
