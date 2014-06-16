@@ -67,7 +67,7 @@ public class ResourceController {
             FileUtils.copyFile(local, cache);
             file = cache;
         }
-        return Result.ok(file, response);
+        return Result.ok(application, file, response);
     }
 
     @ApiMethod(description = "image download")
@@ -119,7 +119,7 @@ public class ResourceController {
                 }
             }
         }
-        return Result.ok(file, response);
+        return Result.ok(application, file, response);
     }
 
     public static BufferedImage getScaledImage(BufferedImage image, int width,

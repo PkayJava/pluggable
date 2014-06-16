@@ -1,25 +1,26 @@
 package com.angkorteam.pluggable.framework.core;
 
-import com.angkorteam.pluggable.framework.database.DbSupport;
-import com.angkorteam.pluggable.framework.database.DbSupportFactory;
-import com.angkorteam.pluggable.framework.database.Schema;
-import com.angkorteam.pluggable.framework.entity.AbstractUser;
-import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
-import com.angkorteam.pluggable.framework.entity.Group;
-import com.angkorteam.pluggable.framework.entity.Role;
-import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
-import com.angkorteam.pluggable.framework.migration.AbstractApplicationMigrator;
-import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
-import com.angkorteam.pluggable.framework.migration.ApplicationMigrator;
-import com.angkorteam.pluggable.framework.page.*;
-import com.angkorteam.pluggable.framework.quartz.AbstractJob;
-import com.angkorteam.pluggable.framework.quartz.Scheduled;
-import com.angkorteam.pluggable.framework.utilities.*;
-import com.angkorteam.pluggable.framework.wicket.RequestMappingInfo;
-import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebApplication;
-import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.Method;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Exclude;
+import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
+import javax.servlet.ServletContext;
+import javax.sql.DataSource;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.dbcp.BasicDataSource;
@@ -38,19 +39,43 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import javax.persistence.*;
-import javax.servlet.ServletContext;
-import javax.sql.DataSource;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.Map.Entry;
+import com.angkorteam.pluggable.framework.database.DbSupport;
+import com.angkorteam.pluggable.framework.database.DbSupportFactory;
+import com.angkorteam.pluggable.framework.database.Schema;
+import com.angkorteam.pluggable.framework.entity.AbstractUser;
+import com.angkorteam.pluggable.framework.entity.ApplicationRegistry;
+import com.angkorteam.pluggable.framework.entity.Group;
+import com.angkorteam.pluggable.framework.entity.Role;
+import com.angkorteam.pluggable.framework.mapper.ApplicationRegistryMapper;
+import com.angkorteam.pluggable.framework.migration.AbstractApplicationMigrator;
+import com.angkorteam.pluggable.framework.migration.AbstractPluginMigrator;
+import com.angkorteam.pluggable.framework.migration.ApplicationMigrator;
+import com.angkorteam.pluggable.framework.page.ApplicationSettingPage;
+import com.angkorteam.pluggable.framework.page.DashboardPage;
+import com.angkorteam.pluggable.framework.page.EditGroupPage;
+import com.angkorteam.pluggable.framework.page.EditUserPage;
+import com.angkorteam.pluggable.framework.page.GroupManagementPage;
+import com.angkorteam.pluggable.framework.page.HomePage;
+import com.angkorteam.pluggable.framework.page.LoginPage;
+import com.angkorteam.pluggable.framework.page.NewGroupPage;
+import com.angkorteam.pluggable.framework.page.NewUserPage;
+import com.angkorteam.pluggable.framework.page.SettingPage;
+import com.angkorteam.pluggable.framework.page.UserManagementPage;
+import com.angkorteam.pluggable.framework.page.WebPage;
+import com.angkorteam.pluggable.framework.quartz.AbstractJob;
+import com.angkorteam.pluggable.framework.quartz.Scheduled;
+import com.angkorteam.pluggable.framework.utilities.FrameworkUtilities;
+import com.angkorteam.pluggable.framework.utilities.GroupUtilities;
+import com.angkorteam.pluggable.framework.utilities.JobUtilities;
+import com.angkorteam.pluggable.framework.utilities.RegistryUtilities;
+import com.angkorteam.pluggable.framework.utilities.RoleUtilities;
+import com.angkorteam.pluggable.framework.utilities.SecurityUtilities;
+import com.angkorteam.pluggable.framework.utilities.TableUtilities;
+import com.angkorteam.pluggable.framework.wicket.RequestMappingInfo;
+import com.angkorteam.pluggable.framework.wicket.authroles.authentication.AuthenticatedWebApplication;
+import com.angkorteam.pluggable.framework.wicket.authroles.authorization.strategies.role.Roles;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 /**
  * @author Socheat KHAUV
@@ -264,10 +289,11 @@ public abstract class AbstractWebApplication extends
         FrameworkUtilities.initRegistryTable(this, schema, jdbcTemplate,
                 plugins);
 
-        List<String> pooledRoles = jdbcTemplate.queryForList(
-                "select " + Role.NAME + " from "
-                        + TableUtilities.getTableName(Role.class),
-                String.class);
+        List<String> pooledRoles = jdbcTemplate
+                .queryForList(
+                        "select " + Role.NAME + " from "
+                                + TableUtilities.getTableName(Role.class),
+                        String.class);
 
         Map<String, Role> mapping = new HashMap<String, Role>();
 
@@ -296,8 +322,7 @@ public abstract class AbstractWebApplication extends
 
         for (Entry<String, List<String>> roles : getGroups().entrySet()) {
             Group group = GroupUtilities.createJdbcGroup(jdbcTemplate,
-                    roles.getKey(), getPlugin(roles.getKey()).getName(),
-                    false);
+                    roles.getKey(), getPlugin(roles.getKey()).getName(), false);
             for (String role : roles.getValue()) {
                 SecurityUtilities.grantJdbcAccess(jdbcTemplate, group,
                         mapping.get(role));
@@ -332,7 +357,7 @@ public abstract class AbstractWebApplication extends
                                 + com.angkorteam.pluggable.framework.entity.Job.ID
                                 + " from "
                                 + TableUtilities
-                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
+                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class),
                         String.class);
 
         for (Class<? extends AbstractJob> job : getJobs()) {
@@ -358,7 +383,7 @@ public abstract class AbstractWebApplication extends
                 jdbcTemplate
                         .update("delete from "
                                 + TableUtilities
-                                .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
+                                        .getTableName(com.angkorteam.pluggable.framework.entity.Job.class)
                                 + " where "
                                 + com.angkorteam.pluggable.framework.entity.Job.ID
                                 + " = ?", job);
@@ -376,29 +401,62 @@ public abstract class AbstractWebApplication extends
 
     protected EntityManagerFactory initEntityManagerFactory() {
 
-        ServletContext servletContext = ((WebApplication) this).getServletContext();
+        ServletContext servletContext = ((WebApplication) this)
+                .getServletContext();
 
         StringBuffer persistence = new StringBuffer();
-        persistence.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>").append("\n");
-        persistence.append("<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\" version=\"2.0\">").append("\n");
-        persistence.append("\t").append("<persistence-unit name=\"jpa\" transaction-type=\"RESOURCE_LOCAL\">").append("\n");
-        persistence.append("\t\t").append("<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>").append("\n");
+        persistence.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+                .append("\n");
+        persistence
+                .append("<persistence xmlns=\"http://java.sun.com/xml/ns/persistence\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd\" version=\"2.0\">")
+                .append("\n");
+        persistence
+                .append("\t")
+                .append("<persistence-unit name=\"jpa\" transaction-type=\"RESOURCE_LOCAL\">")
+                .append("\n");
+        persistence
+                .append("\t\t")
+                .append("<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>")
+                .append("\n");
 
         for (Class<?> clazz : getEntities()) {
             if (!clazz.isAnnotationPresent(Exclude.class)) {
-                persistence.append("\t\t").append("<class>" + clazz.getName() + "</class>").append("\n");
+                persistence.append("\t\t")
+                        .append("<class>" + clazz.getName() + "</class>")
+                        .append("\n");
             }
         }
 
-        persistence.append("\t\t").append("<exclude-unlisted-classes>true</exclude-unlisted-classes>").append("\n");
+        persistence
+                .append("\t\t")
+                .append("<exclude-unlisted-classes>true</exclude-unlisted-classes>")
+                .append("\n");
 
         persistence.append("\t\t").append("<properties>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.MySQLMyISAMDialect\"/>").append("\n");
+        persistence
+                .append("\t\t\t")
+                .append("<property name=\"hibernate.dialect\" value=\"org.hibernate.dialect.MySQLMyISAMDialect\"/>")
+                .append("\n");
         // persistence.append("\t\t\t").append("<property name=\"hibernate.hbm2ddl.auto\" value=\"none\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.driver\" value=\"" + getDriverClass() + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.url\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcUrl()) + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.user\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcUsername()) + "\"/>").append("\n");
-        persistence.append("\t\t\t").append("<property name=\"javax.persistence.jdbc.password\" value=\"" + StringEscapeUtils.escapeXml10(getJdbcPassword()) + "\"/>").append("\n");
+        persistence
+                .append("\t\t\t")
+                .append("<property name=\"javax.persistence.jdbc.driver\" value=\""
+                        + getDriverClass() + "\"/>").append("\n");
+        persistence
+                .append("\t\t\t")
+                .append("<property name=\"javax.persistence.jdbc.url\" value=\""
+                        + StringEscapeUtils.escapeXml10(getJdbcUrl()) + "\"/>")
+                .append("\n");
+        persistence
+                .append("\t\t\t")
+                .append("<property name=\"javax.persistence.jdbc.user\" value=\""
+                        + StringEscapeUtils.escapeXml10(getJdbcUsername())
+                        + "\"/>").append("\n");
+        persistence
+                .append("\t\t\t")
+                .append("<property name=\"javax.persistence.jdbc.password\" value=\""
+                        + StringEscapeUtils.escapeXml10(getJdbcPassword())
+                        + "\"/>").append("\n");
 
         persistence.append("\t\t").append("</properties>").append("\n");
         persistence.append("\t").append("</persistence-unit>").append("\n");
@@ -443,7 +501,8 @@ public abstract class AbstractWebApplication extends
         }
 
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpa");
+            EntityManagerFactory emf = Persistence
+                    .createEntityManagerFactory("jpa");
             return emf;
         } catch (PersistenceException e) {
             LOGGER.info("persistence error due to {}", e.getMessage());
@@ -531,7 +590,7 @@ public abstract class AbstractWebApplication extends
                             + clazz.getSimpleName()
                             + " with "
                             + getControllers().get(path).getClazz()
-                            .getSimpleName());
+                                    .getSimpleName());
         }
         RequestMappingInfo info = new RequestMappingInfo();
         info.setClazz(clazz);
@@ -645,7 +704,7 @@ public abstract class AbstractWebApplication extends
     }
 
     public String[] getPackages() {
-        return new String[]{this.getClass().getPackage().getName()};
+        return new String[] { this.getClass().getPackage().getName() };
     }
 
     public Class<? extends WebPage> getHomePage() {
@@ -778,6 +837,34 @@ public abstract class AbstractWebApplication extends
             doDestroy();
         } catch (Throwable e) {
             e.printStackTrace();
+        }
+    }
+
+    public String lookupMineType(String extension) {
+        if ("mp3".equalsIgnoreCase(extension)) {
+            return "audio/mp3";
+        } else if ("gif".equals(extension)) {
+            return "image/gif";
+        } else if ("jpg".equalsIgnoreCase(extension)) {
+            return "image/jpg";
+        } else if ("jpeg".equalsIgnoreCase(extension)) {
+            return "image/jpg";
+        } else if ("png".equalsIgnoreCase(extension)) {
+            return "image/png";
+        } else if ("xml".equalsIgnoreCase(extension)) {
+            return "application/xml";
+        } else if ("json".equalsIgnoreCase(extension)) {
+            return "application/json";
+        } else if ("txt".equalsIgnoreCase(extension)) {
+            return "text/txt";
+        } else if ("html".equalsIgnoreCase(extension)) {
+            return "text/html";
+        } else if ("vtt".equalsIgnoreCase(extension)) {
+            return "text/vtt";
+        } else if ("csv".equals(extension)) {
+            return "text/csv";
+        } else {
+            return null;
         }
     }
 

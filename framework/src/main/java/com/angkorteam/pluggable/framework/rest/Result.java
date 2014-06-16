@@ -19,6 +19,7 @@ import org.apache.wicket.util.time.Time;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 
@@ -83,36 +84,17 @@ public class Result<T> implements Serializable {
         return new Result<T>();
     }
 
-    public static final <T> Result<T> ok(File file, WebResponse response)
-            throws IOException {
+    public static final <T> Result<T> ok(AbstractWebApplication application,
+            File file, WebResponse response) throws IOException {
         response.enableCaching(Duration.ONE_WEEK, CacheScope.PUBLIC);
         response.setLastModifiedTime(Time.valueOf(new Date(file.lastModified())));
         String extension = FilenameUtils.getExtension(file.getAbsolutePath());
-        if ("mp3".equalsIgnoreCase(extension)) {
-            response.setContentType("audio/mp3");
-        } else if ("gif".equals(extension)) {
-            response.setContentType("image/gif");
-        } else if ("jpg".equals(extension)) {
-            response.setContentType("image/jpg");
-        } else if ("jpeg".equals(extension)) {
-            response.setContentType("image/jpg");
-        } else if ("png".equals(extension)) {
-            response.setContentType("image/png");
-        } else if ("xml".equals(extension)) {
-            response.setContentType("application/xml");
-        } else if ("json".equals(extension)) {
-            response.setContentType("application/json");
-        } else if ("txt".equals(extension)) {
-            response.setContentType("text/txt");
-        } else if ("html".equals(extension)) {
-            response.setContentType("text/html");
-        } else if ("csv".equals(extension)) {
-            response.setContentType("text/csv");
-        } else {
-            response.setContentType("application/octet-stream");
-            response.addHeader("Content-Disposition", "attachment; filename=\n"
-                    + file.getName() + "\"");
+        String mine = application.lookupMineType(extension);
+        if (mine != null && !"".equals(mine)) {
+            response.setContentType(mine);
         }
+        response.addHeader("Content-Disposition", "attachment; filename=\n"
+                + file.getName() + "\"");
         response.setContentLength(file.length());
         FileInputStream inputStream = new FileInputStream(file);
         try {
@@ -126,24 +108,15 @@ public class Result<T> implements Serializable {
         return Result.<T> fake();
     }
 
-    public static final <T> Result<T> ok(File file, HttpServletResponse response)
-            throws IOException {
+    public static final <T> Result<T> ok(AbstractWebApplication application,
+            File file, HttpServletResponse response) throws IOException {
         String extension = FilenameUtils.getExtension(file.getAbsolutePath());
-        if ("mp3".equalsIgnoreCase(extension)) {
-            response.setContentType("audio/mp3");
-        } else if ("gif".equals(extension)) {
-            response.setContentType("image/gif");
-        } else if ("jpg".equals(extension)) {
-            response.setContentType("image/jpg");
-        } else if ("jpeg".equals(extension)) {
-            response.setContentType("image/jpeg");
-        } else if ("png".equals(extension)) {
-            response.setContentType("image/png");
-        } else {
-            response.setContentType("application/octet-stream");
-            response.addHeader("Content-Disposition", "attachment; filename=\n"
-                    + file.getName() + "\"");
+        String mine = application.lookupMineType(extension);
+        if (mine != null && !"".equals(mine)) {
+            response.setContentType(mine);
         }
+        response.addHeader("Content-Disposition", "attachment; filename=\n"
+                + file.getName() + "\"");
         response.setContentLength(Long.valueOf(file.length()).intValue());
         FileInputStream inputStream = new FileInputStream(file);
         try {
