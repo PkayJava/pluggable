@@ -15,21 +15,6 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<distributionManagement>
-		<!-- use the following if you're not using a snapshot version. -->
-		<repository>
-			<id>nexus</id>
-			<name>Release</name>
-			<url>http://nexus.angkorteam.com/content/repositories/releases</url>
-		</repository>
-		<!-- use the following if you ARE using a snapshot version. -->
-		<snapshotRepository>
-			<id>nexus</id>
-			<name>snapshot</name>
-			<url>http://nexus.angkorteam.com/content/repositories/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<developers>
 		<developer>
 			<id>pkayjava</id>
