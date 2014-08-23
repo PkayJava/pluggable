@@ -1,35 +1,7 @@
 package com.angkorteam.pluggable.framework.utilities;
 
-import java.beans.PropertyDescriptor;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.WildcardType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Stack;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.lang3.ObjectUtils.Null;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
-import org.apache.wicket.WicketRuntimeException;
-import org.springframework.beans.BeanUtils;
-
 import com.angkorteam.pluggable.framework.core.AbstractWebApplication;
-import com.angkorteam.pluggable.framework.doc.ApiError;
-import com.angkorteam.pluggable.framework.doc.ApiHeader;
-import com.angkorteam.pluggable.framework.doc.ApiMethod;
-import com.angkorteam.pluggable.framework.doc.ApiObject;
-import com.angkorteam.pluggable.framework.doc.ApiObjectField;
-import com.angkorteam.pluggable.framework.doc.ApiParam;
+import com.angkorteam.pluggable.framework.doc.*;
 import com.angkorteam.pluggable.framework.json.ObjectAPIForm;
 import com.angkorteam.pluggable.framework.json.RestAPIForm;
 import com.angkorteam.pluggable.framework.rest.RequestMapping;
@@ -37,6 +9,18 @@ import com.angkorteam.pluggable.framework.wicket.RequestMappingInfo;
 import com.angkorteam.pluggable.framework.wicket.RestController;
 import com.angkorteam.pluggable.framework.wicket.authroles.Role;
 import com.angkorteam.pluggable.framework.wicket.authroles.Secured;
+import org.apache.commons.lang3.ObjectUtils.Null;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.wicket.WicketRuntimeException;
+import org.springframework.beans.BeanUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.beans.PropertyDescriptor;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * @author Socheat KHAUV
@@ -93,8 +77,8 @@ public class RestDocUtilities {
     }
 
     public static final void fillRestAPI(HttpServletRequest request,
-            AbstractWebApplication application, List<RestAPIForm> restAPIForms,
-            List<ObjectAPIForm> objectAPIForms) {
+                                         AbstractWebApplication application, List<RestAPIForm> restAPIForms,
+                                         List<ObjectAPIForm> objectAPIForms) {
 
         Stack<Class<?>> queueForm = new Stack<Class<?>>();
 
@@ -143,7 +127,7 @@ public class RestDocUtilities {
                     restAPIForm
                             .setRoles(roles.toArray(new String[roles.size()]));
                 } else {
-                    restAPIForm.setRoles(new String[] {});
+                    restAPIForm.setRoles(new String[]{});
                 }
 
                 restAPIForm.setMethod(requestMapping.method());
@@ -199,8 +183,8 @@ public class RestDocUtilities {
                                     "value",
                                     "Allowed values: "
                                             + StringUtils.join(
-                                                    apiParam.allowedvalues(),
-                                                    ","));
+                                            apiParam.allowedvalues(),
+                                            ","));
                             formParameter.add(allowedvalues);
                         }
                         if (apiParam.format() != null
@@ -242,9 +226,9 @@ public class RestDocUtilities {
                 Class<?> returnObject = method.getReturnType();
                 if (returnObject == null
                         || !returnObject
-                                .getName()
-                                .equals(com.angkorteam.pluggable.framework.rest.Result.class
-                                        .getName())) {
+                        .getName()
+                        .equals(com.angkorteam.pluggable.framework.rest.Result.class
+                                .getName())) {
                     throw new WicketRuntimeException(method.getName()
                             + " is not rest api compatible");
                 }
@@ -372,7 +356,7 @@ public class RestDocUtilities {
                     .getPropertyDescriptors(objectForm);
             if (propertyDescriptors != null && propertyDescriptors.length > 0) {
                 for (PropertyDescriptor propertyDescriptor : propertyDescriptors) {
-                    if (propertyDescriptor.getName().equals("class")) {
+                    if (propertyDescriptor.getName().equals("class") || propertyDescriptor.getPropertyType() == Void.class) {
                         continue;
                     }
                     List<Map<String, String>> field = new ArrayList<Map<String, String>>();
@@ -414,15 +398,15 @@ public class RestDocUtilities {
                                 ParameterizedType pp = (ParameterizedType) type1;
                                 fieldType = "Type : "
                                         + ((Class<?>) pp.getRawType())
-                                                .getSimpleName()
+                                        .getSimpleName()
                                         + "<"
                                         + ((Class<?>) pp
-                                                .getActualTypeArguments()[0])
-                                                .getSimpleName()
+                                        .getActualTypeArguments()[0])
+                                        .getSimpleName()
                                         + ","
                                         + ((Class<?>) pp
-                                                .getActualTypeArguments()[1])
-                                                .getSimpleName() + ">" + "[]";
+                                        .getActualTypeArguments()[1])
+                                        .getSimpleName() + ">" + "[]";
                             } else {
                                 Class<?> cla = (Class<?>) type
                                         .getActualTypeArguments()[0];
@@ -458,11 +442,11 @@ public class RestDocUtilities {
                                 .isAnnotationPresent(ApiObject.class)) {
                             fieldType = "Type : "
                                     + propertyDescriptor.getPropertyType()
-                                            .getName();
+                                    .getName();
                         } else {
                             fieldType = "Type : "
                                     + propertyDescriptor.getPropertyType()
-                                            .getSimpleName();
+                                    .getSimpleName();
                         }
                     }
 
