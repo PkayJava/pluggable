@@ -98,6 +98,7 @@ public class RestController implements IResource {
             }
         }
         WebResponse response = (WebResponse) attributes.getResponse();
+        response.addHeader("Access-Control-Allow-Origin", "*");
 
         WebSession session = (WebSession) WebSession.get();
         JdbcTemplate jdbcTemplate = application.getBean(JdbcTemplate.class);
