@@ -179,17 +179,17 @@ public class RestDocUtilities {
                                 && apiParam.allowedvalues().length > 0) {
                             Map<String, String> allowedvalues = new HashMap<String, String>();
                             allowedvalues.put("name", "");
-                            String allowValues = "";
+                            List<String> allowValues = new ArrayList<String>();
                             if (apiParam.allowedvalues() != null
                                     && apiParam.allowedvalues().length > 0) {
                                 for (String value : apiParam.allowedvalues()) {
-                                    allowValues = allowValues + "<span class=\"label label-danger\" >" + value + "</span >";
+                                    allowValues.add("<span class=\"label label-danger\" >" + value + "</span >");
                                 }
                             }
                             allowedvalues.put(
                                     "value",
                                     "Allowed values: "
-                                            + allowValues);
+                                            + StringUtils.join(allowValues, "&nbsp;"));
                             formParameter.add(allowedvalues);
                         }
                         if (apiParam.format() != null
