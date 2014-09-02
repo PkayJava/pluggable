@@ -1,9 +1,7 @@
 package com.angkorteam.pluggable.framework.panel;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-
+import com.angkorteam.pluggable.framework.json.RestAPIForm;
+import com.angkorteam.pluggable.framework.rest.RequestMethod;
 import org.apache.wicket.AttributeModifier;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
@@ -11,8 +9,9 @@ import org.apache.wicket.markup.html.list.ListItem;
 import org.apache.wicket.markup.html.list.ListView;
 import org.apache.wicket.markup.html.panel.Panel;
 
-import com.angkorteam.pluggable.framework.json.RestAPIForm;
-import com.angkorteam.pluggable.framework.rest.RequestMethod;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Socheat KHAUV
@@ -20,7 +19,7 @@ import com.angkorteam.pluggable.framework.rest.RequestMethod;
 public class RestAPIPanel extends Panel {
 
     /**
-     * 
+     *
      */
     private static final long serialVersionUID = 9070699867881487891L;
 
@@ -59,7 +58,7 @@ public class RestAPIPanel extends Panel {
 
                 ListView<RequestMethod> methods = new ListView<RequestMethod>(
                         "methods", Arrays.asList(item.getModelObject()
-                                .getMethod())) {
+                        .getMethod())) {
 
                     private static final long serialVersionUID = -2832929292740133237L;
 
@@ -98,7 +97,7 @@ public class RestAPIPanel extends Panel {
 
                 ListView<RequestMethod> method1 = new ListView<RequestMethod>(
                         "method1", Arrays.asList(item.getModelObject()
-                                .getMethod())) {
+                        .getMethod())) {
 
                     private static final long serialVersionUID = 2517437141389219449L;
 
@@ -145,7 +144,7 @@ public class RestAPIPanel extends Panel {
 
                 ListView<List<Map<String, String>>> urlParameters = new ListView<List<Map<String, String>>>(
                         "urlParameters", item.getModelObject()
-                                .getUrlParameters()) {
+                        .getUrlParameters()) {
 
                     private static final long serialVersionUID = 678059867689378626L;
 
@@ -166,7 +165,7 @@ public class RestAPIPanel extends Panel {
                                 name.setVisible(item.getModelObject().get(
                                         "name") != null
                                         && !"".equals(item.getModelObject()
-                                                .get("name")));
+                                        .get("name")));
 
                                 Label value = new Label("value", item
                                         .getModelObject().get("value"));
@@ -183,7 +182,7 @@ public class RestAPIPanel extends Panel {
 
                 ListView<List<Map<String, String>>> formParameters = new ListView<List<Map<String, String>>>(
                         "formParameters", item.getModelObject()
-                                .getFormParameters()) {
+                        .getFormParameters()) {
 
                     private static final long serialVersionUID = -1304228070319726021L;
 
@@ -204,10 +203,11 @@ public class RestAPIPanel extends Panel {
                                 name.setVisible(item.getModelObject().get(
                                         "name") != null
                                         && !"".equals(item.getModelObject()
-                                                .get("name")));
+                                        .get("name")));
 
                                 Label value = new Label("value", item
                                         .getModelObject().get("value"));
+                                value.setEscapeModelStrings(false);
                                 item.add(value);
                             }
                         };
@@ -217,7 +217,7 @@ public class RestAPIPanel extends Panel {
                 formParameters
                         .setVisible(item.getModelObject().getFormParameters() != null
                                 && !item.getModelObject().getFormParameters()
-                                        .isEmpty());
+                                .isEmpty());
                 body.add(formParameters);
 
                 ListView<Map<String, String>> headers = new ListView<Map<String, String>>(
@@ -269,7 +269,7 @@ public class RestAPIPanel extends Panel {
                         item.getModelObject().getResponseDescription());
                 if (item.getModelObject().getResponseDescription() == null
                         || "".equals(item.getModelObject()
-                                .getResponseDescription())) {
+                        .getResponseDescription())) {
                     responseDescription.setVisible(false);
                 } else {
                     responseDescription.setVisible(true);
