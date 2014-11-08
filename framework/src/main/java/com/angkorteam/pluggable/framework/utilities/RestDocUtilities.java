@@ -244,18 +244,18 @@ public class RestDocUtilities {
                             + " is not rest api compatible");
                 }
                 ParameterizedType parameterizedType = (ParameterizedType) type;
-                Class<?> responseObject = null;
-                Class<?> actualType = null;
+                Class responseObject = null;
+                Class actualType = null;
                 try {
-                    if (parameterizedType.getActualTypeArguments()[0] instanceof Class<?>) {
-                        responseObject = (Class<?>) parameterizedType
-                                .getActualTypeArguments()[0];
+                    if (parameterizedType.getActualTypeArguments()[0] instanceof Class) {
+                        responseObject = (Class) parameterizedType.getActualTypeArguments()[0];
                     } else if (parameterizedType.getActualTypeArguments()[0] instanceof ParameterizedType) {
-                        responseObject = (Class<?>) ((ParameterizedType) parameterizedType
-                                .getActualTypeArguments()[0]).getRawType();
-                        actualType = (Class<?>) ((ParameterizedType) parameterizedType
-                                .getActualTypeArguments()[0])
-                                .getActualTypeArguments()[0];
+                        responseObject = (Class) ((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getRawType();
+                        if (((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getActualTypeArguments()[0] instanceof ParameterizedType) {
+                            actualType = (Class) ((ParameterizedType) ((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getActualTypeArguments()[0]).getRawType();
+                        } else {
+                            actualType = (Class) ((ParameterizedType) parameterizedType.getActualTypeArguments()[0]).getActualTypeArguments()[0];
+                        }
                     }
                 } catch (java.lang.ClassCastException e) {
                     throw new WicketRuntimeException(e.getMessage() + " "
